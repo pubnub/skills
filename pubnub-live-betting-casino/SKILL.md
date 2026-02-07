@@ -1,12 +1,12 @@
 ---
 name: pubnub-live-betting-casino
-description: "Build real-time betting and casino game platforms with PubNub"
+description: Build real-time betting and casino game platforms with PubNub
 license: PubNub
 metadata:
   author: pubnub
   version: "0.1.0"
   domain: real-time
-  triggers: "pubnub, betting, casino, odds, wager, live betting, in-play, game state"
+  triggers: pubnub, betting, casino, odds, wager, live betting, in-play, game state
   role: specialist
   scope: implementation
   output-format: code
@@ -121,6 +121,13 @@ pubnub.addListener({
 - Suspend markets immediately when events occur (goals, red cards) before publishing new odds
 - Implement rate limiting on wager submission channels to prevent abuse
 - Encrypt all wager and balance messages using PubNub's built-in AES encryption
+
+## Related Skills
+
+- **pubnub-security** - Access Manager and AES-256 encryption for wager and balance data
+- **pubnub-functions** - PubNub Functions for server-side bet validation and rate limiting
+- **pubnub-scale** - Channel groups for market hierarchies and high-volume odds delivery
+- **pubnub-presence** - Tracking active users on betting markets and casino tables
 
 ## Output Format
 

@@ -1,12 +1,12 @@
 ---
 name: pubnub-order-delivery-driver
-description: "Build real-time order tracking and delivery driver systems with PubNub"
+description: Build real-time order tracking and delivery driver systems with PubNub
 license: PubNub
 metadata:
   author: pubnub
   version: "0.1.0"
   domain: real-time
-  triggers: "pubnub, delivery, order tracking, driver location, dispatch, fleet, logistics, eta"
+  triggers: pubnub, delivery, order tracking, driver location, dispatch, fleet, logistics, eta
   role: specialist
   scope: implementation
   output-format: code
@@ -40,9 +40,9 @@ Invoke this skill when:
 
 | Reference | Purpose |
 |-----------|---------|
-| [delivery-setup.md](references/delivery-setup.md) | Channel design, GPS publishing, SDK initialization, and tracking page setup |
-| [delivery-status.md](references/delivery-status.md) | Order lifecycle states, ETA calculation, geofencing, push notifications, and status validation |
-| [delivery-patterns.md](references/delivery-patterns.md) | Dispatch coordination, driver-customer chat, fleet dashboards, privacy controls, and proof of delivery |
+| `delivery-setup.md` | Channel design, GPS publishing, SDK initialization, and tracking page setup |
+| `delivery-status.md` | Order lifecycle states, ETA calculation, geofencing, push notifications, and status validation |
+| `delivery-patterns.md` | Dispatch coordination, driver-customer chat, fleet dashboards, privacy controls, and proof of delivery |
 
 ## Key Implementation Requirements
 
@@ -51,7 +51,7 @@ Invoke this skill when:
 Driver apps must publish location updates to a dedicated driver channel. Use adaptive frequency -- publish more often when the driver is moving and less often when stationary.
 
 ```javascript
-const PubNub = require('pubnub');
+import PubNub from 'pubnub';
 
 const pubnub = new PubNub({
   publishKey: 'pub-key',
@@ -154,6 +154,13 @@ await updateOrderStatus('order-5678', 'dispatched', {
 - Cap GPS publishing frequency at no more than once per second to avoid exceeding PubNub message quotas and draining driver device batteries.
 - Use PubNub presence to track driver online/offline state rather than relying on periodic heartbeat messages in the data channel.
 - Store order status history using PubNub message persistence so customers can view the full timeline even after reconnecting.
+
+## Related Skills
+
+- **pubnub-presence** - Tracking driver online/offline status and availability
+- **pubnub-functions** - PubNub Functions for dispatch logic, geofence triggers, and status validation
+- **pubnub-security** - Access Manager for isolating order channels and protecting driver location data
+- **pubnub-scale** - Channel groups for fleet management dashboards
 
 ## Output Format
 

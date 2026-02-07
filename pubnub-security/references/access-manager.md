@@ -8,26 +8,24 @@ PubNub Access Manager provides fine-grained control over who can access channels
 
 | Concept | Description |
 |---------|-------------|
-| **Permissions** | Read (subscribe), Write (publish), Manage (channel groups) |
-| **Auth-Key** | Client authentication token for permission grants |
-| **Secret Key** | Server-side key for granting/revoking permissions |
-| **TTL** | Time-to-live for permission grants (1-43,200 minutes) |
+| **Permissions** | Read (subscribe), Write (publish), Get, Update, Manage, Delete, Join |
+| **Token** | JWT-like token issued by `grantToken()` containing embedded permissions |
+| **Secret Key** | Server-side key for issuing and revoking tokens |
+| **TTL** | Time-to-live for tokens (in minutes) |
 
 ## Enabling Access Manager
 
 1. Log in to PubNub Admin Portal
 2. Select your Application and Keyset
 3. Enable **Access Manager** add-on
-4. **Securely store your Secret Key** - required for grants
+4. **Securely store your Secret Key** - required for token grants
 
-> **Critical**: Once enabled, all clients need valid auth tokens to access channels.
+> **Critical**: Once enabled, all clients need valid tokens to access channels.
 
-## Server-Side Permission Grants
-
-### Setup (Node.js)
+## Server-Side Setup (Node.js)
 
 ```javascript
-const PubNub = require('pubnub');
+import PubNub from 'pubnub';
 
 const pubnub = new PubNub({
   publishKey: 'pub-c-...',
@@ -37,144 +35,126 @@ const pubnub = new PubNub({
 });
 ```
 
-### Grant Read/Write Access
+## Token-Based Access (Recommended)
+
+### Grant Token for Specific Resources
 
 ```javascript
-// Grant user access to specific channel
-async function grantUserAccess(authKey, channel, permissions) {
+// Grant a user access to specific channels
+async function issueUserToken(userId, channels, ttlMinutes = 60) {
   try {
-    const result = await pubnub.grant({
-      channels: [channel],
-      authKeys: [authKey],
-      read: permissions.read ?? true,
-      write: permissions.write ?? false,
-      manage: permissions.manage ?? false,
-      ttl: 60  // 1 hour
+    const token = await pubnub.grantToken({
+      ttl: ttlMinutes,
+      authorizedUUID: userId,
+      resources: {
+        channels: Object.fromEntries(
+          channels.map(ch => [ch, { read: true, write: true }])
+        )
+      }
     });
-    console.log('Grant successful:', result);
-    return result;
+    console.log('Token issued:', token);
+    return token;
   } catch (error) {
-    console.error('Grant failed:', error);
+    console.error('Token grant failed:', error);
     throw error;
   }
 }
 
 // Usage
-await grantUserAccess('user-123-auth-token', 'chat-room-private', {
-  read: true,
-  write: true
+const token = await issueUserToken('user-123', ['chat-room-private', 'notifications']);
+```
+
+### Grant Token with Channel Patterns
+
+```javascript
+// Grant access to all channels matching a pattern
+const token = await pubnub.grantToken({
+  ttl: 60,
+  authorizedUUID: 'user-123',
+  patterns: {
+    channels: {
+      'chat-room-*': { read: true, write: true }
+    }
+  }
 });
 ```
 
-### Grant for Multiple Channels
+### Grant Token with Mixed Resources and Patterns
 
 ```javascript
-await pubnub.grant({
-  channels: ['room-1', 'room-2', 'room-3'],
-  authKeys: ['user-auth-token'],
-  read: true,
-  write: true,
-  ttl: 1440  // 24 hours
+const token = await pubnub.grantToken({
+  ttl: 60,
+  authorizedUUID: 'user-123',
+  resources: {
+    channels: {
+      'private-room': { read: true, write: true, get: true, update: true }
+    },
+    uuids: {
+      'user-123': { get: true, update: true }
+    }
+  },
+  patterns: {
+    channels: {
+      'public-*': { read: true }
+    }
+  }
 });
 ```
 
-### Grant Using Channel Patterns
+### Grant Token for Channel Groups
 
 ```javascript
-// Grant access to all channels matching pattern
-await pubnub.grant({
-  channels: ['chat-room-*'],  // Wildcard pattern
-  authKeys: ['user-auth-token'],
-  read: true,
-  write: false,
-  ttl: 60
-});
-```
-
-### Grant for Channel Groups
-
-```javascript
-await pubnub.grant({
-  channelGroups: ['user-feeds-group'],
-  authKeys: ['user-auth-token'],
-  read: true,
-  manage: true,  // Allow adding/removing channels in group
-  ttl: 60
-});
-```
-
-### Grant for Presence Channels
-
-```javascript
-// Main channel access
-await pubnub.grant({
-  channels: ['chat-room'],
-  authKeys: ['user-auth-token'],
-  read: true,
-  write: true,
-  ttl: 60
-});
-
-// Presence channel access (required for withPresence)
-await pubnub.grant({
-  channels: ['chat-room-pnpres'],
-  authKeys: ['user-auth-token'],
-  read: true,
-  ttl: 60
+const token = await pubnub.grantToken({
+  ttl: 60,
+  authorizedUUID: 'user-123',
+  resources: {
+    groups: {
+      'user-feeds-group': { read: true, manage: true }
+    }
+  }
 });
 ```
 
 ## Client-Side Configuration
 
-### Correct Configuration (authKey)
+### Setting the Token on the Client
 
 ```javascript
-// After receiving auth token from your server
 const pubnub = new PubNub({
   subscribeKey: 'sub-c-...',
-  publishKey: 'pub-c-...',  // Only if client needs to publish
-  userId: 'user-123',
-  authKey: 'auth-token-from-server'  // CORRECT
+  publishKey: 'pub-c-...',
+  userId: 'user-123'
 });
+
+// Set the token received from your server
+pubnub.setToken(token);
 ```
 
-### WRONG Configuration (token)
+### Parsing Token Permissions (Debugging)
 
 ```javascript
-// DO NOT use 'token' parameter
-const pubnub = new PubNub({
-  subscribeKey: 'sub-c-...',
-  userId: 'user-123',
-  token: 'auth-token'  // WRONG - will not work
-});
+// Inspect what a token grants
+const parsed = pubnub.parseToken(token);
+console.log('Token permissions:', JSON.stringify(parsed, null, 2));
 ```
 
-## Revoking Permissions
+## Revoking Tokens
 
 ```javascript
-// Revoke specific user's access
-await pubnub.revoke({
-  channels: ['private-room'],
-  authKeys: ['user-auth-token']
-});
-
-// Revoke all access for a user
-await pubnub.revoke({
-  authKeys: ['user-auth-token']  // All channels
-});
+// Revoke a specific token
+await pubnub.revokeToken(token);
 ```
 
-> **Note**: Revokes may take up to 60 seconds to propagate due to caching.
+> **Note**: Revocations may take up to 60 seconds to propagate due to caching.
 
 ## Authentication Flow
 
 ### Complete Server Flow
 
 ```javascript
-// Express.js example
-const express = require('express');
-const PubNub = require('pubnub');
-const jwt = require('jsonwebtoken');
+import express from 'express';
+import PubNub from 'pubnub';
+import jwt from 'jsonwebtoken';
 
 const app = express();
 
@@ -193,24 +173,24 @@ app.post('/api/pubnub/auth', async (req, res) => {
     const userToken = req.headers.authorization?.split(' ')[1];
     const user = jwt.verify(userToken, process.env.JWT_SECRET);
 
-    // 2. Generate PubNub auth token
-    const authKey = `pn_${user.id}_${Date.now()}`;
-
-    // 3. Determine channels based on user permissions
+    // 2. Determine channels based on user permissions
     const channels = getUserChannels(user);
 
-    // 4. Grant PubNub access
-    await pubnub.grant({
-      channels: channels,
-      authKeys: [authKey],
-      read: true,
-      write: user.canWrite,
-      ttl: 60  // 1 hour, then client must re-auth
+    // 3. Issue PubNub token
+    const channelPermissions = {};
+    for (const ch of channels) {
+      channelPermissions[ch] = { read: true, write: user.canWrite };
+    }
+
+    const token = await pubnub.grantToken({
+      ttl: 60,  // 1 hour, then client must re-auth
+      authorizedUUID: user.id,
+      resources: { channels: channelPermissions }
     });
 
-    // 5. Return credentials to client
+    // 4. Return credentials to client
     res.json({
-      authKey: authKey,
+      token: token,
       subscribeKey: 'sub-c-...',
       publishKey: user.canWrite ? 'pub-c-...' : null,
       channels: channels,
@@ -227,7 +207,7 @@ app.post('/api/pubnub/auth', async (req, res) => {
 
 ```javascript
 async function initializePubNub() {
-  // 1. Get auth token from your server
+  // 1. Get token from your server
   const response = await fetch('/api/pubnub/auth', {
     method: 'POST',
     headers: {
@@ -237,27 +217,28 @@ async function initializePubNub() {
 
   const credentials = await response.json();
 
-  // 2. Initialize PubNub with auth token
+  // 2. Initialize PubNub and set token
   const pubnub = new PubNub({
     subscribeKey: credentials.subscribeKey,
     publishKey: credentials.publishKey,
-    userId: currentUserId,
-    authKey: credentials.authKey  // From server
+    userId: currentUserId
   });
+
+  pubnub.setToken(credentials.token);
 
   // 3. Handle access denied errors
   pubnub.addListener({
     status: (statusEvent) => {
       if (statusEvent.category === 'PNAccessDeniedCategory') {
         console.error('Access denied - refreshing token');
-        refreshAuthToken();
+        refreshToken();
       }
     }
   });
 
   // 4. Schedule token refresh before expiry
   const refreshTime = credentials.expiresAt - Date.now() - 300000;  // 5 min before
-  setTimeout(refreshAuthToken, refreshTime);
+  setTimeout(refreshToken, refreshTime);
 
   return pubnub;
 }
@@ -265,32 +246,17 @@ async function initializePubNub() {
 
 ## Permission Levels
 
-### Channel-Level Permissions
+### Token Permissions
 
 | Permission | Allows |
 |------------|--------|
 | `read` | Subscribe to channel, fetch history |
 | `write` | Publish messages to channel |
+| `get` | Get channel/UUID metadata |
+| `update` | Set channel/UUID metadata |
 | `manage` | Add/remove channels in channel groups |
-| `delete` | Delete messages (if supported) |
-
-### Grant Scope
-
-```javascript
-// User-channel specific
-await pubnub.grant({
-  channels: ['chat-room'],
-  authKeys: ['user-auth-token'],
-  read: true
-});
-
-// All channels for user (use carefully)
-await pubnub.grant({
-  authKeys: ['user-auth-token'],
-  read: true,
-  write: true
-});
-```
+| `delete` | Delete messages |
+| `join` | Join channel as a member |
 
 ## TTL Best Practices
 
@@ -303,10 +269,38 @@ await pubnub.grant({
 
 ```javascript
 // Short TTL for sensitive operations
-await pubnub.grant({
-  channels: ['payment-updates'],
-  authKeys: [authKey],
-  read: true,
-  ttl: 15  // 15 minutes
+const token = await pubnub.grantToken({
+  ttl: 15,  // 15 minutes
+  authorizedUUID: userId,
+  resources: {
+    channels: {
+      'payment-updates': { read: true }
+    }
+  }
 });
 ```
+
+## Legacy: grant() and authKey
+
+For older implementations using the `grant()` API with `authKey`:
+
+```javascript
+// Server-side grant (legacy)
+await pubnub.grant({
+  channels: ['private-room'],
+  authKeys: ['user-auth-token'],
+  read: true,
+  write: true,
+  ttl: 60
+});
+
+// Client-side with authKey (legacy)
+const pubnub = new PubNub({
+  subscribeKey: 'sub-c-...',
+  publishKey: 'pub-c-...',
+  userId: 'user-123',
+  authKey: 'auth-token-from-server'
+});
+```
+
+> **Note**: New implementations should use `grantToken()` and `setToken()` instead.

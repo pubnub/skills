@@ -24,7 +24,7 @@ class RandomMatchmaker {
     this.pubnub = pubnub;
     this.gameType = gameType;
     this.queueChannel = `matchmaking.${gameType}.random`;
-    this.playerChannel = `player.${pubnub.getUUID()}`;
+    this.playerChannel = `player.${pubnub.getUserId()}`;
   }
 
   async joinQueue() {
@@ -38,7 +38,7 @@ class RandomMatchmaker {
       channel: this.queueChannel,
       message: {
         type: 'queue-join',
-        playerId: this.pubnub.getUUID(),
+        playerId: this.pubnub.getUserId(),
         timestamp: Date.now()
       }
     });
@@ -61,7 +61,7 @@ class RandomMatchmaker {
       channel: this.queueChannel,
       message: {
         type: 'queue-leave',
-        playerId: this.pubnub.getUUID()
+        playerId: this.pubnub.getUserId()
       }
     });
     this.pubnub.unsubscribe({ channels: [this.queueChannel] });
@@ -280,7 +280,7 @@ async function playCard(pubnub, turnManager, cardId) {
     fromHand: true
   };
 
-  await turnManager.submitAction(pubnub.getUUID(), action);
+  await turnManager.submitAction(pubnub.getUserId(), action);
 }
 
 // All players listen for turn actions
@@ -293,7 +293,7 @@ pubnub.addListener({
         updateUI({
           activePlayer: msg.activePlayer,
           timeRemaining: msg.deadline - Date.now(),
-          isMyTurn: msg.activePlayer === pubnub.getUUID()
+          isMyTurn: msg.activePlayer === pubnub.getUserId()
         });
         break;
 
@@ -339,7 +339,7 @@ class PredictiveGameClient {
       channel: this.stateChannel,
       message: {
         type: 'player-input',
-        playerId: this.pubnub.getUUID(),
+        playerId: this.pubnub.getUserId(),
         input
       }
     });
@@ -365,7 +365,7 @@ class PredictiveGameClient {
   }
 
   applyToState(state, input) {
-    const player = state.players[this.pubnub.getUUID()];
+    const player = state.players[this.pubnub.getUserId()];
     if (!player) return;
 
     switch (input.type) {
@@ -647,7 +647,7 @@ class InGameChat {
       channel: this.chatChannel,
       message: {
         type: 'chat',
-        senderId: this.pubnub.getUUID(),
+        senderId: this.pubnub.getUserId(),
         text,
         team
       }
@@ -660,7 +660,7 @@ class InGameChat {
       channel: this.chatChannel,
       message: {
         type: 'quick-chat',
-        senderId: this.pubnub.getUUID(),
+        senderId: this.pubnub.getUserId(),
         phraseKey // e.g., 'nice_shot', 'good_game', 'need_help'
       }
     });
@@ -696,7 +696,7 @@ class SpectatorManager {
       channel: this.stateChannel,
       message: {
         type: 'spectator-join',
-        spectatorId: this.pubnub.getUUID()
+        spectatorId: this.pubnub.getUserId()
       }
     });
   }

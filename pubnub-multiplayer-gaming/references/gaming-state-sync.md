@@ -77,7 +77,7 @@ class HostAuthoritativeSync {
       channel: this.stateChannel,
       message: {
         type: 'player-action',
-        playerId: this.pubnub.getUUID(),
+        playerId: this.pubnub.getUserId(),
         action,
         clientSeq: ++this.sequenceNumber,
         timestamp: Date.now()
@@ -234,7 +234,7 @@ class DeltaBatcher {
       message: {
         type: 'state-delta',
         seq: ++this.sequenceNumber,
-        senderId: this.pubnub.getUUID(),
+        senderId: this.pubnub.getUserId(),
         delta,
         timestamp: Date.now()
       }
@@ -381,7 +381,7 @@ class GameTickManager {
       message: {
         type: 'tick-input',
         tick: this.currentTick,
-        playerId: this.pubnub.getUUID(),
+        playerId: this.pubnub.getUserId(),
         inputs,
         timestamp: Date.now()
       }
@@ -457,7 +457,7 @@ async function requestStateSnapshot(pubnub, stateChannel) {
     channel: stateChannel,
     message: {
       type: 'snapshot-request',
-      requesterId: pubnub.getUUID(),
+      requesterId: pubnub.getUserId(),
       timestamp: Date.now()
     }
   });

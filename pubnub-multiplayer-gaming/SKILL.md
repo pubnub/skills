@@ -1,12 +1,12 @@
 ---
 name: pubnub-multiplayer-gaming
-description: "Build real-time multiplayer games with PubNub game state sync"
+description: Build real-time multiplayer games with PubNub game state sync
 license: PubNub
 metadata:
   author: pubnub
   version: "0.1.0"
   domain: real-time
-  triggers: "pubnub, multiplayer, gaming, game state, player matching, game rooms, lobby, sync"
+  triggers: pubnub, multiplayer, gaming, game state, player matching, game rooms, lobby, sync
   role: specialist
   scope: implementation
   output-format: code
@@ -124,7 +124,7 @@ async function sendStateUpdate(pubnub, stateChannel, deltaUpdate) {
     channel: stateChannel,
     message: {
       type: 'state-delta',
-      senderId: pubnub.getUUID(),
+      senderId: pubnub.getUserId(),
       timestamp: Date.now(),
       sequenceNum: ++localSequence,
       delta: deltaUpdate
@@ -138,7 +138,7 @@ pubnub.addListener({
     if (event.channel.endsWith('.state')) {
       const { type, delta, sequenceNum, senderId } = event.message;
 
-      if (type === 'state-delta' && senderId !== pubnub.getUUID()) {
+      if (type === 'state-delta' && senderId !== pubnub.getUserId()) {
         applyDelta(gameState, delta, sequenceNum);
         renderGame(gameState);
       }
@@ -162,6 +162,13 @@ pubnub.addListener({
 - Validate critical game actions server-side using PubNub Functions to prevent cheating
 - Use separate channels for game state, chat, and lobby to avoid message congestion
 - Design for eventual consistency; PubNub guarantees message ordering per channel but not cross-channel
+
+## Related Skills
+
+- **pubnub-presence** - Presence tracking for player online/offline status and room occupancy
+- **pubnub-functions** - PubNub Functions for server-side anti-cheat validation
+- **pubnub-security** - Access Manager for game room permissions and player isolation
+- **pubnub-chat** - In-game chat features using the Chat SDK
 
 ## Output Format
 

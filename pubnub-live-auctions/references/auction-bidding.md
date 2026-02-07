@@ -246,7 +246,7 @@ export default (request) => {
 
 ```javascript
 async function placeBidWithRetry(pubnub, auctionId, amount, maxRetries = 3) {
-  const idempotencyKey = `bid-${pubnub.getUUID()}-${Date.now()}`;
+  const idempotencyKey = `bid-${pubnub.getUserId()}-${Date.now()}`;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
@@ -254,7 +254,7 @@ async function placeBidWithRetry(pubnub, auctionId, amount, maxRetries = 3) {
         channel: `auction.${auctionId}`,
         message: {
           type: 'bid',
-          bidderId: pubnub.getUUID(),
+          bidderId: pubnub.getUserId(),
           auctionId: auctionId,
           amount: amount,
           idempotencyKey: idempotencyKey,
@@ -271,7 +271,7 @@ async function placeBidWithRetry(pubnub, auctionId, amount, maxRetries = 3) {
         const listener = {
           message: (event) => {
             const msg = event.message;
-            if (msg.auctionId === auctionId && msg.bidderId === pubnub.getUUID()) {
+            if (msg.auctionId === auctionId && msg.bidderId === pubnub.getUserId()) {
               clearTimeout(timeout);
               pubnub.removeListener(listener);
               if (msg.type === 'bid_accepted') {
@@ -398,7 +398,7 @@ function sendOutbidNotification(pubnub, previousBidderId, auctionId, details) {
 ```javascript
 // Subscribe to personal notification channel
 pubnub.subscribe({
-  channels: [`user.${pubnub.getUUID()}.notifications`]
+  channels: [`user.${pubnub.getUserId()}.notifications`]
 });
 
 pubnub.addListener({

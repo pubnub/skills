@@ -52,7 +52,7 @@ pubnub.subscribe({
 The driver app needs publish and subscribe permissions. Set a unique `userId` tied to the driver's identity.
 
 ```javascript
-const PubNub = require('pubnub');
+import PubNub from 'pubnub';
 
 const pubnub = new PubNub({
   publishKey: process.env.PUBNUB_PUBLISH_KEY,

@@ -392,7 +392,7 @@ async function setProxyBid(pubnub, auctionId, maxAmount) {
     channel: `auction.${auctionId}.admin`,
     message: {
       type: 'set_proxy_bid',
-      bidderId: pubnub.getUUID(),
+      bidderId: pubnub.getUserId(),
       auctionId: auctionId,
       maxAmount: maxAmount,
       timestamp: Date.now()
@@ -663,7 +663,7 @@ async function bidDutchAuction(pubnub, auctionId) {
     channel: `dutch.${auctionId}`,
     message: {
       type: 'dutch_bid',
-      bidderId: pubnub.getUUID(),
+      bidderId: pubnub.getUserId(),
       auctionId: auctionId,
       timestamp: Date.now()
     }
@@ -676,7 +676,7 @@ async function bidDutchAuction(pubnub, auctionId) {
 ```javascript
 // Client-side: maintain a watchlist of auctions
 async function addToWatchlist(pubnub, auctionId) {
-  const userId = pubnub.getUUID();
+  const userId = pubnub.getUserId();
   const watchlistChannel = `user.${userId}.notifications`;
 
   // Subscribe to ending-soon notifications for this auction

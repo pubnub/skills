@@ -27,6 +27,14 @@ npx skills add pubnub/skills
 | [pubnub-security](./pubnub-security) | Access Manager, AES-256 encryption, TLS |
 | [pubnub-chat](./pubnub-chat) | Chat SDK, messaging, typing indicators, reactions |
 | [pubnub-scale](./pubnub-scale) | High-volume optimization, channel groups, persistence |
+| [pubnub-live-auctions](./pubnub-live-auctions) | Real-time auction platforms with bidding and countdowns |
+| [pubnub-live-betting-casino](./pubnub-live-betting-casino) | Real-time betting and casino game platforms |
+| [pubnub-live-sport-updates](./pubnub-live-sport-updates) | Real-time sports scores, play-by-play, scoreboards |
+| [pubnub-live-stock-quote-updates](./pubnub-live-stock-quote-updates) | Real-time stock quotes and market data |
+| [pubnub-live-voting](./pubnub-live-voting) | Real-time voting and polling systems |
+| [pubnub-multiplayer-gaming](./pubnub-multiplayer-gaming) | Real-time multiplayer game state synchronization |
+| [pubnub-order-delivery-driver](./pubnub-order-delivery-driver) | Real-time order tracking and delivery driver systems |
+| [pubnub-telemedicine](./pubnub-telemedicine) | HIPAA-compliant telemedicine applications |
 
 For more details, see the [CLI documentation](https://skills.sh/docs/cli).
 
@@ -135,6 +143,142 @@ Scale PubNub applications for high-volume events.
 - `performance.md` - Message optimization, batching
 - `persistence.md` - History API, catch-up patterns
 
+---
+
+### pubnub-live-auctions
+
+Build real-time auction platforms with PubNub bidding and countdowns.
+
+**Use for:**
+- Live bidding with server-side validation
+- Countdown timer synchronization
+- Outbid notifications and bid activity feeds
+- Auction lifecycle management
+
+**References:**
+- `auction-setup.md` - Auction channel design, lifecycle management
+- `auction-bidding.md` - Bid validation, race condition handling
+- `auction-patterns.md` - Reserve prices, auto-extend, proxy bidding
+
+---
+
+### pubnub-live-betting-casino
+
+Build real-time betting and casino game platforms with PubNub.
+
+**Use for:**
+- Live/in-play betting with real-time odds updates
+- Casino game state synchronization
+- Wager placement, validation, and settlement
+- Responsible gambling features
+
+**References:**
+- `betting-setup.md` - Platform initialization, market channels, odds broadcasting
+- `betting-wagers.md` - Wager validation, bet settlement, cash-out
+- `betting-patterns.md` - Casino game sync, in-play patterns, compliance
+
+---
+
+### pubnub-live-sport-updates
+
+Deliver real-time sports scores, play-by-play, and scoreboards with PubNub.
+
+**Use for:**
+- Live scoreboards and score tickers
+- Play-by-play and timeline feeds
+- Multi-sport dashboards
+- Fan engagement features
+
+**References:**
+- `sport-updates-setup.md` - Channel hierarchy, data models, subscription patterns
+- `sport-updates-events.md` - Game event types, scoring logic, play-by-play
+- `sport-updates-patterns.md` - Multi-sport dashboards, fan engagement, scaling
+
+---
+
+### pubnub-live-stock-quote-updates
+
+Deliver real-time stock quotes and market data with PubNub.
+
+**Use for:**
+- Live stock quote streaming
+- Portfolio tracking and watchlists
+- Price alert systems
+- Ticker displays and charting dashboards
+
+**References:**
+- `stock-quotes-setup.md` - Channel design, quote broadcasting, ingestion
+- `stock-quotes-portfolio.md` - Watchlist management, price alerts
+- `stock-quotes-patterns.md` - Ticker displays, charting, market hours
+
+---
+
+### pubnub-live-voting
+
+Build real-time voting and polling systems with PubNub.
+
+**Use for:**
+- Live audience polling and voting
+- Real-time vote tallying with duplicate prevention
+- Survey systems with live results
+- Multi-round voting workflows
+
+**References:**
+- `voting-setup.md` - Poll creation, channel design, lifecycle management
+- `voting-tallying.md` - Duplicate prevention, atomic counters, fraud detection
+- `voting-patterns.md` - Result broadcasting, multi-round voting, weighted votes
+
+---
+
+### pubnub-multiplayer-gaming
+
+Build real-time multiplayer games with PubNub game state sync.
+
+**Use for:**
+- Game lobbies and room management
+- Game state synchronization with delta updates
+- Matchmaking systems
+- Player connection and reconnection handling
+
+**References:**
+- `gaming-setup.md` - Game room creation, lobby management
+- `gaming-state-sync.md` - Game state synchronization, delta updates
+- `gaming-patterns.md` - Matchmaking, turn-based/real-time patterns, anti-cheat
+
+---
+
+### pubnub-order-delivery-driver
+
+Build real-time order tracking and delivery driver systems with PubNub.
+
+**Use for:**
+- GPS location streaming from driver apps
+- Order status pipeline management
+- Dispatch coordination and driver assignment
+- Customer-facing tracking pages
+
+**References:**
+- `delivery-setup.md` - Channel design, GPS publishing, SDK initialization
+- `delivery-status.md` - Order lifecycle states, ETA calculation, geofencing
+- `delivery-patterns.md` - Dispatch coordination, fleet dashboards, proof of delivery
+
+---
+
+### pubnub-telemedicine
+
+Build HIPAA-compliant telemedicine apps with PubNub real-time messaging.
+
+**Use for:**
+- Secure patient-provider communication
+- Virtual waiting rooms and patient queues
+- WebRTC video consultation signaling
+- Audit logging and consent management
+
+**References:**
+- `telemedicine-setup.md` - HIPAA configuration, encryption, Access Manager
+- `telemedicine-features.md` - Patient queue management, notifications, consent
+- `telemedicine-patterns.md` - Consultation workflows, WebRTC signaling, audit logging
+
 ## Publishing & Updating Skills
 
 ### Initial Publish
@@ -159,6 +303,14 @@ tessl skill publish --workspace pubnub --public ./skills/pubnub-functions
 tessl skill publish --workspace pubnub --public ./skills/pubnub-security
 tessl skill publish --workspace pubnub --public ./skills/pubnub-chat
 tessl skill publish --workspace pubnub --public ./skills/pubnub-scale
+tessl skill publish --workspace pubnub --public ./skills/pubnub-live-auctions
+tessl skill publish --workspace pubnub --public ./skills/pubnub-live-betting-casino
+tessl skill publish --workspace pubnub --public ./skills/pubnub-live-sport-updates
+tessl skill publish --workspace pubnub --public ./skills/pubnub-live-stock-quote-updates
+tessl skill publish --workspace pubnub --public ./skills/pubnub-live-voting
+tessl skill publish --workspace pubnub --public ./skills/pubnub-multiplayer-gaming
+tessl skill publish --workspace pubnub --public ./skills/pubnub-order-delivery-driver
+tessl skill publish --workspace pubnub --public ./skills/pubnub-telemedicine
 ```
 
 ### Updating a Skill
@@ -199,7 +351,7 @@ Each `SKILL.md` requires YAML frontmatter:
 ---
 name: skill-name
 description: Short description for CLI display
-license: MIT
+license: PubNub
 metadata:
   author: pubnub
   version: "1.0.0"

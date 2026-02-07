@@ -1,12 +1,12 @@
 ---
 name: pubnub-live-sport-updates
-description: "Deliver real-time sports scores, play-by-play, and scoreboards with PubNub"
+description: Deliver real-time sports scores, play-by-play, and scoreboards with PubNub
 license: PubNub
 metadata:
   author: pubnub
   version: "0.1.0"
   domain: real-time
-  triggers: "pubnub, live sports, play-by-play, scores, scoreboard, fan engagement, standings, game events, multi-sport"
+  triggers: pubnub, live sports, play-by-play, scores, scoreboard, fan engagement, standings, game events, multi-sport
   role: specialist
   scope: implementation
   output-format: code
@@ -149,6 +149,12 @@ await pubnub.publish({
 - Design channel names to support wildcard subscriptions so fans can follow an entire league or a single team without managing dozens of individual channels
 - Publish game status transitions (pre-game, in-progress, halftime, final) as distinct event types so clients can adjust their UI state machines accordingly
 - Never rely solely on client-side clocks for event ordering; always use server-side timestamps and sequence identifiers
+
+## Related Skills
+
+- **pubnub-scale** - Wildcard subscriptions, channel groups, and optimization for peak traffic events
+- **pubnub-functions** - PubNub Functions for message transformation and push notification triggers
+- **pubnub-presence** - Tracking fan counts and active viewers per game channel
 
 ## Output Format
 

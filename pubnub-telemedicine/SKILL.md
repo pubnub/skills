@@ -1,12 +1,12 @@
 ---
 name: pubnub-telemedicine
-description: "Build HIPAA-compliant telemedicine apps with PubNub real-time messaging"
+description: Build HIPAA-compliant telemedicine apps with PubNub real-time messaging
 license: PubNub
 metadata:
   author: pubnub
   version: "0.1.0"
   domain: real-time
-  triggers: "pubnub, telemedicine, hipaa, telehealth, patient queue, healthcare, video chat, appointment"
+  triggers: pubnub, telemedicine, hipaa, telehealth, patient queue, healthcare, video chat, appointment
   role: specialist
   scope: implementation
   output-format: code
@@ -45,9 +45,9 @@ Invoke this skill when:
 
 | Reference | Purpose |
 |-----------|---------|
-| [telemedicine-setup.md](references/telemedicine-setup.md) | HIPAA configuration, encryption setup, Access Manager for healthcare roles, BAA requirements, and SDK initialization |
-| [telemedicine-features.md](references/telemedicine-features.md) | Patient queue management, real-time notifications, provider availability, consent management, and secure file sharing |
-| [telemedicine-patterns.md](references/telemedicine-patterns.md) | Consultation workflows, WebRTC video signaling, audit logging, multi-provider sessions, and emergency escalation |
+| `telemedicine-setup.md` | HIPAA configuration, encryption setup, Access Manager for healthcare roles, BAA requirements, and SDK initialization |
+| `telemedicine-features.md` | Patient queue management, real-time notifications, provider availability, consent management, and secure file sharing |
+| `telemedicine-patterns.md` | Consultation workflows, WebRTC video signaling, audit logging, multi-provider sessions, and emergency escalation |
 
 ## Key Implementation Requirements
 
@@ -172,6 +172,13 @@ async function grantPatientAccess(patientId, consultationChannelId, ttlMinutes =
 - Message history retention must comply with organizational and jurisdictional record-keeping requirements (typically 6-10 years for medical records)
 - Audit logs must capture all message events, access grants, and consent actions for HIPAA compliance verification
 - Never log PHI to console, application logs, or third-party monitoring services — audit logs must store references, not raw patient data
+
+## Related Skills
+
+- **pubnub-security** - Access Manager token grants and AES-256 encryption for PHI protection
+- **pubnub-functions** - PubNub Functions for consent verification and audit event triggers
+- **pubnub-presence** - Provider availability tracking and patient connection status
+- **pubnub-chat** - Chat SDK features for patient-provider messaging
 
 ## Output Format
 

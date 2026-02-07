@@ -1,12 +1,12 @@
 ---
 name: pubnub-live-stock-quote-updates
-description: "Deliver real-time stock quotes and market data with PubNub"
+description: Deliver real-time stock quotes and market data with PubNub
 license: PubNub
 metadata:
   author: pubnub
   version: "0.1.0"
   domain: real-time
-  triggers: "pubnub, stocks, market data, quotes, ticker, portfolio, price alerts, financial"
+  triggers: pubnub, stocks, market data, quotes, ticker, portfolio, price alerts, financial
   role: specialist
   scope: implementation
   output-format: code
@@ -161,6 +161,12 @@ export default (request) => {
 - Comply with market data vendor agreements by enforcing delayed-quote tiers and attribution/disclaimer requirements
 - Clean up channel group memberships when users remove symbols from watchlists to avoid unnecessary subscription overhead
 - Never store or redistribute raw exchange data without proper entitlements; use PubNub Access Manager to enforce data tier access
+
+## Related Skills
+
+- **pubnub-functions** - PubNub Functions for server-side price alert evaluation
+- **pubnub-scale** - Channel groups for watchlists and signal optimization for high-frequency ticks
+- **pubnub-security** - Access Manager for enforcing market data entitlement tiers
 
 ## Output Format
 

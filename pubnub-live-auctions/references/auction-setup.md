@@ -368,7 +368,7 @@ class AuctionCountdown {
 async function pauseAuction(pubnub, auctionId) {
   await pubnub.publish({
     channel: `auction.${auctionId}.admin`,
-    message: { type: 'pause', auctionId, adminId: pubnub.getUUID() }
+    message: { type: 'pause', auctionId, adminId: pubnub.getUserId() }
   });
 
   await pubnub.publish({

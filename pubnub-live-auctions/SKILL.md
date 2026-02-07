@@ -1,12 +1,12 @@
 ---
 name: pubnub-live-auctions
-description: "Build real-time auction platforms with PubNub bidding and countdowns"
+description: Build real-time auction platforms with PubNub bidding and countdowns
 license: PubNub
 metadata:
   author: pubnub
   version: "0.1.0"
   domain: real-time
-  triggers: "pubnub, auction, bidding, countdown, bid validation, live auction, reserve price"
+  triggers: pubnub, auction, bidding, countdown, bid validation, live auction, reserve price
   role: specialist
   scope: implementation
   output-format: code
@@ -84,7 +84,7 @@ async function placeBid(auctionId, amount) {
       channel: `auction.${auctionId}`,
       message: {
         type: 'bid',
-        bidderId: pubnub.getUUID(),
+        bidderId: pubnub.getUserId(),
         amount: amount,
         timestamp: Date.now()
       }
@@ -128,6 +128,13 @@ function updateCountdownDisplay(auctionId, remainingMs) {
 - Store bid history using PubNub message persistence for audit trails and dispute resolution
 - Enforce minimum bid increments server-side to prevent micro-bid spam
 - Handle auction channel cleanup after completion to avoid stale subscriptions
+
+## Related Skills
+
+- **pubnub-functions** - PubNub Functions runtime for server-side bid validation
+- **pubnub-security** - Access Manager for separating bidder and admin permissions
+- **pubnub-scale** - Channel groups and optimization for high-traffic auctions
+- **pubnub-presence** - Tracking active bidders in auction rooms
 
 ## Output Format
 

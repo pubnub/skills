@@ -569,7 +569,7 @@ function requestStateSnapshot() {
     channel: `game.${currentRoomId}.state`,
     message: {
       type: 'state-request',
-      requesterId: pubnub.getUUID(),
+      requesterId: pubnub.getUserId(),
       timestamp: Date.now()
     }
   });

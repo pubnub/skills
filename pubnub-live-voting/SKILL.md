@@ -1,12 +1,12 @@
 ---
 name: pubnub-live-voting
-description: "Build real-time voting and polling systems with PubNub"
+description: Build real-time voting and polling systems with PubNub
 license: PubNub
 metadata:
   author: pubnub
   version: "0.1.0"
   domain: real-time
-  triggers: "pubnub, voting, polls, tally, results, survey, live poll, audience response"
+  triggers: pubnub, voting, polls, tally, results, survey, live poll, audience response
   role: specialist
   scope: implementation
   output-format: code
@@ -117,6 +117,12 @@ pubnub.addListener({
 - Keep vote payloads small; include only pollId, optionId, and voterId
 - Design channel names with a consistent hierarchy such as `poll.<pollId>.votes` and `poll.<pollId>.results`
 - Use atomic counter operations (incrCounter) in PubNub Functions to avoid race conditions in tallying
+
+## Related Skills
+
+- **pubnub-functions** - PubNub Functions runtime for server-side vote validation and KV Store counters
+- **pubnub-security** - Access Manager for separating voter and admin permissions
+- **pubnub-scale** - Channel optimization for high-volume audience polling events
 
 ## Output Format
 

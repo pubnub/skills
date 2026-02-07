@@ -29,9 +29,9 @@ Invoke this skill when:
 ## Core Workflow
 
 1. **Enable Access Manager**: Configure in Admin Portal with Secret Key
-2. **Implement Server Auth**: Grant permissions server-side using Secret Key
-3. **Configure Client Auth**: Use authKey parameter for client initialization
-4. **Enable Encryption**: Add cipherKey for end-to-end message encryption
+2. **Implement Server Auth**: Issue tokens server-side using `grantToken()` with Secret Key
+3. **Configure Client Auth**: Set the token on the client using `pubnub.setToken()`
+4. **Enable Encryption**: Configure CryptoModule for end-to-end message encryption
 5. **Verify TLS**: Ensure TLS 1.2+ for all connections
 6. **Audit Permissions**: Review and minimize access grants
 
@@ -45,28 +45,44 @@ Invoke this skill when:
 
 ## Key Implementation Requirements
 
-### Access Manager Client Configuration
+### Server-Side Token Grant (Recommended)
 
 ```javascript
-// CORRECT: Use authKey for client configuration
+// Server-side only (requires Secret Key)
+const token = await pubnub.grantToken({
+  ttl: 60,  // minutes
+  authorizedUUID: 'user-123',
+  resources: {
+    channels: {
+      'private-room': { read: true, write: true }
+    }
+  }
+});
+// Return token to the client
+```
+
+### Client Configuration with Token
+
+```javascript
+const pubnub = new PubNub({
+  subscribeKey: 'sub-c-...',
+  publishKey: 'pub-c-...',
+  userId: 'user-123'
+});
+
+// Set the token received from your server
+pubnub.setToken(token);
+```
+
+### Legacy: Client Configuration with authKey
+
+```javascript
+// Older PAM approach using grant() and authKey
 const pubnub = new PubNub({
   subscribeKey: 'sub-c-...',
   publishKey: 'pub-c-...',
   userId: 'user-123',
-  authKey: 'auth-token-from-server'  // NOT 'token'
-});
-```
-
-### Server-Side Permission Grant
-
-```javascript
-// Server-side only (requires Secret Key)
-await pubnub.grant({
-  channels: ['private-room'],
-  authKeys: ['user-auth-token'],
-  read: true,
-  write: true,
-  ttl: 60  // minutes
+  authKey: 'auth-token-from-server'
 });
 ```
 
@@ -77,18 +93,20 @@ const pubnub = new PubNub({
   subscribeKey: 'sub-c-...',
   publishKey: 'pub-c-...',
   userId: 'user-123',
-  cipherKey: 'my-secret-cipher-key'  // AES-256 encryption
+  cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({
+    cipherKey: 'my-secret-cipher-key'
+  })
 });
 ```
 
 ## Constraints
 
 - **NEVER expose Secret Key** in client-side code
-- **Use authKey** (not `token`) for client initialization
-- Secret Key is only for server-side grant operations
+- Use `grantToken()` and `setToken()` for new implementations; `authKey` with `grant()` is legacy
+- Secret Key is only for server-side grant/token operations
 - TLS 1.2+ required as of February 2025
 - Short TTLs recommended for sensitive operations
-- Revokes may take up to 60 seconds to propagate
+- Token revocations may take up to 60 seconds to propagate
 
 ## Output Format
 
