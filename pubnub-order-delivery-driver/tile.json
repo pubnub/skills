@@ -1,0 +1,11 @@
+{
+  "name": "pubnub/pubnub-order-delivery-driver",
+  "version": "0.1.0",
+  "private": false,
+  "summary": "Build real-time order tracking and delivery driver systems with PubNub",
+  "skills": {
+    "pubnub-order-delivery-driver": {
+      "path": "SKILL.md"
+    }
+  }
+}

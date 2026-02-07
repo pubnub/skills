@@ -1,0 +1,11 @@
+{
+  "name": "pubnub/pubnub-live-auctions",
+  "version": "0.1.0",
+  "private": false,
+  "summary": "Build real-time auction platforms with PubNub bidding and countdowns",
+  "skills": {
+    "pubnub-live-auctions": {
+      "path": "SKILL.md"
+    }
+  }
+}

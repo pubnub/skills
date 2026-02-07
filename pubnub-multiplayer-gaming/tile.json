@@ -1,0 +1,11 @@
+{
+  "name": "pubnub/pubnub-multiplayer-gaming",
+  "version": "0.1.0",
+  "private": false,
+  "summary": "Build real-time multiplayer games with PubNub game state sync",
+  "skills": {
+    "pubnub-multiplayer-gaming": {
+      "path": "SKILL.md"
+    }
+  }
+}

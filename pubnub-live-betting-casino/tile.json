@@ -1,0 +1,11 @@
+{
+  "name": "pubnub/pubnub-live-betting-casino",
+  "version": "0.1.0",
+  "private": false,
+  "summary": "Build real-time betting and casino game platforms with PubNub",
+  "skills": {
+    "pubnub-live-betting-casino": {
+      "path": "SKILL.md"
+    }
+  }
+}

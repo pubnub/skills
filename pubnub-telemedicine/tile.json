@@ -1,0 +1,11 @@
+{
+  "name": "pubnub/pubnub-telemedicine",
+  "version": "0.1.0",
+  "private": false,
+  "summary": "Build HIPAA-compliant telemedicine apps with PubNub real-time messaging",
+  "skills": {
+    "pubnub-telemedicine": {
+      "path": "SKILL.md"
+    }
+  }
+}

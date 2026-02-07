@@ -1,0 +1,11 @@
+{
+  "name": "pubnub/pubnub-live-stock-quote-updates",
+  "version": "0.1.0",
+  "private": false,
+  "summary": "Deliver real-time stock quotes and market data with PubNub",
+  "skills": {
+    "pubnub-live-stock-quote-updates": {
+      "path": "SKILL.md"
+    }
+  }
+}

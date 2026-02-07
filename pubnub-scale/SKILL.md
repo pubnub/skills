@@ -1,10 +1,10 @@
 ---
 name: pubnub-scale
 description: Scale PubNub applications for high-volume real-time events
-license: MIT
+license: PubNub
 metadata:
   author: pubnub
-  version: "1.0.0"
+  version: "0.1.0"
   domain: real-time
   triggers: pubnub, scale, performance, channel groups, wildcards, optimization
   role: specialist

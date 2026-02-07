@@ -1,10 +1,10 @@
 ---
 name: pubnub-security
 description: Secure PubNub applications with Access Manager, encryption, and TLS
-license: MIT
+license: PubNub
 metadata:
   author: pubnub
-  version: "1.0.0"
+  version: "0.1.0"
   domain: real-time
   triggers: pubnub, security, access manager, pam, encryption, aes, tls, auth
   role: specialist

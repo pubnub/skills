@@ -1,10 +1,10 @@
 ---
 name: pubnub-functions
 description: Develop serverless edge functions with PubNub Functions 2.0
-license: MIT
+license: PubNub
 metadata:
   author: pubnub
-  version: "1.0.0"
+  version: "0.1.0"
   domain: real-time
   triggers: pubnub, functions, serverless, edge, kvstore, webhook, transform
   role: specialist
