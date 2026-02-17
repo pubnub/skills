@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent uses delta state updates instead of full state broadcasts, includes sequence numbers for ordering, batches frequent updates, respects the 32 KB message size constraint, implements appropriate conflict resolution strategies, and includes rate-limiting on publishes.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Delta updates used",
+      "description": "State updates are sent as deltas (only changed properties) rather than broadcasting the entire game state each time",
+      "max_score": 10
+    },
+    {
+      "name": "No full-state broadcasts",
+      "description": "Regular game state messages do NOT send the complete game state object; full state is only sent for snapshot/recovery purposes if at all",
+      "max_score": 8
+    },
+    {
+      "name": "Sequence numbers present",
+      "description": "Each state update message includes a sequence number (or equivalent monotonically increasing counter)",
+      "max_score": 10
+    },
+    {
+      "name": "Missed message detection",
+      "description": "Code checks sequence numbers on incoming messages to detect gaps or out-of-order delivery",
+      "max_score": 8
+    },
+    {
+      "name": "Batch interval used",
+      "description": "The delta batcher accumulates changes over a short time window (between 20ms and 100ms) before publishing, rather than publishing immediately on each change",
+      "max_score": 10
+    },
+    {
+      "name": "Batch flush mechanism",
+      "description": "The batcher has a flush method that sends accumulated deltas and resets the pending buffer",
+      "max_score": 8
+    },
+    {
+      "name": "32 KB awareness",
+      "description": "Code includes a comment, check, or documentation referencing the 32 KB PubNub message size limit as motivation for delta updates",
+      "max_score": 8
+    },
+    {
+      "name": "LWW conflict strategy",
+      "description": "Implements a last-write-wins conflict resolution strategy using timestamps for at least one type of game data (e.g., positions)",
+      "max_score": 10
+    },
+    {
+      "name": "Accumulative conflict strategy",
+      "description": "Implements an accumulative/additive conflict resolution strategy for numeric values like scores or damage (increments rather than overwrites)",
+      "max_score": 10
+    },
+    {
+      "name": "Eventual consistency acknowledgment",
+      "description": "Code or comments acknowledge that PubNub guarantees per-channel ordering but NOT cross-channel ordering",
+      "max_score": 8
+    },
+    {
+      "name": "Client-side rate limiting",
+      "description": "Includes some mechanism to limit how frequently the client publishes messages (timer-based batching counts, or an explicit rate limiter)",
+      "max_score": 10
+    }
+  ]
+}

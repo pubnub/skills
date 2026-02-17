@@ -1,21 +1,66 @@
 {
-  "context": "Tests whether the agent respects the 3 combined operations per execution limit in PubNub Functions. Each KV, XHR, or publish call counts as one operation. Functions exceeding this limit will fail at runtime.",
+  "context": "Tests whether the agent correctly implements an On Request PubNub Function as an HTTP REST API, using the correct function signature, CORS handling, response methods, and proper async patterns with KVStore.",
   "type": "weighted_checklist",
   "checklist": [
     {
-      "name": "Within operation limit",
-      "description": "The function uses at most 3 combined async operations (any combination of KVStore calls, XHR fetches, and PubNub publish/fire/signal calls)",
-      "max_score": 50
+      "name": "Request-response signature",
+      "description": "Function signature takes both request and response parameters: (request, response)",
+      "max_score": 10
     },
     {
-      "name": "Acknowledges constraint",
-      "description": "Code comments or accompanying explanation mentions the operation limit, or the implementation clearly demonstrates awareness by combining or minimizing operations",
-      "max_score": 25
+      "name": "Response.send usage",
+      "description": "Uses response.send(body, statusCode) to return HTTP responses with appropriate status codes",
+      "max_score": 8
     },
     {
-      "name": "Correct function structure",
-      "description": "Uses export default async with try/catch and proper ok()/abort() returns",
-      "max_score": 25
+      "name": "CORS Allow-Origin header",
+      "description": "Sets Access-Control-Allow-Origin header on the response (e.g., response.headers['Access-Control-Allow-Origin'] = '*')",
+      "max_score": 10
+    },
+    {
+      "name": "CORS Allow-Methods header",
+      "description": "Sets Access-Control-Allow-Methods header listing the supported HTTP methods",
+      "max_score": 8
+    },
+    {
+      "name": "OPTIONS preflight handling",
+      "description": "Handles OPTIONS method requests for CORS preflight, returning a 200 response",
+      "max_score": 10
+    },
+    {
+      "name": "Default async export",
+      "description": "Function uses 'export default async' syntax",
+      "max_score": 8
+    },
+    {
+      "name": "Try/catch wrapping",
+      "description": "Main logic is wrapped in a try/catch block with an error response in the catch",
+      "max_score": 8
+    },
+    {
+      "name": "Async/await not then",
+      "description": "Uses async/await for asynchronous operations, does NOT use .then() or .catch() chains",
+      "max_score": 10
+    },
+    {
+      "name": "KVStore require inside body",
+      "description": "Imports kvstore using require('kvstore') inside the function body, not at the file level",
+      "max_score": 8
+    },
+    {
+      "name": "KVStore TTL in minutes",
+      "description": "If db.set() is called with a TTL, the value is in minutes (e.g., 1440 for 24 hours, 43200 for 30 days), not seconds or milliseconds",
+      "max_score": 10
+    },
+    {
+      "name": "Error status 500 response",
+      "description": "Returns a 500 status code in the catch block for internal server errors",
+      "max_score": 5
+    },
+    {
+      "name": "On Request trigger type",
+      "description": "Deployment instructions identify the function trigger type as 'On Request' (HTTP endpoint)",
+      "max_score": 5
     }
   ]
 }

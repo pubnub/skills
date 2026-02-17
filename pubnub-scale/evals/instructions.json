@@ -1,0 +1,190 @@
+{
+  "instructions": [
+    {
+      "instruction": "Use channel multiplexing for up to 30 channels, channel groups for 30-2000, multiple channel groups for 2000-20000, and wildcard subscriptions for hierarchical data",
+      "original_snippets": "| 1-30 | Multiplexing | 30 recommended | ... | 30-2,000 | Single Channel Group | 2,000 | ... | 2,000-20,000 | Multiple Channel Groups | 10 groups x 2,000 | ... | Hierarchical | Wildcard Subscribe | Unlimited matching |",
+      "relevant_when": "Choosing a subscription strategy based on the number of channels needed",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Enable Stream Controller in Admin Portal before using channel groups or wildcard subscriptions",
+      "original_snippets": "Enable Stream Controller for channel groups and wildcards ... > **Requires**: Stream Controller enabled in Admin Portal",
+      "relevant_when": "Setting up channel groups or wildcard subscriptions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Channel groups support up to 2000 channels per group, 10 groups per client, 20000 total channels per client",
+      "original_snippets": "| Channels per group | 2,000 (configurable) | ... | Groups per client | 10 | ... | Total channels | 20,000 per client |",
+      "relevant_when": "Designing channel group architecture or calculating capacity",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Wildcard patterns must end with .* (wildcard at the end only)",
+      "original_snippets": "Wildcard (`*`) must be at the **end** ... Wildcard patterns must end with `.*`",
+      "relevant_when": "Writing wildcard subscription patterns",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Maximum 2 dots (3 levels) in wildcard patterns",
+      "original_snippets": "Maximum **2 dots** (3 levels) ... Maximum 2 dots in wildcard patterns (3 levels)",
+      "relevant_when": "Designing hierarchical channel namespaces with wildcards",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Cannot publish to channel groups or wildcards directly",
+      "original_snippets": "Cannot publish to channel groups or wildcards directly",
+      "relevant_when": "Publishing messages in a system that uses channel groups or wildcards",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Recommended publish rate is 10-15 messages/second per channel",
+      "original_snippets": "Publish rate: 10-15 messages/second per channel recommended ... | Optimal | 10-15 |",
+      "relevant_when": "Designing message publishing strategies and rate limiting",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Keep message size well under 32KB; recommended size is under 2KB for optimal speed",
+      "original_snippets": "Message size: Keep well under 32KB (smaller is faster) ... | Maximum message size | 32KB (32,768 bytes) | ... | Recommended size | < 2KB for optimal speed |",
+      "relevant_when": "Designing message payloads",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use compact/short field names and numeric codes instead of verbose strings in message payloads",
+      "original_snippets": "// BAD: Verbose payload (wasteful) ... // GOOD: Compact payload (efficient) ... // 1. Use short field names ... // 2. Use numeric codes instead of strings",
+      "relevant_when": "Optimizing message payloads for performance",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Remove null/undefined fields from messages before publishing",
+      "original_snippets": "// 3. Remove null/undefined fields\nfunction compactMessage(message) {\n  return Object.fromEntries(\n    Object.entries(message).filter(([_, v]) => v != null)\n  );\n}",
+      "relevant_when": "Building message compaction/optimization utilities",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Consider delta updates (send only changes) instead of full state",
+      "original_snippets": "// 4. Consider delta updates (send only changes)\nfunction createDelta(previous, current) { ... }",
+      "relevant_when": "Optimizing message payloads for frequently changing state",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Consider sharding chat rooms when over 10,000 users; use hash-based shard assignment",
+      "original_snippets": "Subscribers: Consider sharding if >10K users in single chat room ... // For > 10,000 users: Consider sharding\nfunction getShardedChannel(roomId, userId) { const shardCount = 10; const shardId = hashCode(userId) % shardCount; ... }",
+      "relevant_when": "Building large-scale chat rooms or event channels with many concurrent users",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Contact PubNub for 10K+ concurrent user events via Virtual Event Form; discuss Pro plan for 1000+ regular concurrent users",
+      "original_snippets": "Contact PubNub for 10K+ concurrent user events ... **1,000+ concurrent users** regularly - discuss Pro plan ... **10,000+ concurrent users** for events - submit Virtual Event Form",
+      "relevant_when": "Planning architecture for high-concurrency scenarios",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use interval presence events (not individual join/leave) for high-occupancy channels; configure Announce Max in Admin Portal",
+      "original_snippets": "// For high-occupancy channels, use interval events\n// Configure \"Announce Max\" in Admin Portal\n... if (event.action === 'interval') { // Batch updates for high occupancy",
+      "relevant_when": "Implementing presence features at scale",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Create a single PubNub instance per client; do not create new instances per operation",
+      "original_snippets": "// Create single PubNub instance per client\n// DON'T create new instances per operation\n// BAD ... const pn = new PubNub({ /* config */ });  // New instance each time\n// GOOD ... const pubnub = new PubNub({ /* config */ });  // Single instance",
+      "relevant_when": "Initializing PubNub in an application",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Use async message queue pattern for listeners: queue messages and process in batches rather than doing heavy processing inside the message listener callback",
+      "original_snippets": "// BAD: Heavy processing in listener ... // Don't do heavy work here ... // GOOD: Queue and process asynchronously\nconst messageQueue = []; ... pubnub.addListener({ message: (event) => { messageQueue.push(event); } }); ... setInterval(() => { const batch = messageQueue.splice(0, 100); ... }, 100);",
+      "relevant_when": "Implementing message listeners that need to handle high throughput",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Batch multiple items into single messages instead of many small publishes",
+      "original_snippets": "// Instead of many small publishes\nasync function publishBatch(channel, items) {\n  // Batch items into single message\n  await pubnub.publish({ channel, message: { type: 'batch', items, timestamp: Date.now() } });",
+      "relevant_when": "Publishing multiple updates that can be combined",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Use Promise.all for parallel publishing to multiple channels",
+      "original_snippets": "// Multiple publishes can be pipelined\nawait Promise.all([\n  pubnub.publish({ channel: 'ch1', message: msg1 }),\n  pubnub.publish({ channel: 'ch2', message: msg2 }),\n  pubnub.publish({ channel: 'ch3', message: msg3 })\n]);",
+      "relevant_when": "Publishing to multiple channels simultaneously",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "For battery-sensitive mobile apps, increase heartbeatInterval (e.g., 120s) and presenceTimeout (e.g., 600s), and use suppressLeaveEvents: true",
+      "original_snippets": "// For battery-sensitive mobile apps\nconst pubnub = new PubNub({ ... heartbeatInterval: 120, presenceTimeout: 600 ... }); ... // Reduce heartbeat frequency for battery savings\nheartbeatInterval: 120, ... presenceTimeout: 600, ... suppressLeaveEvents: true  // Reduce presence traffic",
+      "relevant_when": "Configuring PubNub for mobile applications",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Unsubscribe from non-critical channels when app is backgrounded and re-subscribe when foregrounded",
+      "original_snippets": "// Reduce activity when app is backgrounded\ndocument.addEventListener('visibilitychange', () => { if (document.hidden) { pubnub.unsubscribe({ channels: nonCriticalChannels }); } else { pubnub.subscribe({ channels: nonCriticalChannels }); } });",
+      "relevant_when": "Building mobile or browser applications with background/foreground handling",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Message Persistence must be enabled in Admin Portal; use storeInHistory: false to exclude ephemeral messages from storage",
+      "original_snippets": "1. Log in to PubNub Admin Portal\n2. Select your Application and Keyset\n3. Enable **Message Persistence** add-on ... storeInHistory: false  // Don't store this message",
+      "relevant_when": "Setting up message persistence or publishing ephemeral messages",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use fetchMessages (not history) for retrieving stored messages; max 100 per request with pagination via start timetoken",
+      "original_snippets": "const result = await pubnub.fetchMessages({ channels: ['chat-room'], count: 100  // Max 100 per request }); ... start: startTimetoken  // Fetch older than this",
+      "relevant_when": "Retrieving message history from PubNub",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement catch-up pattern: save last timetoken (e.g., in localStorage), fetch missed messages on reconnection using that timetoken",
+      "original_snippets": "class MessageCatchUp { ... loadLastTimetoken() { return localStorage.getItem(`lastTimetoken_${this.channel}`); } ... saveLastTimetoken(timetoken) { localStorage.setItem(`lastTimetoken_${this.channel}`, timetoken); } ... async catchUp() { ... const result = await this.pubnub.fetchMessages({ channels: [this.channel], start: this.lastTimetoken, count: 100 }); ... }",
+      "relevant_when": "Building applications that need to handle offline/reconnection scenarios",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use message actions for soft deletes (addMessageAction with type 'deleted') rather than actually deleting messages, and filter on retrieval",
+      "original_snippets": "// Mark message as deleted (don't actually delete)\nawait pubnub.addMessageAction({ channel: 'chat-room', messageTimetoken: targetTimetoken, action: { type: 'deleted', value: 'true' } }); ... // When loading history, filter deleted messages",
+      "relevant_when": "Implementing message deletion in a chat application",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Use cipherKey in PubNub config for end-to-end encryption; messages are stored encrypted and auto-decrypted on retrieval with same key",
+      "original_snippets": "Messages encrypted with `cipherKey` are stored encrypted: ... const pubnub = new PubNub({ ... cipherKey: 'my-secret-key' }); ... // Retrieve - automatically decrypted with same cipherKey",
+      "relevant_when": "Building applications requiring message encryption",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Channel name maximum length is 92 characters",
+      "original_snippets": "| Channel name | 92 characters max |",
+      "relevant_when": "Designing channel naming conventions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Default message buffer is 100 messages per channel (~20 minutes) without persistence; use Message Persistence for catch-up",
+      "original_snippets": "Message buffer: 100 messages per channel (configurable) ... Messages cached briefly (~20 minutes) ... Last 100 messages per channel in buffer ... Lost if not received by subscribers",
+      "relevant_when": "Understanding default message delivery guarantees without persistence",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Include Stream Controller configuration steps, channel group management patterns, performance optimization examples, scale limits and contact thresholds, and monitoring/testing recommendations when providing implementations",
+      "original_snippets": "When providing implementations:\n1. Include Stream Controller configuration steps\n2. Show channel group management patterns\n3. Provide performance optimization examples\n4. Note scale limits and contact thresholds\n5. Include monitoring and testing recommendations",
+      "relevant_when": "Providing any PubNub scaling implementation",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Period (.) is the hierarchy delimiter for wildcard subscriptions",
+      "original_snippets": "Period (`.`) is the hierarchy delimiter",
+      "relevant_when": "Designing channel naming for wildcard subscriptions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use the user feed pattern: create per-user channel groups named user-{userId}-feeds containing topic feeds and personal channels",
+      "original_snippets": "// Server-side: Create personalized feed group\nasync function createUserFeedGroup(userId, subscriptions) {\n  const groupName = `user-${userId}-feeds`; ... channels: subscriptions.map(topic => `feed-${topic}`) ... channels: [`user-notifications-${userId}`, `user-dm-${userId}`]",
+      "relevant_when": "Building personalized feed/subscription systems",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Use an estimateMessageSize function that accounts for channel name + JSON encoding + 100 bytes overhead, and check against 32KB limit before publishing",
+      "original_snippets": "function estimateMessageSize(channel, message) {\n  const json = JSON.stringify(message);\n  const encoded = encodeURIComponent(channel + json);\n  return encoded.length + 100;  // Add overhead\n}\n\n// Check before publish\nconst size = estimateMessageSize('my-channel', myMessage);\nif (size > 32000) { console.warn('Message too large:', size); }",
+      "relevant_when": "Building publish utilities or handling large messages",
+      "why_given": "preference"
+    }
+  ]
+}

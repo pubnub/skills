@@ -1,1 +1,1 @@
-Vault for secrets
+Message transformation with KVStore enrichment

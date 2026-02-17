@@ -1,0 +1,172 @@
+{
+  "instructions": [
+    {
+      "instruction": "Always require a unique, persistent userId for SDK initialization",
+      "original_snippets": "userId: 'unique-user-id'  // REQUIRED - must be persistent per user ... Always Required: SDK will error without a userId ... Must Be Unique: Each user/device needs a distinct identifier ... Must Be Persistent: Reuse the same userId across sessions ... DON'T: Generate random UUID on each session ... DO: Generate once and persist",
+      "relevant_when": "When initializing the PubNub SDK in any language",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use the userId parameter (not uuid) in JavaScript SDK initialization",
+      "original_snippets": "const pubnub = new PubNub({ publishKey: 'pub-c-...', subscribeKey: 'sub-c-...', userId: 'unique-user-id' });",
+      "relevant_when": "When initializing the PubNub JavaScript SDK",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "In Python SDK, use pnconfig.uuid (not userId) for user identification",
+      "original_snippets": "pnconfig = PNConfiguration() ... pnconfig.uuid = 'unique-user-id'      # REQUIRED",
+      "relevant_when": "When initializing the PubNub Python SDK",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Keep message payloads under 32KB",
+      "original_snippets": "Message: Data payload (JSON, string) up to 32KB ... Keep under 32KB, use concise field names ... Message size: Keep well under 32KB for optimal delivery",
+      "relevant_when": "When designing message payloads for publishing",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use valid channel names - no commas, colons, asterisks, slashes, backslashes, spaces, or periods (period reserved for wildcard hierarchy)",
+      "original_snippets": "Use valid channel names (no commas, colons, asterisks, slashes, or spaces) ... Invalid Characters (DO NOT USE): comma, colon, asterisk, slash, backslash, space, period (reserved for wildcards)",
+      "relevant_when": "When naming channels for pub/sub",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Add listeners BEFORE subscribing to channels",
+      "original_snippets": "// Add listener BEFORE subscribing ... Add listeners before subscribing: Ensure you don't miss events",
+      "relevant_when": "When setting up subscriptions with message listeners",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Handle connection status events for robust applications",
+      "original_snippets": "Handle connection status events for robust applications ... Handle all status categories: Provide good UX during disconnects ... status: (statusEvent) => { switch (statusEvent.category) { case 'PNConnectedCategory': ... case 'PNReconnectedCategory': ... case 'PNDisconnectedCategory': ... case 'PNNetworkDownCategory': ... case 'PNAccessDeniedCategory': ... } }",
+      "relevant_when": "When implementing subscription-based features",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Never expose Secret Keys in client-side code",
+      "original_snippets": "Never expose Secret Keys in client-side code ... Never expose Secret Key: Only use on server-side code",
+      "relevant_when": "When writing client-side PubNub code",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use TLS/SSL (enabled by default) for all connections",
+      "original_snippets": "Use TLS (enabled by default) for all connections ... ssl: true, // Default: true (use HTTPS)",
+      "relevant_when": "When configuring PubNub SDK connections",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Initialize PubNub once - create a single instance per user session",
+      "original_snippets": "Initialize once: Create a single PubNub instance per user session",
+      "relevant_when": "When architecting a PubNub client application",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Clean up subscriptions on unmount or page unload - call unsubscribeAll()",
+      "original_snippets": "Clean up on unmount: Unsubscribe to prevent memory leaks ... window.addEventListener('beforeunload', () => { pubnub.unsubscribeAll(); }); ... Cleanup on unmount: return () => { pubnub.removeListener(listener); pubnub.unsubscribeAll(); };",
+      "relevant_when": "When implementing PubNub in components or pages with lifecycle",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Use try/catch for publish error handling",
+      "original_snippets": "Use try/catch: Handle publish/subscribe errors gracefully ... async function safePublish(channel, message) { try { const result = await pubnub.publish({ channel, message }); ... } catch (error) { ... } }",
+      "relevant_when": "When publishing messages",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "For direct messaging channels, sort user IDs alphabetically for consistent channel naming",
+      "original_snippets": "Convention: Sort user IDs alphabetically for consistent channel name ... function getDirectChannelName(userId1, userId2) { const sorted = [userId1, userId2].sort(); return `dm-${sorted[0]}-${sorted[1]}`; }",
+      "relevant_when": "When implementing direct/1:1 messaging between users",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use hierarchical dot-separated channel names for wildcard subscriptions with max two dots (three levels)",
+      "original_snippets": "Hierarchical Topics (for Wildcard Subscribe) ... 'sports.football.scores' ... Maximum two dots (three levels) ... Wildcard (*) must be at the end of the pattern",
+      "relevant_when": "When designing channel hierarchies for wildcard subscription",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use Channel Groups for subscribing to large numbers of channels (30-2000), with limit of 2000 channels per group and 10 groups per client",
+      "original_snippets": "Channel Groups allow subscribing to thousands of channels efficiently ... Channels per group: 2,000 ... Groups per client: 10 ... When to Use What: < 30 channels -> Multiplexing, 30-2,000 channels -> Channel Groups",
+      "relevant_when": "When subscribing to many channels per user",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Cannot publish to a channel group - always publish to individual channels",
+      "original_snippets": "Cannot publish to group: Always publish to individual channels",
+      "relevant_when": "When using channel groups for message delivery",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use channelGroups.addChannels() API for managing channel group membership",
+      "original_snippets": "await pubnub.channelGroups.addChannels({ channelGroup: 'user-alice-feeds', channels: ['feed-news', 'feed-sports', 'feed-tech'] });",
+      "relevant_when": "When programmatically managing channel groups",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Persist userId using localStorage or authenticated user ID - do not generate random UUID each session",
+      "original_snippets": "DO: Generate once and persist ... function getUserId() { let userId = localStorage.getItem('pubnub_user_id'); if (!userId) { userId = `user_${crypto.randomUUID()}`; localStorage.setItem('pubnub_user_id', userId); } return userId; } ... DO: Use authenticated user ID from your system",
+      "relevant_when": "When implementing userId generation for browser-based PubNub apps",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Use enableEventEngine: true for better connection management in JavaScript SDK",
+      "original_snippets": "enableEventEngine: true  // Recommended for better connection management",
+      "relevant_when": "When configuring the PubNub JavaScript SDK",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Use fetchMessages for catching up on missed messages after longer disconnects",
+      "original_snippets": "Manual history fetch for longer gaps ... const history = await pubnub.fetchMessages({ channels: ['chat-room'], count: 100 });",
+      "relevant_when": "When implementing reconnection or message catch-up logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Include complete working code examples with proper error handling, listener setup, and channel design explanations",
+      "original_snippets": "When providing implementations: 1. Include complete, working code examples 2. Show proper error handling patterns 3. Explain channel design decisions 4. Note platform-specific considerations 5. Include listener setup for real-time updates",
+      "relevant_when": "When producing any PubNub implementation code",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Use concise field names in message payloads and prefer small, focused payloads",
+      "original_snippets": "Good: Small, focused payload ... { \"type\": \"chat_message\", \"user\": \"alice\", \"text\": \"Hello\", \"ts\": 1704067200000 } ... Keep under 32KB, use concise field names",
+      "relevant_when": "When designing message payload structures",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Channels are case-sensitive - MyChannel and mychannel are different",
+      "original_snippets": "Case-Sensitive: MyChannel and mychannel are different",
+      "relevant_when": "When naming and referencing channels",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use descriptive, hierarchical channel names when planning for wildcard support - stick to alphanumeric, hyphens, underscores",
+      "original_snippets": "Use descriptive, hierarchical names when planning for wildcards ... Avoid special characters - stick to alphanumeric, hyphens, underscores ... Good channel names: 'chat-room-123', 'user_notifications_alice', 'sports-scores-nba'",
+      "relevant_when": "When designing channel naming schemes",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Wildcard subscriptions require period (.) as hierarchy delimiter and wildcard (*) must be at end of pattern",
+      "original_snippets": "Period (.) is the hierarchy delimiter ... Wildcard (*) must be at the end of the pattern ... Maximum two dots (three levels)",
+      "relevant_when": "When implementing wildcard channel subscriptions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Recommended publish rate is 10-15 messages/second per channel",
+      "original_snippets": "Publish rate: 10-15 messages/second per channel recommended",
+      "relevant_when": "When designing high-throughput messaging systems",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use async publishing to avoid blocking",
+      "original_snippets": "Use async publishing to avoid blocking",
+      "relevant_when": "When implementing publish logic",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "For React components, store PubNub instance in useRef, set up listener and subscribe in useEffect, and clean up in useEffect return",
+      "original_snippets": "const pubnubRef = useRef(null); ... useEffect(() => { const pubnub = new PubNub({...}); pubnubRef.current = pubnub; ... return () => { pubnub.removeListener(listener); pubnub.unsubscribeAll(); }; }, [userId, channel]);",
+      "relevant_when": "When building React components that use PubNub",
+      "why_given": "preference"
+    }
+  ]
+}

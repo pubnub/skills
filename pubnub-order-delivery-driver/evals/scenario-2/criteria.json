@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent implements the customer tracking page with correct channel subscriptions, smooth map marker animation, progressive privacy-based location disclosure, ETA calculation with debouncing, and proper history fetching on page load.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Subscribes to both channels",
+      "description": "Customer subscribes to both the order status channel (order.<orderId>.status) and a driver location channel, using the skill's channel naming conventions",
+      "max_score": 8
+    },
+    {
+      "name": "Separate handling for location vs status",
+      "description": "Message handler distinguishes between location messages and status messages (e.g., by checking the channel name) and processes them differently",
+      "max_score": 8
+    },
+    {
+      "name": "Smooth marker animation",
+      "description": "Driver marker position is updated using interpolation/animation between GPS points (e.g., multiple frames over a short duration) rather than jumping directly",
+      "max_score": 10
+    },
+    {
+      "name": "30-frame interpolation",
+      "description": "The marker animation uses approximately 30 frames (or a similar count producing a roughly half-second transition)",
+      "max_score": 8
+    },
+    {
+      "name": "Fetches last location on init",
+      "description": "On initialization, fetches the most recent driver location from PubNub message history (e.g., history with count: 1) so the map is populated immediately",
+      "max_score": 10
+    },
+    {
+      "name": "Progressive location privacy",
+      "description": "Implements at least 3 precision levels for driver location based on distance to customer (e.g., exact when close, approximate at medium range, general area when far)",
+      "max_score": 10
+    },
+    {
+      "name": "Distance thresholds for privacy",
+      "description": "Uses distance thresholds around 1km for exact precision and around 3km for approximate precision (or comparable graduated thresholds)",
+      "max_score": 8
+    },
+    {
+      "name": "ETA debouncing",
+      "description": "ETA updates are debounced/throttled so they are not republished on every GPS tick -- only when the change exceeds a threshold (e.g., 30 seconds or 100 meters)",
+      "max_score": 10
+    },
+    {
+      "name": "ETA buffer multiplier",
+      "description": "ETA calculation applies a buffer/multiplier to the raw distance-over-speed estimate (e.g., higher multiplier when close to destination)",
+      "max_score": 8
+    },
+    {
+      "name": "Minimum speed floor for ETA",
+      "description": "ETA calculation uses a minimum speed floor (around 5 m/s or similar) to prevent division by zero or unrealistically long ETA when driver is slow or stationary",
+      "max_score": 10
+    },
+    {
+      "name": "Customer SDK init with restore",
+      "description": "Customer PubNub SDK is initialized with restore: true for reconnection handling",
+      "max_score": 5
+    },
+    {
+      "name": "Unsubscribe on stop",
+      "description": "The tracker includes a stop/cleanup method that unsubscribes from channels",
+      "max_score": 5
+    }
+  ]
+}

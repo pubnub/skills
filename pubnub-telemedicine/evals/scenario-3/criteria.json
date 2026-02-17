@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements audit logging with no raw PHI in entries, publishes to the correct audit channel pattern, persists events externally, and configures retention periods matching healthcare requirements for different channel types.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Audit channel naming",
+      "description": "Audit events are published to a channel following the pattern audit.{organizationId} (the channel name includes 'audit' and an organization or tenant identifier)",
+      "max_score": 10
+    },
+    {
+      "name": "No raw PHI in audit entries",
+      "description": "Audit event objects use identifiers (patient ID, consultation ID, user ID) rather than containing actual patient names, dates of birth, diagnoses, or other raw health information",
+      "max_score": 12
+    },
+    {
+      "name": "External persistence",
+      "description": "The audit logger sends events to an external HTTP endpoint (fetch/POST or equivalent) in addition to publishing them on PubNub",
+      "max_score": 10
+    },
+    {
+      "name": "Audit storeInHistory",
+      "description": "Audit events published to PubNub use storeInHistory: true",
+      "max_score": 8
+    },
+    {
+      "name": "Consultation retention",
+      "description": "The retention configuration specifies approximately 7 years (or 2555 days, or a value between 6 and 10 years) for consultation messages",
+      "max_score": 10
+    },
+    {
+      "name": "Video signaling retention",
+      "description": "The retention configuration specifies 0 days or explicitly no retention for video signaling channels",
+      "max_score": 10
+    },
+    {
+      "name": "Notification retention",
+      "description": "The retention configuration specifies approximately 90 days (between 30 and 180 days) for notification channels",
+      "max_score": 8
+    },
+    {
+      "name": "Audit log retention",
+      "description": "The retention configuration specifies at least 7 years (or equivalent in days) for audit log channels",
+      "max_score": 8
+    },
+    {
+      "name": "deleteMessages API",
+      "description": "The retention manager uses PubNub's deleteMessages API to remove expired messages",
+      "max_score": 8
+    },
+    {
+      "name": "Consent event types",
+      "description": "The audit event types include events for consent given and consent revoked (or equivalent consent-related event types)",
+      "max_score": 8
+    },
+    {
+      "name": "Structured audit entry",
+      "description": "Each audit entry includes at minimum: a unique ID, a timestamp, an event type, an actor (with user ID and role), and a resource reference",
+      "max_score": 8
+    }
+  ]
+}

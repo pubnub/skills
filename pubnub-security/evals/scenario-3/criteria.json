@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent uses pattern-based grantToken for channel access, follows channel naming conventions with security prefixes, applies least privilege, uses revokeToken, and correctly configures the server PubNub instance.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses grantToken()",
+      "description": "The issueCredentials function uses pubnub.grantToken() (not the legacy grant()) to issue access",
+      "max_score": 10
+    },
+    {
+      "name": "Pattern-based grants",
+      "description": "Uses the patterns property in grantToken (e.g., patterns.channels with wildcard patterns) rather than listing every channel individually",
+      "max_score": 10
+    },
+    {
+      "name": "Channel naming with prefixes",
+      "description": "Channel names use descriptive prefixes that indicate security level or purpose (e.g., public-, private-, admin-, dm-)",
+      "max_score": 8
+    },
+    {
+      "name": "Tenant isolation in channels",
+      "description": "Channel names incorporate the tenant ID to ensure multi-tenant isolation",
+      "max_score": 8
+    },
+    {
+      "name": "Least privilege - guest",
+      "description": "Guest role gets read-only access to public/announcement channels only (no write, no private channels)",
+      "max_score": 8
+    },
+    {
+      "name": "Least privilege - escalation",
+      "description": "Each higher role adds permissions incrementally (member > guest, manager > member, owner > manager) rather than all roles getting the same permissions",
+      "max_score": 8
+    },
+    {
+      "name": "Uses revokeToken()",
+      "description": "The revokeAccess function calls pubnub.revokeToken() to revoke the given token",
+      "max_score": 8
+    },
+    {
+      "name": "Server secretKey from env",
+      "description": "The server PubNub instance reads the secret key from an environment variable (process.env.*)",
+      "max_score": 8
+    },
+    {
+      "name": "Server userId identifier",
+      "description": "The server PubNub instance sets userId to a server-specific identifier (not a user's ID)",
+      "max_score": 6
+    },
+    {
+      "name": "authorizedUUID in grant",
+      "description": "The grantToken() call sets authorizedUUID to the specific user's ID",
+      "max_score": 8
+    },
+    {
+      "name": "TTL specified",
+      "description": "The grantToken() call includes a ttl parameter",
+      "max_score": 6
+    },
+    {
+      "name": "Fine-grained permissions",
+      "description": "Uses at least three different permission types from: read, write, get, update, manage, delete, join (not just read+write for everything)",
+      "max_score": 12
+    }
+  ]
+}

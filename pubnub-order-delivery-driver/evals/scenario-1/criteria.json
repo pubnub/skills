@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements the correct order state machine with all defined states and transitions, uses server-side validation via PubNub Functions, and publishes status updates to appropriate channels with the correct message format.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Order status channel naming",
+      "description": "Status updates are published to a channel matching the pattern order.<orderId>.status",
+      "max_score": 8
+    },
+    {
+      "name": "All lifecycle states defined",
+      "description": "The state machine includes at least these states: placed, confirmed, preparing, ready, dispatched, driver-arrived-pickup, picked-up, en-route, driver-nearby, delivered, failed, cancelled",
+      "max_score": 10
+    },
+    {
+      "name": "Correct transition rules",
+      "description": "Transition validation correctly maps each state to its allowed next states (e.g., placed can go to confirmed or cancelled; picked-up can only go to en-route; failed can go to dispatched for reassignment)",
+      "max_score": 10
+    },
+    {
+      "name": "Server-side validation function",
+      "description": "Includes a PubNub Function (Before Publish or Fire event handler) that validates transitions using kvstore to track current order state",
+      "max_score": 10
+    },
+    {
+      "name": "Invalid transition blocking",
+      "description": "The PubNub Function calls request.abort() or equivalent to reject invalid status transitions",
+      "max_score": 8
+    },
+    {
+      "name": "Dual channel publishing",
+      "description": "Status updates are published to both the order-specific channel AND a dispatch aggregation channel (e.g., dispatch.status-updates)",
+      "max_score": 10
+    },
+    {
+      "name": "Previous status included",
+      "description": "Status update messages include a previousStatus field (or equivalent) indicating the state being transitioned from",
+      "max_score": 10
+    },
+    {
+      "name": "storeInHistory for status",
+      "description": "Status update publish calls set storeInHistory to true so messages are persisted",
+      "max_score": 8
+    },
+    {
+      "name": "Timestamp in messages",
+      "description": "Each status update message includes a timestamp field (using Date.now() or equivalent)",
+      "max_score": 6
+    },
+    {
+      "name": "Terminal states handled",
+      "description": "The state machine treats delivered and cancelled as terminal states with no outgoing transitions (except failed -> dispatched for reassignment)",
+      "max_score": 10
+    },
+    {
+      "name": "Message deduplication consideration",
+      "description": "Code includes logic or documentation for detecting/handling duplicate status messages (e.g., checking orderId + status + timestamp combination)",
+      "max_score": 10
+    }
+  ]
+}

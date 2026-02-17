@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent correctly configures PubNub with HIPAA-compliant encryption, enforces role-based access control with appropriate token lifetimes, and follows healthcare-specific channel naming conventions.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "AES-CBC CryptoModule",
+      "description": "Client initialization uses PubNub.CryptoModule.aesCbcCryptoModule (or the equivalent aesCbc method) with a cipherKey parameter",
+      "max_score": 10
+    },
+    {
+      "name": "SSL enabled",
+      "description": "Client PubNub configuration sets ssl: true (or equivalent secure connections flag)",
+      "max_score": 8
+    },
+    {
+      "name": "Log verbosity disabled",
+      "description": "Client PubNub configuration sets logVerbosity to false (or equivalent) to prevent PHI appearing in logs",
+      "max_score": 8
+    },
+    {
+      "name": "Cipher key from env",
+      "description": "Cipher key is read from an environment variable (e.g. process.env.PUBNUB_CIPHER_KEY) and is NOT hardcoded as a string literal",
+      "max_score": 8
+    },
+    {
+      "name": "Secret key server-only",
+      "description": "The PubNub secret key (secretKey) appears in the server token service but does NOT appear in the client initialization code",
+      "max_score": 10
+    },
+    {
+      "name": "grantToken usage",
+      "description": "The token service uses PubNub's grantToken API (not the older grant API) to issue access tokens",
+      "max_score": 10
+    },
+    {
+      "name": "Provider TTL",
+      "description": "Provider tokens are granted with a TTL of approximately 60 minutes (between 30 and 60 inclusive)",
+      "max_score": 8
+    },
+    {
+      "name": "Patient TTL",
+      "description": "Patient tokens are granted with a shorter TTL than provider tokens, approximately 15-30 minutes",
+      "max_score": 8
+    },
+    {
+      "name": "Provider permissions",
+      "description": "Provider token grants include at minimum read and write permissions and also include get or update permission on consultation channels",
+      "max_score": 8
+    },
+    {
+      "name": "Consultation channel naming",
+      "description": "The architecture document or code uses a consultation channel naming pattern that includes both provider ID and patient ID (e.g., consultation.{providerId}.{patientId})",
+      "max_score": 8
+    },
+    {
+      "name": "Waiting room channel naming",
+      "description": "The architecture document or code uses a waiting room channel pattern that includes provider ID (e.g., waiting-room.{providerId})",
+      "max_score": 7
+    },
+    {
+      "name": "Notification channel naming",
+      "description": "The architecture document or code uses a personal notification channel pattern that includes user ID (e.g., notification.{userId})",
+      "max_score": 7
+    }
+  ]
+}

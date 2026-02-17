@@ -1,0 +1,13 @@
+{
+  "total_infeasible": 2,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "React hook for stock quotes",
+      "reasoning": "Testing the React hook pattern (useStockQuotes with proper cleanup via unsubscribeAll/destroy) requires a full React build environment and browser rendering. The eval sandbox cannot run React components or verify React lifecycle behavior from file output alone. The core concepts (dual listeners, cleanup) are tested in scenarios 1 and 4."
+    },
+    {
+      "scenarios": "Mobile/Kotlin ticker implementation",
+      "reasoning": "The Android/Kotlin StockTickerViewModel pattern requires Android SDK, Gradle build system, and Kotlin compiler which are not available in the eval sandbox. The core subscription and display patterns are covered by the JavaScript scenarios."
+    }
+  ]
+}

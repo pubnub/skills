@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements a client-side play-by-play timeline with proper PubNub subscriber initialization (restore, autoNetworkDetection), event deduplication via gameId+sequence, out-of-order handling, reconnection backfill using fetchMessages, and message type routing via addListener.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "restore enabled",
+      "description": "PubNub client initialization includes restore: true",
+      "max_score": 8
+    },
+    {
+      "name": "autoNetworkDetection enabled",
+      "description": "PubNub client initialization includes autoNetworkDetection: true",
+      "max_score": 8
+    },
+    {
+      "name": "userId field used",
+      "description": "PubNub initialization uses the userId property (not uuid) with a fan- or user-prefixed identifier",
+      "max_score": 7
+    },
+    {
+      "name": "addListener with type switch",
+      "description": "Uses pubnub.addListener with a message handler that routes events by checking message.type (e.g. score_update, play_by_play, game_status)",
+      "max_score": 9
+    },
+    {
+      "name": "Sequence-based deduplication",
+      "description": "Timeline implementation deduplicates events using the sequence number (or gameId + sequence combination) to prevent the same event from appearing twice",
+      "max_score": 10
+    },
+    {
+      "name": "Out-of-order detection",
+      "description": "Timeline detects gaps in the sequence (e.g. sequence jumps ahead) and buffers or reorders out-of-order events rather than appending them blindly",
+      "max_score": 12
+    },
+    {
+      "name": "Reconnection status handling",
+      "description": "The status listener checks for PNReconnectedCategory (or equivalent reconnection event) and triggers a recovery action",
+      "max_score": 10
+    },
+    {
+      "name": "Backfill via fetchMessages",
+      "description": "On reconnection or for late joiners, uses pubnub.fetchMessages (or equivalent history API) to retrieve missed events",
+      "max_score": 10
+    },
+    {
+      "name": "Hierarchical channel subscription",
+      "description": "Subscribes to channels following the sports.nba.games.<gameId> pattern (dot-delimited hierarchy)",
+      "max_score": 8
+    },
+    {
+      "name": "Server timestamp reliance",
+      "description": "Event ordering logic relies on server-provided sequence numbers and/or timestamps rather than local Date.now() or client-side clock values",
+      "max_score": 9
+    },
+    {
+      "name": "No secretKey on client",
+      "description": "Client-side PubNub initialization does NOT include a secretKey property",
+      "max_score": 9
+    }
+  ]
+}

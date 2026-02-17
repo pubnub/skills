@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent uses PubNub Channel Groups for efficient large-scale subscriptions, respects group limits, publishes to individual channels (not groups), and uses fetchMessages for catch-up after offline periods.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses Channel Groups",
+      "description": "The module uses PubNub Channel Groups (channelGroups API) to manage subscriptions rather than subscribing to each channel individually",
+      "max_score": 15
+    },
+    {
+      "name": "channelGroups.addChannels API",
+      "description": "Uses pubnub.channelGroups.addChannels() to add channels to a group",
+      "max_score": 10
+    },
+    {
+      "name": "channelGroups.removeChannels API",
+      "description": "Uses pubnub.channelGroups.removeChannels() to remove channels from a group",
+      "max_score": 10
+    },
+    {
+      "name": "Subscribe to channelGroups",
+      "description": "The subscribe call uses the channelGroups parameter (not channels) to listen to the channel group",
+      "max_score": 10
+    },
+    {
+      "name": "Publishes to individual channel",
+      "description": "Any publish calls target individual channel names, NOT a channel group name",
+      "max_score": 10
+    },
+    {
+      "name": "fetchMessages for catch-up",
+      "description": "The offline catch-up function uses pubnub.fetchMessages() (not history()) to retrieve missed messages",
+      "max_score": 10
+    },
+    {
+      "name": "Descriptive channel names",
+      "description": "Feed channel names use descriptive prefixes with hyphens or underscores (e.g. 'feed-user-123' or 'topic_tech') rather than opaque IDs",
+      "max_score": 5
+    },
+    {
+      "name": "No invalid channel characters",
+      "description": "Channel names do not contain commas, colons, asterisks, slashes, backslashes, spaces, or periods",
+      "max_score": 5
+    },
+    {
+      "name": "userId in SDK init",
+      "description": "PubNub initialization includes the userId property",
+      "max_score": 5
+    },
+    {
+      "name": "Listener before subscribe",
+      "description": "addListener() is called before subscribe() when starting to listen for updates",
+      "max_score": 10
+    },
+    {
+      "name": "Status event handling",
+      "description": "The listener includes a status callback that handles at least the connected status category",
+      "max_score": 5
+    },
+    {
+      "name": "Error handling on publish or fetch",
+      "description": "At least one of the publish or fetchMessages calls includes try/catch or .catch() error handling",
+      "max_score": 5
+    }
+  ]
+}

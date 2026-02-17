@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent follows skill instructions for charting, market hours, and data quality: OHLCV bar aggregation from ticks, market session definitions with correct ET times, quote validation checks, UI debouncing, sparkline tracking, and handling both message and signal events.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "OHLCV bar aggregation",
+      "description": "Aggregates incoming ticks into bars with open, high, low, close, and volume fields, grouped by a time interval",
+      "max_score": 10
+    },
+    {
+      "name": "Bar time bucketing",
+      "description": "Uses Math.floor(timestamp / interval) * interval or equivalent to bucket ticks into consistent time bars",
+      "max_score": 8
+    },
+    {
+      "name": "Pre-market session",
+      "description": "Defines pre-market session starting at 4:00 AM ET (or 4:00 in the America/New_York timezone)",
+      "max_score": 8
+    },
+    {
+      "name": "Regular session times",
+      "description": "Defines regular market hours as 9:30 AM to 4:00 PM ET",
+      "max_score": 8
+    },
+    {
+      "name": "After-hours session",
+      "description": "Defines after-hours session from 4:00 PM to 8:00 PM ET",
+      "max_score": 8
+    },
+    {
+      "name": "Holiday handling",
+      "description": "Market hours logic includes handling for holidays or weekends (days when the market is closed regardless of time)",
+      "max_score": 8
+    },
+    {
+      "name": "Price validation",
+      "description": "Validates that price is a number greater than zero before processing",
+      "max_score": 8
+    },
+    {
+      "name": "Crossed market check",
+      "description": "Validates that bid is not greater than ask (crossed market detection) when both values are present",
+      "max_score": 8
+    },
+    {
+      "name": "Stale timestamp check",
+      "description": "Validates that quote timestamp is not too far in the past (e.g., rejects quotes older than a threshold like 5 minutes)",
+      "max_score": 8
+    },
+    {
+      "name": "UI debounce",
+      "description": "Uses requestAnimationFrame or a debounce/throttle mechanism (100-250ms) to limit rendering frequency for high-frequency updates",
+      "max_score": 10
+    },
+    {
+      "name": "Sparkline tracking",
+      "description": "Maintains a rolling window of recent price points (capped at a maximum number of points) for sparkline visualization",
+      "max_score": 8
+    },
+    {
+      "name": "Both listeners",
+      "description": "Adds PubNub listener that handles both 'message' events and 'signal' events for incoming data",
+      "max_score": 8
+    }
+  ]
+}

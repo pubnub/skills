@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent applies channel sharding for high-concurrency chat, handles presence at scale with interval events, uses single PubNub instances, parallel publishing for broadcasts, and documents PubNub contact thresholds and monitoring.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Channel sharding implemented",
+      "description": "The solution shards users across multiple channels (not a single channel) using some form of hash or modulo-based assignment from the user ID",
+      "max_score": 10
+    },
+    {
+      "name": "Broadcast to all shards",
+      "description": "The broadcast/announcement function publishes the message to every shard channel (not just one channel)",
+      "max_score": 10
+    },
+    {
+      "name": "Parallel shard publishing",
+      "description": "When broadcasting to multiple shard channels, the publishes are done in parallel using Promise.all or equivalent (not sequentially awaited one by one)",
+      "max_score": 8
+    },
+    {
+      "name": "Interval presence events",
+      "description": "The presence handler checks for or handles interval-type presence events (event.action === 'interval' or similar) rather than only individual join/leave events",
+      "max_score": 10
+    },
+    {
+      "name": "Announce Max mentioned",
+      "description": "The architecture document or code comments mention configuring 'Announce Max' in the Admin Portal for high-occupancy presence",
+      "max_score": 8
+    },
+    {
+      "name": "Single PubNub instance",
+      "description": "Each client/server module creates only one PubNub instance that is reused, rather than creating new instances per operation or per function call",
+      "max_score": 10
+    },
+    {
+      "name": "Contact PubNub threshold",
+      "description": "The architecture document mentions the need to contact PubNub or submit a Virtual Event Form for events with 10,000+ concurrent users",
+      "max_score": 10
+    },
+    {
+      "name": "Pro plan threshold",
+      "description": "The architecture document mentions discussing a Pro plan or contacting PubNub for 1,000+ regular concurrent users",
+      "max_score": 8
+    },
+    {
+      "name": "Monitoring recommendations",
+      "description": "The architecture document includes monitoring or testing recommendations (e.g., mentions PubNub status page, Speed-o-Meter, Admin Portal metrics, or latency tracking)",
+      "max_score": 8
+    },
+    {
+      "name": "Scale limits documented",
+      "description": "The architecture document notes at least one specific numerical scale limit (e.g., 10K user sharding threshold, message rates, buffer sizes)",
+      "max_score": 8
+    },
+    {
+      "name": "Publish rate awareness",
+      "description": "The architecture document or code comments reference the recommended publish rate per channel (10-15 msg/sec optimal, or 30-50 sustainable) as a factor in the sharding design",
+      "max_score": 10
+    }
+  ]
+}

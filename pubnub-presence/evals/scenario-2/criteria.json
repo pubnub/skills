@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent uses setState for user metadata, handles multi-device scenarios, implements cleanup on page unload, uses a persistent userId, enables Event Engine, and documents Admin Portal configuration requirements.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "setState usage",
+      "description": "The code uses pubnub.setState() to update user status metadata dynamically",
+      "max_score": 10
+    },
+    {
+      "name": "Initial state on subscribe",
+      "description": "User state/metadata is set when initially subscribing (via the state parameter on subscribe or immediately after)",
+      "max_score": 8
+    },
+    {
+      "name": "State-change event handler",
+      "description": "The presence listener handles 'state-change' events to update tracked user states",
+      "max_score": 10
+    },
+    {
+      "name": "Multi-device handling",
+      "description": "The code addresses the scenario of a single user connected from multiple devices (e.g., device count tracking or deduplication)",
+      "max_score": 10
+    },
+    {
+      "name": "Persistent userId",
+      "description": "The PubNub client uses a userId that is consistent and persistent across sessions (not randomly generated each time)",
+      "max_score": 10
+    },
+    {
+      "name": "beforeunload cleanup",
+      "description": "The code includes a beforeunload or equivalent event listener that calls unsubscribeAll() or unsubscribe()",
+      "max_score": 10
+    },
+    {
+      "name": "Event Engine enabled",
+      "description": "The PubNub configuration includes enableEventEngine: true",
+      "max_score": 8
+    },
+    {
+      "name": "Admin Portal documentation",
+      "description": "The setup-notes.md file documents that Presence must be enabled in the Admin Portal",
+      "max_score": 8
+    },
+    {
+      "name": "Selected channels recommendation",
+      "description": "The setup-notes.md recommends 'selected channels only' mode or mentions configuring channel rules in Presence Management",
+      "max_score": 8
+    },
+    {
+      "name": "withPresence subscription",
+      "description": "The subscription uses withPresence: true or receivePresenceEvents: true",
+      "max_score": 8
+    },
+    {
+      "name": "hereNow for initial state",
+      "description": "The code uses hereNow to fetch the initial set of team members on connection",
+      "max_score": 10
+    }
+  ]
+}

@@ -1,0 +1,190 @@
+{
+  "instructions": [
+    {
+      "instruction": "Use the hierarchical dot-delimited channel naming pattern: sports.<league>.<context>.<identifier>",
+      "original_snippets": "Channel Naming Pattern: sports.<league>.<context>.<identifier> ... Establish a structured channel naming convention that supports league, sport, team, and game-level subscriptions with wildcard support",
+      "relevant_when": "When creating PubNub channels for any sports data",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use separate channels for scores, play-by-play, and fan engagement so clients subscribe only to what they need",
+      "original_snippets": "Use separate channels for score updates versus play-by-play versus fan engagement to allow clients to subscribe only to what they need ... Channel granularity - Use separate channels for scores, play-by-play, and fan engagement so each client subscribes only to what it renders",
+      "relevant_when": "When designing the channel architecture for a sports application",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Design channel names to support wildcard subscriptions at meaningful boundaries (league, team, game)",
+      "original_snippets": "Design channel names to support wildcard subscriptions so fans can follow an entire league or a single team without managing dozens of individual channels ... Wildcard subscriptions - Design channel names to support wildcards at meaningful boundaries (league, team, game)",
+      "relevant_when": "When designing the channel hierarchy for multi-sport or multi-game scenarios",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Always include a monotonically increasing sequence number in play-by-play events for ordering and gap detection",
+      "original_snippets": "Always include a monotonically increasing sequence number in play-by-play events so clients can detect and handle out-of-order delivery ... Sequence numbers - Always include a per-game monotonic sequence so clients detect gaps and request backfill",
+      "relevant_when": "When publishing or consuming play-by-play events",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use server-side timestamps exclusively; never rely on client clocks for event ordering",
+      "original_snippets": "Never rely solely on client-side clocks for event ordering; always use server-side timestamps and sequence identifiers ... Time source - Use server-side timestamps exclusively; never rely on client clocks for event ordering",
+      "relevant_when": "When implementing event ordering or timestamping logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Publish game status transitions (pre_game, in_progress, halftime, delayed, final) as distinct game_status event types",
+      "original_snippets": "Publish game status transitions (pre-game, in-progress, halftime, final) as distinct event types so clients can adjust their UI state machines accordingly ... Status transitions - Publish explicit game_status events for every state change so clients do not infer state from scores",
+      "relevant_when": "When handling game lifecycle state changes",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Keep message payloads compact; avoid embedding full rosters or historical data in real-time messages",
+      "original_snippets": "Keep message payloads compact; avoid embedding full rosters or historical data in real-time messages ... Compact payloads - Keep real-time messages under 2 KB; use abbreviations and codes rather than full names",
+      "relevant_when": "When defining the data model for real-time score or event messages",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Initialize client PubNub with restore: true and autoNetworkDetection: true for reconnection handling",
+      "original_snippets": "const pubnub = new PubNub({ subscribeKey: 'sub-c-...', userId: `fan-${currentUserId}`, restore: true, autoNetworkDetection: true, heartbeatInterval: 30 }); ... Reconnection - Enable restore: true and autoNetworkDetection: true; fetch missed messages on reconnect",
+      "relevant_when": "When initializing the PubNub client on the subscriber/client side",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Fetch missed messages on reconnect (backfill) using fetchMessages and replay through the timeline builder",
+      "original_snippets": "if (event.category === 'PNReconnectedCategory') { fetchMissedUpdates(pubnub, channels, handlers); } ... Reconnection with backfill - Always fetch recent history on reconnect; use sequence numbers to detect what was missed ... Backfill on reconnect - Fetch recent history and replay events through the timeline builder to close gaps",
+      "relevant_when": "When implementing reconnection logic or a listener status handler",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Include both publisher-side (score ingestion service) and subscriber-side (client app) code in implementations",
+      "original_snippets": "Provide both publisher-side (score ingestion service) and subscriber-side (client app) code",
+      "relevant_when": "When building a complete sports update implementation",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Use the universal event envelope structure with type, gameId, sport, sequence, timestamp, period, score, and payload fields",
+      "original_snippets": "const gameEvent = { type: 'string', gameId: 'string', sport: 'string', sequence: 'number', timestamp: 'number', period: { current: 'number', label: 'string', clock: 'string' }, score: { home: { team: 'string', score: 'number' }, away: { team: 'string', score: 'number' } }, payload: {} };",
+      "relevant_when": "When publishing any game event to PubNub channels",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Categorize events into three tiers: Critical (scoring + status), Standard (significant actions), Informational (context/stats), with different delivery routing",
+      "original_snippets": "Events are categorized into three tiers based on impact and urgency ... Critical: Scoring plays and game status changes - Immediate + push notification ... Standard: Significant in-game actions - Immediate ... Informational: Context and statistics - Batched (1-5 second window) ... Tier-based routing - Publish critical events to both the game channel and plays channel; informational events to plays only",
+      "relevant_when": "When implementing an event publisher or deciding which channels to publish to",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Server-side PubNub initialization must include secretKey; client-side must NOT include secretKey",
+      "original_snippets": "const pubnub = new PubNub({ publishKey: process.env.PUBNUB_PUBLISH_KEY, subscribeKey: process.env.PUBNUB_SUBSCRIBE_KEY, secretKey: process.env.PUBNUB_SECRET_KEY, // Server-side only ... }) ... Client Application ... const pubnub = new PubNub({ subscribeKey: 'sub-c-...',",
+      "relevant_when": "When initializing PubNub SDK on server vs client side",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use sport-appropriate period labels (Q1-Q4 for NFL/NBA, P1-P3 for NHL, 1st Half/2nd Half for soccer, Top/Bot 1st-9th for MLB)",
+      "original_snippets": "Period labels - Use sport-appropriate labels (quarters, halves, innings) in every event for correct rendering ... NFL: Q1-Q4, OT ... NBA: Q1-Q4, OT ... NHL: P1-P3, OT ... Soccer: 1st Half, 2nd Half, ET1, ET2 ... MLB: Top/Bot 1st-9th, Extras",
+      "relevant_when": "When formatting period labels for different sports",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement idempotent client-side processing by deduplicating events using gameId + sequence",
+      "original_snippets": "Idempotent processing - Clients should deduplicate by gameId + sequence to handle redelivery gracefully ... Idempotent clients - Deduplicate by gameId + sequence so redelivered messages do not corrupt the timeline",
+      "relevant_when": "When implementing a client-side event consumer or timeline builder",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Always unsubscribe and destroy the PubNub instance when the user navigates away or components unmount",
+      "original_snippets": "Cleanup - Always unsubscribe and destroy the PubNub instance when the user navigates away ... Cleanup subscriptions - Always unsubscribe and destroy PubNub instances when components unmount or users navigate away",
+      "relevant_when": "When implementing React components or any client-side lifecycle management",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Publish critical events to both the game channel and the plays channel; informational events to plays channel only",
+      "original_snippets": "if (this.isCriticalEvent(event.type, event.sport)) { await Promise.all([ this.pubnub.publish({ channel: gameChannel, message: enrichedEvent }), this.pubnub.publish({ channel: playsChannel, message: enrichedEvent }) ]); ... } else { await this.pubnub.publish({ channel: playsChannel, message: enrichedEvent }); }",
+      "relevant_when": "When implementing the event publisher routing logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Also publish score summaries to the league scores channel (sports.<league>.scores) when critical scoring events occur",
+      "original_snippets": "await this.pubnub.publish({ channel: `sports.${event.sport}.scores`, message: { type: 'score_summary', gameId: event.gameId, score: event.score, period: event.period } }); ... Also publish summary to league scores channel",
+      "relevant_when": "When implementing the event publisher for scoring events",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use delta compression for high-frequency updates, sending only changed fields to minimize bandwidth",
+      "original_snippets": "Delta compression - For high-frequency updates (pitch-by-pitch, possession tracking), send only changed fields to minimize bandwidth ... Apply PubNub Functions, channel multiplexing, and delta-compression strategies to handle surges during major sporting events",
+      "relevant_when": "When implementing high-frequency stat updates or pitch-by-pitch tracking",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Store favorite teams in PubNub App Context (objects.setUUIDMetadata/getUUIDMetadata) for cross-session persistence",
+      "original_snippets": "Personalization via metadata - Store favorite teams in PubNub App Context so preferences persist across sessions and devices ... await this.pubnub.objects.setUUIDMetadata({ uuid: this.userId, data: { custom: { favoriteTeams: teams } } });",
+      "relevant_when": "When implementing user personalization or favorite teams feature",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use PubNub push module (pubnub.push.addChannels) for mobile push notifications with apns2 for iOS and gcm for Android",
+      "original_snippets": "if (platform === 'ios') { await pubnub.push.addChannels({ channels, device: deviceToken, pushGateway: 'apns2', environment: 'production', topic: 'com.example.sportsapp' }); } else { await pubnub.push.addChannels({ channels, device: deviceToken, pushGateway: 'gcm' }); }",
+      "relevant_when": "When implementing push notifications for mobile sports apps",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Include pn_apns and pn_gcm keys in message payload for push notification delivery with appropriate alert, sound, and data fields",
+      "original_snippets": "return { pn_apns: { aps: { alert: { title, body }, sound: 'score_update.aiff', badge: 1 }, gameId: event.gameId, type: event.type }, pn_gcm: { notification: { title, body, icon: 'ic_score', sound: 'default' }, data: { gameId: event.gameId, type: event.type } } };",
+      "relevant_when": "When constructing push notification payloads for sports events",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Send push notifications only for critical events (goals, game start, game end) to avoid notification fatigue",
+      "original_snippets": "Push notification thresholds - Send push notifications only for critical events (goals, game start, game end) to avoid notification fatigue",
+      "relevant_when": "When deciding which events should trigger push notifications",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Use the userId field (not uuid) when initializing PubNub, set to a meaningful identifier like 'score-ingestion-service' or 'fan-<userId>'",
+      "original_snippets": "userId: 'score-ingestion-service' ... userId: `fan-${currentUserId}` ... userId: 'score-service'",
+      "relevant_when": "When initializing the PubNub client",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "For React integration, initialize PubNub in useEffect with cleanup that calls unsubscribeAll() and destroy()",
+      "original_snippets": "useEffect(() => { const pn = new PubNub({ ... }); setPubnub(pn); return () => { pn.unsubscribeAll(); pn.destroy(); }; }, [userId]);",
+      "relevant_when": "When building React components that use PubNub",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use the addListener method with message and status handlers to process incoming events, switching on message.type",
+      "original_snippets": "pubnub.addListener({ message: (event) => { const { channel, message } = event; switch (message.type) { case 'score_update': ... case 'play_by_play': ... case 'game_status': ... } } });",
+      "relevant_when": "When setting up subscriber-side event handling",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Validate every event before publishing; reject malformed events to protect downstream consumers",
+      "original_snippets": "Validation at ingestion - Validate every event before publishing; reject malformed events to protect downstream consumers ... function validateGameEvent(event) { const errors = []; if (!event.type) errors.push('Missing event type'); ... }",
+      "relevant_when": "When implementing the server-side event ingestion/publishing pipeline",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement out-of-order event recovery on the client by detecting sequence gaps and fetching history for backfill",
+      "original_snippets": "if (event.sequence > this.lastSequence + 1) { this.pendingOutOfOrder.push(event); this.requestBackfill(this.lastSequence + 1, event.sequence - 1); return; } ... Error Handling: Out-of-Order Event Recovery",
+      "relevant_when": "When building a client-side play-by-play timeline or event consumer",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Sort games by status for display: in_progress first, then halftime, pre_game, and final",
+      "original_snippets": "const order = { in_progress: 0, halftime: 1, pre_game: 2, final: 3 }; return (order[a.status] || 9) - (order[b.status] || 9);",
+      "relevant_when": "When implementing a multi-sport dashboard or game listing view",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Fetch the last N events from history and replay them through the timeline builder when users join mid-game (late joiners)",
+      "original_snippets": "Replay for late joiners - Fetch the last N events from history and replay them through the timeline builder before subscribing to live updates",
+      "relevant_when": "When implementing game join or initial load logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Show cached scores with a staleness indicator when the connection is lost rather than an error state",
+      "original_snippets": "Graceful degradation - Show cached scores with a staleness indicator when the connection is lost rather than an error state",
+      "relevant_when": "When implementing disconnection/offline UI handling",
+      "why_given": "preference"
+    }
+  ]
+}

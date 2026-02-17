@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent designs a proper PubNub channel hierarchy using dot-separated names for wildcard subscriptions, respects the maximum depth limits, uses valid channel naming, and publishes with concise payloads.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Dot-separated hierarchy",
+      "description": "Channel names use period (.) as the hierarchy delimiter between levels (e.g. building.floor.sensortype)",
+      "max_score": 15
+    },
+    {
+      "name": "Maximum three levels",
+      "description": "The channel hierarchy uses at most three levels (two dots), not exceeding the PubNub wildcard depth limit",
+      "max_score": 10
+    },
+    {
+      "name": "Wildcard at end only",
+      "description": "Wildcard subscribe patterns place the asterisk (*) at the end of the pattern (e.g. 'building1.*') rather than in the middle or beginning",
+      "max_score": 10
+    },
+    {
+      "name": "Building-level wildcard subscribe",
+      "description": "The subscribe-to-building function uses a wildcard pattern that matches all sensors in a building (e.g. 'building1.*')",
+      "max_score": 10
+    },
+    {
+      "name": "No invalid characters in base channel names",
+      "description": "The non-wildcard portions of channel names do not contain commas, colons, asterisks, slashes, backslashes, or spaces",
+      "max_score": 5
+    },
+    {
+      "name": "Async publish",
+      "description": "The publish function uses await or returns a promise rather than using synchronous/blocking patterns",
+      "max_score": 5
+    },
+    {
+      "name": "Concise sensor payload",
+      "description": "The published sensor message uses short field names and a flat or shallow structure (not deeply nested)",
+      "max_score": 10
+    },
+    {
+      "name": "Payload under 32KB aware",
+      "description": "The sensor reading payload contains only necessary data (reading value, timestamp, and minimal metadata) rather than embedding large objects",
+      "max_score": 5
+    },
+    {
+      "name": "Listener before subscribe",
+      "description": "In any subscription function, addListener() is called before subscribe() (or listener is confirmed to already exist)",
+      "max_score": 10
+    },
+    {
+      "name": "Status event handling",
+      "description": "At least one listener setup includes a status callback checking for PNConnectedCategory or similar connection status",
+      "max_score": 10
+    },
+    {
+      "name": "userId in SDK init",
+      "description": "If PubNub is initialized in this module, the configuration includes the userId property",
+      "max_score": 10
+    }
+  ]
+}

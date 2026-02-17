@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent implements responsible gambling features including deposit limits, session tracking with duration and loss alerts, self-exclusion via PubNub Functions, geo-fencing with country allowlist and periodic re-verification, cool-down periods, and the correct alert channel naming.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Deposit limit check",
+      "description": "Checks cumulative deposits against a configured limit before allowing a new deposit",
+      "max_score": 8
+    },
+    {
+      "name": "Session duration alert",
+      "description": "Tracks session duration and triggers an alert when the player has been active for over 1 hour (3600000ms or similar threshold)",
+      "max_score": 8
+    },
+    {
+      "name": "Net loss tracking",
+      "description": "Calculates net loss as totalStaked minus totalWon and triggers an alert when it exceeds a threshold",
+      "max_score": 8
+    },
+    {
+      "name": "Responsible gambling channel",
+      "description": "Alerts are published to a channel following the pattern responsible.{userId}",
+      "max_score": 10
+    },
+    {
+      "name": "Alert message type",
+      "description": "Alert messages include a type field of 'responsible_gambling_alert' and an alertType field distinguishing the kind of alert",
+      "max_score": 8
+    },
+    {
+      "name": "Cool-down mechanism",
+      "description": "Implements a cool-down or delay between rapid betting actions",
+      "max_score": 8
+    },
+    {
+      "name": "Self-exclusion PubNub Function",
+      "description": "Self-exclusion check is implemented as a PubNub Function that calls request.abort() to block excluded users",
+      "max_score": 10
+    },
+    {
+      "name": "Exclusion expiry check",
+      "description": "Self-exclusion check verifies both that the exclusion is active AND that it has not expired (Date.now() < expiresAt or equivalent)",
+      "max_score": 8
+    },
+    {
+      "name": "Geo-fence country list",
+      "description": "Geo-fencing checks coordinates against a list of allowed country codes (including at least GB, MT, GI)",
+      "max_score": 10
+    },
+    {
+      "name": "Geo-verification expiry",
+      "description": "Geo-verification results are stored with an expiry time for periodic re-verification (approximately 30 minutes / 1800000ms)",
+      "max_score": 10
+    },
+    {
+      "name": "KVStore for limits",
+      "description": "Uses kvstore to persist deposit totals, exclusion records, and geo-verification results",
+      "max_score": 6
+    },
+    {
+      "name": "Location denied handling",
+      "description": "Handles the case where the browser/device denies location access with an error callback or rejection",
+      "max_score": 6
+    }
+  ]
+}

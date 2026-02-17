@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent uses the correct PubNub channel naming conventions for direct messaging, including alphabetical sorting of user IDs, valid channel characters, and proper listener/subscribe ordering.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Alphabetical user ID sorting",
+      "description": "The channel name function sorts the two user IDs alphabetically (e.g. using .sort()) to ensure the same channel is produced regardless of argument order",
+      "max_score": 15
+    },
+    {
+      "name": "Deterministic channel name",
+      "description": "Calling the function with (userA, userB) and (userB, userA) would produce the same channel name string",
+      "max_score": 10
+    },
+    {
+      "name": "No invalid characters in channel name",
+      "description": "The generated channel name does NOT contain commas, colons, asterisks, slashes, backslashes, spaces, or periods",
+      "max_score": 10
+    },
+    {
+      "name": "Uses hyphens or underscores as separators",
+      "description": "The channel naming convention uses hyphens (-) or underscores (_) as delimiters between parts of the channel name",
+      "max_score": 5
+    },
+    {
+      "name": "Descriptive channel prefix",
+      "description": "The channel name includes a descriptive prefix such as 'dm-' or 'direct-' or similar identifying it as a direct message channel",
+      "max_score": 5
+    },
+    {
+      "name": "Listener before subscribe",
+      "description": "In the listening/initialization function, addListener() is called before subscribe()",
+      "max_score": 10
+    },
+    {
+      "name": "Message listener included",
+      "description": "The addListener call includes a message callback that handles incoming message events",
+      "max_score": 5
+    },
+    {
+      "name": "Status listener included",
+      "description": "The addListener call includes a status callback that handles connection status events",
+      "max_score": 10
+    },
+    {
+      "name": "userId in SDK init",
+      "description": "The PubNub initialization includes the userId property",
+      "max_score": 10
+    },
+    {
+      "name": "Async publish with error handling",
+      "description": "The send message function uses await with try/catch or .catch() when calling pubnub.publish()",
+      "max_score": 10
+    },
+    {
+      "name": "Concise message payload",
+      "description": "The published message object uses short field names and a focused structure rather than deeply nested or verbose payloads",
+      "max_score": 10
+    }
+  ]
+}

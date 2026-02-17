@@ -1,0 +1,172 @@
+{
+  "instructions": [
+    {
+      "instruction": "Use grantToken() and setToken() for new implementations; grant() and authKey is legacy",
+      "original_snippets": "Use `grantToken()` and `setToken()` for new implementations; `authKey` with `grant()` is legacy ... New implementations should use `grantToken()` and `setToken()` instead.",
+      "relevant_when": "When implementing PubNub Access Manager for access control in a new application",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Never expose Secret Key in client-side code",
+      "original_snippets": "**NEVER expose Secret Key** in client-side code ... Secret Key is only for server-side grant/token operations ... // Server-side only! ... // ONLY on server",
+      "relevant_when": "When writing any PubNub code that involves both server and client components",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Issue tokens server-side using grantToken() with Secret Key",
+      "original_snippets": "**Implement Server Auth**: Issue tokens server-side using `grantToken()` with Secret Key ... Server-side only (requires Secret Key)",
+      "relevant_when": "When setting up the authentication flow for PubNub PAM",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Set the token on the client using pubnub.setToken()",
+      "original_snippets": "**Configure Client Auth**: Set the token on the client using `pubnub.setToken()` ... pubnub.setToken(token);",
+      "relevant_when": "When configuring PubNub client after receiving a token from the server",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Configure CryptoModule with aesCbcCryptoModule for end-to-end message encryption",
+      "original_snippets": "cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({ cipherKey: 'my-secret-cipher-key' })",
+      "relevant_when": "When enabling message encryption in a PubNub application",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "TLS 1.2+ is required as of February 2025",
+      "original_snippets": "TLS 1.2+ required as of February 2025 ... As of February 1, 2025, PubNub only supports TLS 1.2+",
+      "relevant_when": "When configuring TLS or discussing transport security for PubNub",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "TLS (ssl) is enabled by default - do not disable for production",
+      "original_snippets": "// ssl: true is the default ... // Only disable for specific testing scenarios ... ssl: false  // NOT RECOMMENDED for production",
+      "relevant_when": "When configuring PubNub client transport security",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use short TTLs for sensitive operations",
+      "original_snippets": "Short TTLs recommended for sensitive operations ... Sensitive operations: short TTL ... ttl: 15  // 15 minutes",
+      "relevant_when": "When granting access to channels that carry sensitive data",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Token revocations may take up to 60 seconds to propagate",
+      "original_snippets": "Token revocations may take up to 60 seconds to propagate ... Revocations may take up to 60 seconds to propagate due to caching.",
+      "relevant_when": "When implementing token revocation logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Clearly separate server-side and client-side code in implementations",
+      "original_snippets": "Clearly separate server-side and client-side code",
+      "relevant_when": "When providing PubNub security implementation code",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Include proper error handling for access denied scenarios using PNAccessDeniedCategory",
+      "original_snippets": "Provide complete error handling for access denied scenarios ... case 'PNAccessDeniedCategory': ... if (statusEvent.category === 'PNAccessDeniedCategory')",
+      "relevant_when": "When implementing PubNub client code with Access Manager",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Store keys using environment variables, not hardcoded",
+      "original_snippets": "// Use environment variables ... publishKey: process.env.PUBNUB_PUB_KEY, ... subscribeKey: process.env.PUBNUB_SUB_KEY, ... secretKey: process.env.PUBNUB_SECRET_KEY",
+      "relevant_when": "When initializing PubNub with API keys in server code",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use separate keysets for different environments (dev/staging/production)",
+      "original_snippets": "Separate Keys per Environment ... Production: pub-c-prod-... Staging: pub-c-staging-... Development: pub-c-dev-...",
+      "relevant_when": "When setting up PubNub across multiple environments",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Follow principle of least privilege when granting permissions",
+      "original_snippets": "// Grant minimum required permissions ... Audit Permissions: Review and minimize access grants",
+      "relevant_when": "When designing channel permissions and access grants",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Implement token refresh before expiry (5 minutes buffer recommended)",
+      "original_snippets": "Schedule token refresh before expiry ... const refreshTime = credentials.expiresAt - Date.now() - 300000;  // 5 min before ... this.refreshBuffer = 5 * 60 * 1000;  // 5 minutes before expiry",
+      "relevant_when": "When implementing client-side token lifecycle management",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use channel naming conventions with security-relevant prefixes (public-, private-, etc.)",
+      "original_snippets": "'public-announcements' ... 'private-user-${userId}' ... 'group-${groupId}' ... 'admin-dashboard' ... Use prefixes for different security levels",
+      "relevant_when": "When designing channel architecture for a secure PubNub application",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use cryptographically secure random key generation for cipher keys (crypto.randomBytes(32))",
+      "original_snippets": "const cipherKey = crypto.randomBytes(32).toString('hex'); ... // Generate cryptographically secure key",
+      "relevant_when": "When generating cipher keys for PubNub encryption",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use separate cipher keys for different security contexts",
+      "original_snippets": "Different cipher keys for different data sensitivity ... Separate Keys by Security Context ... cipherKey: 'private-conversations-key' ... cipherKey: 'financial-data-key'  // Different key for sensitive data",
+      "relevant_when": "When encrypting messages across channels with different sensitivity levels",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Token permissions include: read, write, get, update, manage, delete, join",
+      "original_snippets": "Permissions: Read (subscribe), Write (publish), Get, Update, Manage, Delete, Join",
+      "relevant_when": "When configuring fine-grained permissions in token grants",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "grantToken supports both specific resources and patterns for channels",
+      "original_snippets": "Grant Token with Channel Patterns ... patterns: { channels: { 'chat-room-*': { read: true, write: true } } } ... Grant Token with Mixed Resources and Patterns",
+      "relevant_when": "When granting access to multiple channels following naming conventions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Server PubNub instance must include secretKey and set userId to 'server'",
+      "original_snippets": "const pubnub = new PubNub({ publishKey: 'pub-c-...', subscribeKey: 'sub-c-...', secretKey: 'sec-c-...', userId: 'server' });",
+      "relevant_when": "When initializing the server-side PubNub instance for token management",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Client PubNub should NOT include secretKey",
+      "original_snippets": "// CLIENT-SIDE - No Secret Key ... // NO secretKey here",
+      "relevant_when": "When initializing the client-side PubNub instance",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use parseToken() for debugging token permissions",
+      "original_snippets": "const parsed = pubnub.parseToken(token); ... // Inspect what a token grants",
+      "relevant_when": "When debugging or inspecting token permissions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use revokeToken() to revoke specific tokens",
+      "original_snippets": "await pubnub.revokeToken(token); ... // Revoke a specific token",
+      "relevant_when": "When implementing token revocation",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement server-side validation for publishes using PubNub Functions",
+      "original_snippets": "// PubNub Function: Validate before publish ... export default async (request) => { ... if (message.senderId !== channelUserId) { ... return request.abort(); ... return request.ok(); };",
+      "relevant_when": "When adding server-side message validation",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Channel names are NOT encrypted even when cipherKey is set",
+      "original_snippets": "Channel name | No ... Publisher UUID | No ... Timetoken | No",
+      "relevant_when": "When designing channel naming with encryption enabled",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "For true end-to-end file encryption, encrypt file content before sending via PubNub",
+      "original_snippets": "// 1. Encrypt file content yourself BEFORE sending ... const encryptedFileBuffer = await encryptFile(originalFile, myEncryptionKey);",
+      "relevant_when": "When implementing secure file sharing through PubNub",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Include permission grant examples in implementation output",
+      "original_snippets": "Show proper authKey usage in client config ... Include permission grant examples",
+      "relevant_when": "When providing PubNub security code examples",
+      "why_given": "particular preference"
+    }
+  ]
+}

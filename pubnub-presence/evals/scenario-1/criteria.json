@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent handles all presence event types (join, leave, timeout, state-change, interval), uses hereNow for initial state loading, distinguishes between leave and timeout events, and correctly processes interval events with batch join/leave/timeout arrays.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Join event handling",
+      "description": "The presence listener includes a handler for the 'join' action/event type",
+      "max_score": 8
+    },
+    {
+      "name": "Leave event handling",
+      "description": "The presence listener includes a handler for the 'leave' action/event type",
+      "max_score": 8
+    },
+    {
+      "name": "Timeout event handling",
+      "description": "The presence listener includes a handler for the 'timeout' action/event type",
+      "max_score": 10
+    },
+    {
+      "name": "State-change handling",
+      "description": "The presence listener includes a handler for the 'state-change' action/event type",
+      "max_score": 10
+    },
+    {
+      "name": "Interval event handling",
+      "description": "The presence listener includes a handler for the 'interval' action/event type",
+      "max_score": 10
+    },
+    {
+      "name": "Interval batch arrays",
+      "description": "The interval event handler processes the join, leave, and/or timeout arrays from the interval event object",
+      "max_score": 8
+    },
+    {
+      "name": "hereNow initial fetch",
+      "description": "The module calls pubnub.hereNow() to load the initial set of users/occupancy before relying on live events",
+      "max_score": 10
+    },
+    {
+      "name": "hereNow includeUUIDs",
+      "description": "The hereNow call includes the includeUUIDs parameter set to true (since user list is needed)",
+      "max_score": 8
+    },
+    {
+      "name": "Leave vs timeout distinction",
+      "description": "The code handles leave and timeout as separate cases with different behavior or messaging (not merged into a single identical handler)",
+      "max_score": 10
+    },
+    {
+      "name": "Occupancy tracking",
+      "description": "The module tracks and exposes the occupancy count, updating it from the event.occupancy field on presence events",
+      "max_score": 8
+    },
+    {
+      "name": "User map data structure",
+      "description": "Uses a Map or object keyed by UUID to track active users",
+      "max_score": 10
+    }
+  ]
+}

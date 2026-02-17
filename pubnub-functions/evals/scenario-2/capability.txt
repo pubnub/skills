@@ -1,1 +1,1 @@
-Publish vs fire vs signal
+Webhook integration with vault secrets and external API

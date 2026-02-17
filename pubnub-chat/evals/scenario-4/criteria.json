@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent uses the correct PubNub Chat SDK APIs for read receipts, unread message counts, public channel creation, membership queries, timetoken-to-date conversion utilities, and message history.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "createPublicConversation API",
+      "description": "Uses chat.createPublicConversation() (not createGroupConversation or createDirectConversation) for the announcement channel",
+      "max_score": 10
+    },
+    {
+      "name": "setLastReadMessage for marking read",
+      "description": "Uses channel.setLastReadMessage(message) to mark a channel as read, passing the most recent message",
+      "max_score": 12
+    },
+    {
+      "name": "getUnreadMessagesCount API",
+      "description": "Uses channel.getUnreadMessagesCount() to retrieve the number of unread messages",
+      "max_score": 10
+    },
+    {
+      "name": "TimetokenUtils import",
+      "description": "Imports TimetokenUtils from '@pubnub/chat' for time conversions",
+      "max_score": 10
+    },
+    {
+      "name": "timetokenToDate conversion",
+      "description": "Uses TimetokenUtils.timetokenToDate() to convert a message timetoken to a JavaScript Date object",
+      "max_score": 12
+    },
+    {
+      "name": "getMemberships for channels",
+      "description": "Uses chat.currentUser.getMemberships() to get the list of channels the user belongs to",
+      "max_score": 10
+    },
+    {
+      "name": "channel.getHistory for messages",
+      "description": "Uses channel.getHistory() with a count parameter to fetch recent messages",
+      "max_score": 8
+    },
+    {
+      "name": "Correct package import",
+      "description": "Imports Chat and/or TimetokenUtils from '@pubnub/chat'",
+      "max_score": 8
+    },
+    {
+      "name": "Chat.init initialization",
+      "description": "Uses Chat.init() with publishKey, subscribeKey, and userId",
+      "max_score": 8
+    },
+    {
+      "name": "Fetches latest message for markAsRead",
+      "description": "In markAsRead, fetches the most recent message (via getHistory with count 1 or similar) before passing it to setLastReadMessage",
+      "max_score": 12
+    }
+  ]
+}

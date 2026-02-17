@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements server-side bid validation using a PubNub Before Publish Function with proper bid message structure, minimum increment enforcement, idempotency handling, race condition locking, and self-outbid prevention.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Before Publish handler",
+      "description": "The PubNub Function uses a Before Publish event handler (export default function that receives request and uses request.ok())",
+      "max_score": 8
+    },
+    {
+      "name": "KV Store for auction state",
+      "description": "Uses require('kvstore') and kvstore.get() to retrieve auction state for validation rather than relying on client data",
+      "max_score": 8
+    },
+    {
+      "name": "Bid amount validation",
+      "description": "Validates that the submitted bid amount meets or exceeds the current bid plus minimum increment before accepting",
+      "max_score": 10
+    },
+    {
+      "name": "Tiered minimum increments",
+      "description": "Implements price-based tiered minimum increments (different increment amounts for different price ranges, e.g. $1 under $100, $5 for $100-$499, etc.)",
+      "max_score": 10
+    },
+    {
+      "name": "Auction state check",
+      "description": "Checks that the auction state is 'active' or 'closing' before accepting a bid, rejecting bids for auctions in other states",
+      "max_score": 8
+    },
+    {
+      "name": "Self-outbid prevention",
+      "description": "Checks whether the submitting bidder is already the current high bidder and rejects the bid if so",
+      "max_score": 10
+    },
+    {
+      "name": "Idempotency key handling",
+      "description": "Checks for an idempotency key in KV Store to detect and handle duplicate bid messages from network retries",
+      "max_score": 10
+    },
+    {
+      "name": "KV Store locking",
+      "description": "Implements a locking mechanism using KV Store with a short TTL (around 2-3 seconds) to prevent race conditions between concurrent bids",
+      "max_score": 10
+    },
+    {
+      "name": "Lock cleanup",
+      "description": "Releases/removes the KV Store lock after bid processing completes (both success and failure paths)",
+      "max_score": 8
+    },
+    {
+      "name": "Bid message enrichment",
+      "description": "Transforms the accepted bid message to include at least previousBid, previousBidderId, and bidNumber fields",
+      "max_score": 10
+    },
+    {
+      "name": "Client bid message fields",
+      "description": "The client-side bid message structure includes type, bidderId, auctionId, amount, timestamp, and idempotencyKey fields",
+      "max_score": 8
+    }
+  ]
+}

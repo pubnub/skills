@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements secure file sharing with correct type restrictions and size limits using PubNub's file API, emergency escalation on the correct channel pattern with severity levels, and mobile push notification payloads for iOS and Android.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Allowed file types",
+      "description": "File validation allows at minimum PDF (application/pdf) and at least one image type (image/jpeg or image/png), and does NOT allow executable or script file types",
+      "max_score": 10
+    },
+    {
+      "name": "File size limit",
+      "description": "File validation enforces a maximum file size of 25 MB (or a value between 10 MB and 50 MB)",
+      "max_score": 8
+    },
+    {
+      "name": "Files sub-channel",
+      "description": "Files are sent on a sub-channel with a .files suffix appended to the consultation channel (e.g., consultation.X.Y.files)",
+      "max_score": 10
+    },
+    {
+      "name": "PubNub sendFile API",
+      "description": "The code uses PubNub's sendFile method (not just publish) to share files",
+      "max_score": 10
+    },
+    {
+      "name": "File category metadata",
+      "description": "The file sharing message includes a category or type field indicating the kind of clinical document (e.g., lab-result, prescription, imaging)",
+      "max_score": 8
+    },
+    {
+      "name": "Emergency channel naming",
+      "description": "Emergency escalation publishes to a channel following the pattern emergency.{departmentId}",
+      "max_score": 10
+    },
+    {
+      "name": "Escalation severity levels",
+      "description": "The escalation includes a severity field with at least two of: urgent, critical, life-threatening",
+      "max_score": 10
+    },
+    {
+      "name": "APNS push payload",
+      "description": "Notification payloads include a pn_apns (or apns) object with an aps.alert structure for iOS push notifications",
+      "max_score": 8
+    },
+    {
+      "name": "GCM/FCM push payload",
+      "description": "Notification payloads include a pn_gcm (or gcm/fcm) object with a notification structure for Android push notifications",
+      "max_score": 8
+    },
+    {
+      "name": "Emergency sound",
+      "description": "Critical or emergency notifications use a distinctive sound (e.g., 'emergency.aiff' or a non-default sound name) in the push payload",
+      "max_score": 8
+    },
+    {
+      "name": "Audit logging for file and escalation",
+      "description": "Both file sharing and emergency escalation events trigger audit log calls",
+      "max_score": 10
+    }
+  ]
+}

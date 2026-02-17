@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements nearest-driver dispatch using live GPS positions, handles failed deliveries with retry limits and driver reassignment, uses correct dispatch channels, and implements geofence-triggered status transitions at the prescribed distance thresholds.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Nearest driver selection",
+      "description": "Dispatch finds the nearest available driver by calculating distance from the pickup location to each driver's last known GPS position",
+      "max_score": 10
+    },
+    {
+      "name": "Haversine for dispatch distance",
+      "description": "Uses the haversine formula (referencing Earth's radius ~6371km) for calculating distance between driver and pickup coordinates",
+      "max_score": 8
+    },
+    {
+      "name": "Presence-based driver tracking",
+      "description": "Uses PubNub presence events (join, leave, timeout) or withPresence to detect driver availability rather than custom heartbeat messages",
+      "max_score": 10
+    },
+    {
+      "name": "Driver commands channel",
+      "description": "Sends assignment instructions to the driver via a channel matching driver.<driverId>.commands",
+      "max_score": 8
+    },
+    {
+      "name": "Dispatch channel usage",
+      "description": "Uses dedicated dispatch channels (e.g., dispatch.new-orders, dispatch.status-updates, or dispatch.failed-deliveries) for coordination",
+      "max_score": 8
+    },
+    {
+      "name": "Failed delivery notification",
+      "description": "When a delivery fails, publishes a failure message to both the order status channel and a dispatch channel for reassignment coordination",
+      "max_score": 10
+    },
+    {
+      "name": "Driver freed on failure",
+      "description": "After a delivery failure, the failed driver is notified via their commands channel and made available for new assignments",
+      "max_score": 8
+    },
+    {
+      "name": "Retry limit of 3",
+      "description": "Reassignment attempts are capped at a maximum of 3 retries, after which the order is cancelled",
+      "max_score": 10
+    },
+    {
+      "name": "Geofence pickup threshold",
+      "description": "The geofence trigger automatically transitions to driver-arrived-pickup (or similar) when the driver is within approximately 50 meters of the pickup location",
+      "max_score": 10
+    },
+    {
+      "name": "Geofence dropoff threshold",
+      "description": "The geofence trigger automatically transitions to driver-nearby (or similar) when the driver is within approximately 200 meters of the delivery address",
+      "max_score": 10
+    },
+    {
+      "name": "Channel groups for fleet",
+      "description": "Uses PubNub channel groups (channelGroups) to subscribe to multiple driver location channels for fleet monitoring",
+      "max_score": 8
+    }
+  ]
+}

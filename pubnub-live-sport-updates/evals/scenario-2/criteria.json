@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent builds a React multi-sport dashboard using wildcard subscriptions, proper cleanup (unsubscribeAll + destroy), game sorting by status, graceful degradation with staleness indicators, and correct PubNub client-side initialization patterns.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Wildcard league subscriptions",
+      "description": "Subscribes to leagues using wildcard patterns like sports.<league>.games.* rather than subscribing to individual game channels",
+      "max_score": 10
+    },
+    {
+      "name": "React cleanup with destroy",
+      "description": "The React component's useEffect cleanup (or equivalent) calls both unsubscribeAll() and destroy() on the PubNub instance",
+      "max_score": 10
+    },
+    {
+      "name": "PubNub init in useEffect",
+      "description": "PubNub instance is created inside a useEffect (or useMemo) with a cleanup return, not at module level or in render body",
+      "max_score": 8
+    },
+    {
+      "name": "Game sorting by status",
+      "description": "Games are sorted or grouped so that in-progress games appear before pre-game or final games (status-based ordering)",
+      "max_score": 10
+    },
+    {
+      "name": "Staleness or offline indicator",
+      "description": "UI handles disconnection by showing a staleness indicator, stale/offline banner, or cached-data notice rather than an error screen or blank state",
+      "max_score": 10
+    },
+    {
+      "name": "Separate channels per concern",
+      "description": "Subscribes to score channels and/or game channels separately from play-by-play or fan channels, not mixing all event types on one channel",
+      "max_score": 8
+    },
+    {
+      "name": "Reconnection backfill",
+      "description": "On PNReconnectedCategory (or equivalent), fetches recent messages via fetchMessages or history API to catch up on missed scores",
+      "max_score": 10
+    },
+    {
+      "name": "restore and autoNetworkDetection",
+      "description": "Client PubNub initialization includes restore: true and autoNetworkDetection: true",
+      "max_score": 8
+    },
+    {
+      "name": "userId property",
+      "description": "PubNub initialization uses the userId property (not uuid)",
+      "max_score": 8
+    },
+    {
+      "name": "Dot-delimited channel hierarchy",
+      "description": "All channel names follow the sports.<league>.<context>.<identifier> dot-delimited pattern",
+      "max_score": 8
+    },
+    {
+      "name": "Message type dispatch",
+      "description": "The message handler dispatches on message.type (e.g. score_update, score_summary, game_status) to different processing logic",
+      "max_score": 10
+    }
+  ]
+}

@@ -1,50 +1,13 @@
 {
-  "total_scenarios": 7,
-  "capabilities_coverage": {
-    "total_capabilities": 15,
-    "capabilities_tested": 7,
-    "coverage_percentage": 47
+  "total_scenarios": 5,
+  "instructions_coverage": {
+    "total_instructions": 26,
+    "instructions_tested": 23,
+    "coverage_percentage": 88
   },
-  "complexity_distribution": {
-    "basic": 2,
-    "intermediate": 3,
-    "advanced": 2
-  },
-  "scenarios": [
-    {
-      "index": 0,
-      "capability": "Vault for secrets",
-      "complexity": "basic"
-    },
-    {
-      "index": 1,
-      "capability": "Operation limit awareness",
-      "complexity": "intermediate"
-    },
-    {
-      "index": 2,
-      "capability": "Publish vs fire vs signal",
-      "complexity": "intermediate"
-    },
-    {
-      "index": 3,
-      "capability": "HTTP endpoint with CORS",
-      "complexity": "intermediate"
-    },
-    {
-      "index": 4,
-      "capability": "KVStore atomic counters",
-      "complexity": "basic"
-    },
-    {
-      "index": 5,
-      "capability": "Rate limiting pattern",
-      "complexity": "advanced"
-    },
-    {
-      "index": 6,
-      "capability": "On Interval function structure",
-      "complexity": "advanced"
-    }
-  ]
+  "reason_distribution": {
+    "reminder": 6,
+    "new knowledge": 14,
+    "preference": 6
+  }
 }

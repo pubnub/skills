@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements a score ingestion service following the skill's channel hierarchy, event envelope structure, tier-based routing, sequence numbering, server-side SDK initialization, and event validation patterns.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Hierarchical channel naming",
+      "description": "Channel names follow the dot-delimited pattern sports.nfl.games.<gameId> (not flat names or slash-separated paths)",
+      "max_score": 10
+    },
+    {
+      "name": "Separate plays channel",
+      "description": "Uses a distinct plays channel (e.g. sports.nfl.games.<gameId>.plays) separate from the main game channel for play-by-play events",
+      "max_score": 10
+    },
+    {
+      "name": "League scores channel",
+      "description": "Publishes score summaries to a league-level scores channel (e.g. sports.nfl.scores) in addition to the game channel when scoring events occur",
+      "max_score": 8
+    },
+    {
+      "name": "Server-side secretKey",
+      "description": "PubNub initialization includes a secretKey (or reference to one) since this is a server-side service",
+      "max_score": 8
+    },
+    {
+      "name": "userId in initialization",
+      "description": "PubNub initialization uses the userId field (not uuid) with a meaningful identifier",
+      "max_score": 7
+    },
+    {
+      "name": "Monotonic sequence number",
+      "description": "Each published event includes a sequence number that increments per game (maintained via a counter map or similar mechanism)",
+      "max_score": 10
+    },
+    {
+      "name": "Server-side timestamp",
+      "description": "Events include a timestamp field set server-side (e.g. Date.now()), not relying on client-provided times",
+      "max_score": 8
+    },
+    {
+      "name": "Event envelope fields",
+      "description": "Published messages include at minimum: type, gameId, sport, sequence, timestamp, and period fields following the universal event envelope",
+      "max_score": 10
+    },
+    {
+      "name": "Tier-based routing",
+      "description": "Scoring/critical events are published to both the game channel and plays channel, while non-scoring/informational events are published only to the plays channel",
+      "max_score": 12
+    },
+    {
+      "name": "Event validation",
+      "description": "Includes a validation function that checks for required fields (type, gameId, sport, sequence or score) before publishing and rejects malformed events",
+      "max_score": 9
+    },
+    {
+      "name": "Environment variable keys",
+      "description": "PubNub publish/subscribe/secret keys are read from environment variables (e.g. process.env) rather than hardcoded as string literals",
+      "max_score": 8
+    }
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "instructions": [
+    {
+      "instruction": "Enable Presence add-on in PubNub Admin Portal before use",
+      "original_snippets": "Presence must be enabled in Admin Portal before use ... Enable the Presence add-on ... Include Admin Portal configuration steps",
+      "relevant_when": "Setting up presence tracking for any PubNub application",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Select 'Selected channels only (recommended)' mode rather than 'All channels'",
+      "original_snippets": "Selected channels only (RECOMMENDED): Control which channels track presence ... Select \"Selected channels only (recommended)\"",
+      "relevant_when": "Configuring presence mode in the Admin Portal",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Configure specific channel rules in Presence Management section",
+      "original_snippets": "Configure channel rules in Presence Management ... Without configuring channel rules in Presence Management, presence will NOT work even if enabled in code ... Configure specific channel rules in Presence Management",
+      "relevant_when": "Setting up presence for specific channels",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Subscribe with withPresence: true flag or use channel.subscription({ receivePresenceEvents: true })",
+      "original_snippets": "pubnub.subscribe({ channels: ['chat-room'], withPresence: true  // or use channel.subscription({ receivePresenceEvents: true }) });",
+      "relevant_when": "Subscribing to channels that need presence tracking",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Handle all four main presence event types: join, leave, timeout, and state-change",
+      "original_snippets": "Handle Events: Process join, leave, timeout, and state-change events ... Handle all presence event types (join, leave, timeout, state-change, interval)",
+      "relevant_when": "Setting up presence event listeners",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Handle the interval event type for high-occupancy channels",
+      "original_snippets": "interval: Periodic occupancy summary, Triggered When: High-occupancy channels (announce max) ... case 'interval': // Periodic summary for high-occupancy channels",
+      "relevant_when": "Building presence for channels that may have high occupancy",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use hereNow for initial occupancy/user state, then use presence events for live updates",
+      "original_snippets": "Track Occupancy: Use hereNow for initial counts and events for updates ... Presence events only tell you about changes. You need hereNow for the initial state ... Provide hereNow usage for initial state",
+      "relevant_when": "Building a user list or occupancy counter for a channel",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use unique, persistent userId for accurate presence tracking",
+      "original_snippets": "Use unique, persistent userId for accurate tracking ... Always use a unique, persistent userId ... Without consistent IDs, presence events become unreliable and billing is affected",
+      "relevant_when": "Initializing the PubNub client for presence",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Enable Event Engine for better connection management",
+      "original_snippets": "enableEventEngine: true  // Better connection management ... enableEventEngine: true  // Recommended for connection reliability ... Event Engine provides automatic reconnection, better error handling, and more predictable connection states",
+      "relevant_when": "Configuring the PubNub client instance",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Implement proper cleanup on page unload (unsubscribeAll or unsubscribe)",
+      "original_snippets": "Implement proper cleanup on page unload ... window.addEventListener('beforeunload', () => { pubnub.unsubscribeAll(); }); ... Without cleanup, users appear online until timeout (could be minutes) ... Include proper cleanup for accurate leave detection",
+      "relevant_when": "Building any presence-enabled web application",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Default heartbeat interval is 300 seconds; configure heartbeat and timeout appropriately for the use case",
+      "original_snippets": "Default heartbeat interval is 300 seconds ... heartbeatInterval: 60, presenceTimeout: 300 ... Timeout should be >= 2 * heartbeat interval",
+      "relevant_when": "Configuring heartbeat settings for presence",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Presence timeout should be >= 2 * heartbeat interval",
+      "original_snippets": "Timeout should be >= 2 * heartbeat interval",
+      "relevant_when": "Setting heartbeat interval and presence timeout values",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use presence channel naming convention: channel-pnpres (automatically created companion channel)",
+      "original_snippets": "When you subscribe with presence, PubNub creates a companion presence channel: ... Presence channel: chat-room-pnpres ... You don't subscribe to -pnpres directly - it's handled automatically",
+      "relevant_when": "Understanding PubNub presence architecture or configuring Access Manager",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "When using Access Manager, grant read access to both the channel and its -pnpres companion channel",
+      "original_snippets": "Grant for presence channel specifically ... await pubnub.grant({ channels: ['chat-room-pnpres'], authKeys: ['user-auth-token'], read: true, ttl: 60 });",
+      "relevant_when": "Using PubNub Access Manager (PAM) with presence",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Optimize hereNow calls by only requesting needed fields (includeUUIDs, includeState)",
+      "original_snippets": "Only request what you need ... includeUUIDs: false, // Don't fetch UUIDs if you only need count ... Including UUIDs and state increases payload size and processing time ... Optimize hereNow calls (only request needed fields)",
+      "relevant_when": "Calling hereNow for occupancy or user lists",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "For high-occupancy channels (1000+), use interval events and consider disabling individual presence or using announce max",
+      "original_snippets": "Chat room (1000+ users): Consider disabling or sampling ... Configure in Admin Portal: Presence > Announce Max ... When occupancy exceeds announce max, you get interval events instead of individual join/leave events ... Note performance considerations for high-occupancy scenarios",
+      "relevant_when": "Building presence for channels that may have many users",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use setState to update user metadata and handle state-change events",
+      "original_snippets": "await pubnub.setState({ channels: ['chat-room'], state: { status: 'busy', mood: 'focused' } }); ... Manage State: Optionally store user metadata with presence",
+      "relevant_when": "Implementing user status or metadata with presence",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Distinguish between leave (graceful disconnect) and timeout (ungraceful disconnect) in event handling",
+      "original_snippets": "leave: User went offline gracefully ... timeout: User went offline ungracefully ... case 'leave': // Graceful disconnect - user chose to leave ... case 'timeout': // Ungraceful disconnect - connection lost",
+      "relevant_when": "Handling user disconnection events",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Fetch initial presence state with hereNow on PNConnectedCategory status event",
+      "original_snippets": "if (statusEvent.category === 'PNConnectedCategory') { getInitialOccupancy(); } ... Fetch initial state with hereNow on connect",
+      "relevant_when": "Initializing presence state when the client first connects",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Handle connection status events including PNConnectedCategory, PNReconnectedCategory, PNDisconnectedCategory, PNNetworkDownCategory",
+      "original_snippets": "case 'PNConnectedCategory': ... case 'PNReconnectedCategory': ... case 'PNDisconnectedCategory': ... case 'PNNetworkDownCategory':",
+      "relevant_when": "Managing connection state for presence-enabled applications",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Cache presence data to reduce API calls",
+      "original_snippets": "Cache presence data to reduce API calls ... class PresenceCache { constructor(ttl = 30000) { ... this.cache = new Map();",
+      "relevant_when": "Building presence features that query occupancy frequently",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Handle same user on multiple devices by tracking device count",
+      "original_snippets": "existing.deviceCount = (existing.deviceCount || 1) + 1; ... Use consistent userId across devices ... Synchronizing Multiple Devices",
+      "relevant_when": "Building presence for apps where users may connect from multiple devices",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Subscribe to presence selectively - only on channels that need it",
+      "original_snippets": "Only subscribe to presence where needed ... channelsWithPresence: ['chat-room'] // Presence only for chat ... Be mindful of presence event volume in high-occupancy channels",
+      "relevant_when": "Subscribing to multiple channels where not all need presence",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Include Admin Portal configuration steps in implementation outputs",
+      "original_snippets": "Include Admin Portal configuration steps ... Enable Presence: Configure in Admin Portal for selected channels",
+      "relevant_when": "Providing a complete presence implementation guide",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Show complete presence listener setup in implementations",
+      "original_snippets": "Show complete presence listener setup",
+      "relevant_when": "Providing presence implementation code",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Refresh presence state after reconnection (PNReconnectedCategory)",
+      "original_snippets": "case 'PNReconnectedCategory': ... refreshPresenceState();",
+      "relevant_when": "Handling reconnection in presence-enabled applications",
+      "why_given": "new knowledge"
+    }
+  ]
+}

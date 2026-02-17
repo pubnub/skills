@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements order-scoped chat without phone number sharing, push notification payloads for both iOS and Android, proof of delivery mechanisms, access token management, and proper cleanup of PubNub resources after delivery completion.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Chat channel naming",
+      "description": "Chat messages use a channel matching the pattern chat.order.<orderId> (dot-separated with order ID)",
+      "max_score": 10
+    },
+    {
+      "name": "Chat history loading",
+      "description": "The chat module loads recent message history from PubNub (using history/fetchMessages) when the chat is initialized",
+      "max_score": 8
+    },
+    {
+      "name": "Quick reply templates",
+      "description": "Includes pre-built quick reply templates for common driver situations (at least 3 templates, such as running late, at door, left at door, or similar)",
+      "max_score": 10
+    },
+    {
+      "name": "APNS push payload",
+      "description": "Status update messages include a pn_apns (or pn_apns2) payload with an aps.alert object containing title and body fields",
+      "max_score": 10
+    },
+    {
+      "name": "GCM/FCM push payload",
+      "description": "Status update messages include a pn_gcm payload with notification (title and body) and data fields",
+      "max_score": 10
+    },
+    {
+      "name": "Photo proof of delivery",
+      "description": "Implements a photo-based proof of delivery that publishes proof data (type, URL or reference, timestamp) with the delivered status message",
+      "max_score": 8
+    },
+    {
+      "name": "PIN or signature proof",
+      "description": "Implements at least one additional proof mechanism beyond photo (PIN verification or signature capture)",
+      "max_score": 8
+    },
+    {
+      "name": "Proof stored in history",
+      "description": "Proof-of-delivery messages are published with storeInHistory: true so they persist as a record",
+      "max_score": 8
+    },
+    {
+      "name": "Access token management",
+      "description": "Uses PubNub Access Manager (grantToken or similar) with time-limited tokens scoped to the specific channels needed for the delivery",
+      "max_score": 10
+    },
+    {
+      "name": "Post-delivery cleanup",
+      "description": "Cleanup logic includes at least 2 of: unsubscribing clients from channels, removing channels from channel groups, revoking access tokens",
+      "max_score": 10
+    },
+    {
+      "name": "Chat storeInHistory enabled",
+      "description": "Chat messages are published with storeInHistory: true so conversation history is preserved",
+      "max_score": 8
+    }
+  ]
+}

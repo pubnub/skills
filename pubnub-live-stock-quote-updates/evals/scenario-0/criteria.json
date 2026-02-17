@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent follows skill instructions for market data ingestion and broadcasting: channel naming conventions, publish vs signal usage, data normalization, quote enrichment, throttling patterns, metadata tagging, and server-side SDK configuration.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Dot-delimited channels",
+      "description": "Channel names follow the dot-delimited pattern quotes.<SYMBOL> (e.g., quotes.AAPL) rather than any other naming convention",
+      "max_score": 10
+    },
+    {
+      "name": "Signal for price ticks",
+      "description": "Uses pubnub.signal() for high-frequency or price-only tick updates, not just pubnub.publish() for everything",
+      "max_score": 10
+    },
+    {
+      "name": "Compact signal payload",
+      "description": "Signal messages use a compact format with abbreviated keys (e.g., 'p' for price, 't' for timestamp) rather than full field names",
+      "max_score": 8
+    },
+    {
+      "name": "Full quote schema",
+      "description": "Full publish messages include at least: symbol, price, bid, ask, volume, change, changePct, and timestamp fields",
+      "max_score": 10
+    },
+    {
+      "name": "Data normalization",
+      "description": "Includes a normalization step that handles varying field names from the upstream provider (e.g., mapping sym/symbol/ticker to a single field)",
+      "max_score": 10
+    },
+    {
+      "name": "Change enrichment",
+      "description": "Computes change and changePct from price and prevClose (or equivalent) before publishing",
+      "max_score": 8
+    },
+    {
+      "name": "Per-symbol throttle",
+      "description": "Implements per-symbol throttling that tracks last-publish time per symbol and falls back to signals between full publishes",
+      "max_score": 10
+    },
+    {
+      "name": "Metadata tagging",
+      "description": "Publish calls include a meta field with sector and/or exchange information for server-side filtering",
+      "max_score": 8
+    },
+    {
+      "name": "History storage enabled",
+      "description": "Full quote publishes set storeInHistory to true",
+      "max_score": 8
+    },
+    {
+      "name": "Server SDK config",
+      "description": "PubNub initialization includes publishKey, subscribeKey, secretKey, userId, and ssl set to true",
+      "max_score": 8
+    },
+    {
+      "name": "Retry policy",
+      "description": "PubNub initialization includes a retryConfiguration using LinearRetryPolicy",
+      "max_score": 5
+    },
+    {
+      "name": "Reconnection logic",
+      "description": "Implements reconnection for the upstream WebSocket feed when it disconnects, using a timeout/delay pattern",
+      "max_score": 5
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly implements auction lifecycle state management with proper state transitions, server-authoritative countdown broadcasting with different tick frequencies, and correct channel naming conventions with message persistence.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Auction state definitions",
+      "description": "Defines auction states that include at least: scheduled, active, closing, completed, and cancelled",
+      "max_score": 8
+    },
+    {
+      "name": "Valid state transitions",
+      "description": "Implements state transition logic that prevents invalid transitions (e.g., cannot go directly from 'scheduled' to 'completed')",
+      "max_score": 10
+    },
+    {
+      "name": "Closing state threshold",
+      "description": "Transitions to 'closing' state when remaining time drops to 60 seconds or less",
+      "max_score": 8
+    },
+    {
+      "name": "Server countdown broadcast",
+      "description": "Server publishes countdown messages with remainingMs to the auction channel rather than relying on clients to calculate time",
+      "max_score": 10
+    },
+    {
+      "name": "Closing tick frequency",
+      "description": "Broadcasts countdown messages every 1 second during the closing phase (last 60 seconds)",
+      "max_score": 10
+    },
+    {
+      "name": "Normal tick frequency",
+      "description": "Broadcasts countdown messages at a longer interval (approximately 10 seconds) during the normal active phase",
+      "max_score": 10
+    },
+    {
+      "name": "Channel naming convention",
+      "description": "Uses dot-separated hierarchical channel names following the pattern auction.<itemId> for bid updates and auction.<itemId>.activity for activity feeds",
+      "max_score": 10
+    },
+    {
+      "name": "Catalog channels",
+      "description": "Uses separate catalog channels (e.g., catalog.active, catalog.upcoming, or catalog.completed) for auction listing management",
+      "max_score": 8
+    },
+    {
+      "name": "Message persistence",
+      "description": "Uses storeInHistory: true when publishing auction state change messages (start, end, or completion events)",
+      "max_score": 10
+    },
+    {
+      "name": "Countdown message type",
+      "description": "Countdown messages include a 'type' field (e.g., 'countdown') and contain the auctionId and current state",
+      "max_score": 8
+    },
+    {
+      "name": "Auction start broadcast",
+      "description": "When an auction starts, publishes to both the auction channel and a catalog channel to notify browsing users",
+      "max_score": 8
+    }
+  ]
+}

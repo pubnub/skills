@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent applies PubNub message optimization patterns: short field names, numeric codes for string enums, null removal, delta updates, size estimation with 32KB check, batching strategy, and efficient listener patterns.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Short field names",
+      "description": "The compact message format uses abbreviated/short field names (e.g., single letters or short abbreviations) instead of the verbose original field names",
+      "max_score": 10
+    },
+    {
+      "name": "Numeric status codes",
+      "description": "String enum values like engine status ('running', 'idle', 'off') or driver status ('driving', 'parked') are replaced with numeric codes in the compact format",
+      "max_score": 10
+    },
+    {
+      "name": "Null field removal",
+      "description": "The optimizer removes null or undefined fields from the message before publishing rather than including them with null values",
+      "max_score": 10
+    },
+    {
+      "name": "Delta update function",
+      "description": "A delta/diff function is implemented that compares previous and current state and returns only the fields that changed",
+      "max_score": 10
+    },
+    {
+      "name": "Size estimation function",
+      "description": "A message size estimation function is present that calculates size using JSON serialization and includes overhead (not just JSON.stringify length alone)",
+      "max_score": 8
+    },
+    {
+      "name": "32KB limit check",
+      "description": "The size estimation or publish function checks against the 32KB (or approximately 32000 byte) message size limit",
+      "max_score": 8
+    },
+    {
+      "name": "Batch publishing",
+      "description": "The fleet publisher includes a function that batches multiple vehicle updates into a single PubNub message rather than publishing each individually",
+      "max_score": 10
+    },
+    {
+      "name": "Publish rate documented",
+      "description": "Code comments or documentation reference the recommended publish rate (10-15 messages/second per channel) as motivation for the batching approach",
+      "max_score": 8
+    },
+    {
+      "name": "Async listener queue",
+      "description": "The dashboard listener uses an asynchronous queue or batch processing pattern (queue messages, process in batches) rather than doing heavy work directly inside the message callback",
+      "max_score": 10
+    },
+    {
+      "name": "Recommended message size",
+      "description": "Code comments or documentation reference the recommended 2KB message size target for optimal performance",
+      "max_score": 8
+    },
+    {
+      "name": "Single PubNub instance",
+      "description": "The publisher and listener modules each create or receive a single PubNub instance that is reused across calls, rather than creating new instances per operation",
+      "max_score": 8
+    }
+  ]
+}

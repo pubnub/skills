@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent builds a secure PubNub authentication server that uses the recommended token-based approach, keeps the secret key server-side only, uses environment variables, and applies appropriate TTLs based on data sensitivity.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses grantToken()",
+      "description": "Server uses pubnub.grantToken() (not the legacy grant()) to issue access credentials",
+      "max_score": 10
+    },
+    {
+      "name": "Secret Key server-only",
+      "description": "The secretKey appears ONLY in the server-side PubNub initialization, and is not included in any response payload sent to the client",
+      "max_score": 10
+    },
+    {
+      "name": "Environment variables for keys",
+      "description": "PubNub keys (publishKey, subscribeKey, secretKey) are read from environment variables (e.g. process.env.*) rather than hardcoded strings",
+      "max_score": 10
+    },
+    {
+      "name": "Server userId set",
+      "description": "The server-side PubNub instance sets userId to a server identifier (e.g. 'server') rather than a user's ID",
+      "max_score": 8
+    },
+    {
+      "name": "Returns token via setToken pattern",
+      "description": "The response payload includes a token field (from grantToken result) intended for the client to use with setToken(), NOT an authKey for legacy grant()",
+      "max_score": 10
+    },
+    {
+      "name": "Short TTL for sensitive channels",
+      "description": "Consultation/medical channels use a shorter TTL (60 minutes or less) compared to general notification channels",
+      "max_score": 10
+    },
+    {
+      "name": "Least privilege permissions",
+      "description": "Patient role gets read-only on consultation channels (no write), and notification channel is read-only for all roles",
+      "max_score": 10
+    },
+    {
+      "name": "authorizedUUID set",
+      "description": "The grantToken() call includes the authorizedUUID parameter set to the requesting user's ID",
+      "max_score": 8
+    },
+    {
+      "name": "Expiration in response",
+      "description": "The JSON response includes an expiration timestamp or expiresAt field so the client knows when to refresh",
+      "max_score": 8
+    },
+    {
+      "name": "Error handling",
+      "description": "The endpoint includes try/catch or error handling that returns an appropriate error status (e.g., 401 or 500) if token grant fails",
+      "max_score": 8
+    },
+    {
+      "name": "Server-client separation",
+      "description": "The code is clearly structured as server-side only, with no client-side PubNub initialization mixed in the same file",
+      "max_score": 8
+    }
+  ]
+}

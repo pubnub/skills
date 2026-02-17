@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent handles high-occupancy channels with interval events, subscribes to presence selectively, implements occupancy caching, optimizes hereNow calls, and documents announce max and portal configuration for scaling.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Selective presence subscription",
+      "description": "The code subscribes to presence only on event channels, NOT on the lobby channel (uses channelsWithPresence or equivalent selective mechanism)",
+      "max_score": 10
+    },
+    {
+      "name": "Interval event handling",
+      "description": "The presence listener includes a handler for 'interval' events for high-occupancy channels",
+      "max_score": 10
+    },
+    {
+      "name": "Interval batch processing",
+      "description": "The interval event handler processes the join and leave arrays from the interval event",
+      "max_score": 8
+    },
+    {
+      "name": "Both event patterns",
+      "description": "The code handles both individual presence events (join/leave/timeout) and interval events, supporting channels of different sizes",
+      "max_score": 10
+    },
+    {
+      "name": "Occupancy caching",
+      "description": "The module implements a cache (with TTL or staleness check) for occupancy data to avoid redundant hereNow calls",
+      "max_score": 10
+    },
+    {
+      "name": "hereNow optimization",
+      "description": "At least one hereNow call sets includeUUIDs to false or includeState to false to reduce payload size",
+      "max_score": 10
+    },
+    {
+      "name": "Announce max documentation",
+      "description": "The scaling-notes.md mentions configuring 'announce max' in the Admin Portal for high-occupancy channels",
+      "max_score": 10
+    },
+    {
+      "name": "Portal presence config",
+      "description": "The scaling-notes.md documents that Presence needs to be enabled in the Admin Portal and channel rules configured in Presence Management",
+      "max_score": 8
+    },
+    {
+      "name": "Event Engine enabled",
+      "description": "The PubNub client configuration includes enableEventEngine: true",
+      "max_score": 8
+    },
+    {
+      "name": "Scale-based strategy",
+      "description": "The scaling-notes.md discusses different strategies for small vs large audience channels (e.g., full user list for small, count-only for large)",
+      "max_score": 8
+    },
+    {
+      "name": "Persistent userId",
+      "description": "The PubNub client initialization uses a unique, persistent userId",
+      "max_score": 8
+    }
+  ]
+}

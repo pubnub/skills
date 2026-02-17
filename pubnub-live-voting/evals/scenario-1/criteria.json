@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent implements server-side vote validation using a PubNub Before Publish Function with correct KV Store key patterns, duplicate prevention, status checking, atomic tallying, and proper error code conventions.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Before Publish Function",
+      "description": "The vote handler uses the PubNub Functions Before Publish pattern: export default (request) => { ... } with request.abort() and request.ok()",
+      "max_score": 10
+    },
+    {
+      "name": "Server-side validation only",
+      "description": "Vote validation (duplicate check, status check, option validation) is performed inside the PubNub Function, not in client-side code",
+      "max_score": 10
+    },
+    {
+      "name": "KV Store duplicate prevention",
+      "description": "Uses kvstore to check and store voter records with a key pattern that combines poll ID and voter ID (e.g. poll:<pollId>:voter:<voterId>)",
+      "max_score": 10
+    },
+    {
+      "name": "Poll status check",
+      "description": "Checks poll status from KV Store (with a key like poll:<pollId>:status) and rejects votes if the poll is not open",
+      "max_score": 10
+    },
+    {
+      "name": "Atomic counter tallying",
+      "description": "Uses kvstore.incrCounter (not get-then-set) to increment the vote count for the selected option",
+      "max_score": 10
+    },
+    {
+      "name": "Total votes counter",
+      "description": "Maintains a separate total votes counter (e.g. poll:<pollId>:total) incremented atomically alongside the per-option counter",
+      "max_score": 8
+    },
+    {
+      "name": "Option validation",
+      "description": "Validates that the submitted optionId is in the list of valid options stored in KV Store (e.g. poll:<pollId>:options)",
+      "max_score": 8
+    },
+    {
+      "name": "Time-based rejection",
+      "description": "Checks the poll closing time from KV Store and rejects votes submitted after the close time",
+      "max_score": 8
+    },
+    {
+      "name": "Required field validation",
+      "description": "Checks for presence of required fields (pollId, optionId, voterId) and rejects the vote if any are missing",
+      "max_score": 8
+    },
+    {
+      "name": "Specific error codes",
+      "description": "Uses distinct error code strings for different rejection reasons (e.g. DUPLICATE_VOTE, POLL_NOT_OPEN, INVALID_VOTE, INVALID_OPTION)",
+      "max_score": 8
+    },
+    {
+      "name": "Poll state initialization",
+      "description": "The init module sets up KV Store with poll status, options list, and initializes counters to zero before the poll opens",
+      "max_score": 5
+    },
+    {
+      "name": "Minimal vote payload",
+      "description": "Vote messages contain at most pollId, optionId, voterId, and timestamp - not extra fields like the question text or option labels",
+      "max_score": 5
+    }
+  ]
+}

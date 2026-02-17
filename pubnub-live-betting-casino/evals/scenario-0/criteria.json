@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent uses the correct PubNub channel naming conventions for betting markets, broadcasts odds in all three format types, includes movement metadata and sequence numbers, uses channel groups for subscription management, configures encryption and Access Manager, and implements the suspend-before-recalculate pattern for live events.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Market channel naming",
+      "description": "Uses dot-separated channel names following the pattern event.{sport}.{eventId}.market.{marketId} for odds channels",
+      "max_score": 10
+    },
+    {
+      "name": "Decimal odds format",
+      "description": "Odds update messages include a decimal odds value (e.g., 2.10)",
+      "max_score": 8
+    },
+    {
+      "name": "Fractional odds format",
+      "description": "Odds update messages include a fractional odds value (e.g., '11/10')",
+      "max_score": 8
+    },
+    {
+      "name": "American odds format",
+      "description": "Odds update messages include an American odds value (e.g., '+110')",
+      "max_score": 8
+    },
+    {
+      "name": "Movement metadata",
+      "description": "Odds update messages include a movement field with values like 'up', 'down', or 'stable'",
+      "max_score": 8
+    },
+    {
+      "name": "Sequence numbers",
+      "description": "Odds update messages include a sequence number field for ordering guarantees",
+      "max_score": 8
+    },
+    {
+      "name": "Suspended flag",
+      "description": "Odds update messages include a suspended boolean flag",
+      "max_score": 8
+    },
+    {
+      "name": "Channel groups usage",
+      "description": "Uses pubnub.channelGroups.addChannels() to group market channels and subscribes via channelGroups rather than individual channel subscriptions",
+      "max_score": 10
+    },
+    {
+      "name": "Encryption configured",
+      "description": "PubNub initialization includes a cipherKey parameter for AES encryption",
+      "max_score": 8
+    },
+    {
+      "name": "Access Manager permissions",
+      "description": "Grants write-only (no read) to the odds engine on market channels, and read-only (no write) to users on market channels",
+      "max_score": 8
+    },
+    {
+      "name": "Suspend before recalculate",
+      "description": "Market suspension logic publishes a suspension message to all markets BEFORE publishing new recalculated odds",
+      "max_score": 8
+    },
+    {
+      "name": "Token-based user auth",
+      "description": "Uses grantToken with authorized_uuid and per-resource channel permissions for user authentication",
+      "max_score": 8
+    }
+  ]
+}

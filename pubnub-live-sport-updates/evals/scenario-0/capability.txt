@@ -1,0 +1,1 @@
+Score ingestion service architecture

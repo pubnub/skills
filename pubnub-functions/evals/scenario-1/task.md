@@ -1,21 +1,14 @@
-# Order Processing Pipeline
+# Serverless Product Catalog API
 
-## Context
+## Problem/Feature Description
 
-An e-commerce platform processes orders through a PubNub Before Publish function on `orders.*` channels. When an order message arrives, the function needs to:
+Our e-commerce team needs a lightweight serverless API to manage a small product catalog. The API will be consumed by a single-page web application running in the browser, so cross-origin requests need to be handled properly. The API should support creating, reading, updating, and deleting products using standard HTTP methods. Products should be stored persistently with a reasonable expiration time. Each product has an `id`, `name`, `price`, and `category`.
 
-1. Look up the customer's loyalty tier from KVStore
-2. Record the order timestamp in KVStore
-3. Fetch the current exchange rate from an external API
-4. Send an analytics event via PubNub
-5. Send a notification to a separate PubNub channel
+The API should be built as a PubNub Function that handles incoming HTTP requests and performs CRUD operations against persistent storage. The web frontend will call this endpoint directly from the browser.
 
-The customer ID is in `request.message.customerId` and the order total is in `request.message.total`.
+## Output Specification
 
-## Task
+Produce the following files:
 
-Write a PubNub Before Publish function that handles this order processing. Consider the runtime constraints of the platform when designing how many external calls the function makes.
-
-## Expected Outputs
-
-A single JavaScript file containing the complete PubNub Function implementation, with comments explaining any design decisions around platform constraints.
+1. **`product-api.js`** -- The complete PubNub Function source code for the HTTP endpoint.
+2. **`deployment.md`** -- Instructions covering how to deploy the function, including what type of function trigger to select, and any necessary setup steps.

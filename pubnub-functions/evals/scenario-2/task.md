@@ -1,19 +1,16 @@
-# Chat Message Side Effects
+# Order Notification Pipeline
 
-## Context
+## Problem/Feature Description
 
-A chat application uses a PubNub Before Publish function on `chat.*` channels. When a user sends a message, the function needs to handle two side effects:
+Our logistics team needs a PubNub Function that fires whenever a new order is placed on any of our order channels (e.g., `orders.us`, `orders.eu`). When an order message comes through, the function must forward a notification payload to an external Slack webhook endpoint and also send a stripped-down event to an internal analytics channel so that dashboards update in real time. The analytics event should not be delivered directly to subscribers -- only internal processing functions should receive it.
 
-1. **Analytics tracking**: Record a `message_sent` event to an internal `analytics.chat` channel that is consumed only by a separate analytics aggregation function (no client subscribers listen on this channel).
+The Slack webhook URL and any other external credentials must not appear in the source code. The operations team will handle configuring them separately.
 
-2. **Typing indicator clear**: When the message is published, clear the user's typing status by sending a lightweight `{ typing: false }` status to the `typing.{channelId}` channel. This data is ephemeral — it should not be stored in message history.
+The function runs after the original order message has already been delivered to subscribers, so it does not need to modify or block the message.
 
-The message contains `request.message.userId` and the channel is available via `request.channels[0]`.
+## Output Specification
 
-## Task
+Produce the following files:
 
-Write a PubNub Before Publish function that implements both side effects, choosing the appropriate PubNub messaging method for each based on the delivery requirements described above.
-
-## Expected Outputs
-
-A single JavaScript file containing the complete PubNub Function implementation.
+1. **`order-notify.js`** -- The complete PubNub Function source code.
+2. **`deployment.md`** -- Deployment guide covering trigger type, channel pattern, secrets configuration (explain where and how to store them), and the recommended workflow before going live.

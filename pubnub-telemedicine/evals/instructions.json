@@ -1,0 +1,238 @@
+{
+  "instructions": [
+    {
+      "instruction": "Initialize PubNub with AES-256-CBC encryption via CryptoModule using aesCbcCryptoModule with a cipherKey from environment variables",
+      "original_snippets": "cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({ cipherKey: process.env.PUBNUB_CIPHER_KEY }) ... PubNub's CryptoModule provides AES-256-CBC encryption for all message payloads. This is mandatory for any channel that carries PHI.",
+      "relevant_when": "Setting up PubNub for a telemedicine or healthcare application that handles PHI",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Set ssl: true in PubNub configuration for TLS/SSL encryption in transit",
+      "original_snippets": "ssl: true ... Encryption in Transit | All ePHI must be encrypted during transmission | TLS/SSL (enabled by default)",
+      "relevant_when": "Initializing PubNub for healthcare use",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Set logVerbosity: false in production to prevent PHI leaks in logs",
+      "original_snippets": "logVerbosity: false // Disable in production to prevent PHI leaks in logs ... Disable verbose logging in production builds",
+      "relevant_when": "Configuring PubNub initialization for telemedicine",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use Access Manager v3 with token-based authorization (grantToken) for role-based access control with healthcare roles (provider, patient, nurse)",
+      "original_snippets": "Access Controls | Role-based access to PHI | Access Manager v3 with token grants ... Grant token based on healthcare role",
+      "relevant_when": "Implementing authorization for healthcare channels",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use short TTLs for Access Manager tokens: 30 minutes for patients, 60 minutes for providers",
+      "original_snippets": "ttlMinutes: 60 (provider) ... ttlMinutes: 30 (patient) ... Use the shortest practical TTL for Access Manager tokens — 15 minutes for patients, 60 minutes for providers",
+      "relevant_when": "Granting access tokens for healthcare roles",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Providers get read, write, get, update permissions on consultation channels plus access to .files sub-channel; patients get only read and write on their consultation channel",
+      "original_snippets": "[consultationChannelId]: { read: true, write: true, get: true, update: true } ... [`${consultationChannelId}.files`]: { read: true, write: true } ... (patient) [consultationChannelId]: { read: true, write: true }",
+      "relevant_when": "Defining permissions for different healthcare roles",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use channel naming convention: consultation.{providerId}.{patientId} for consultations, with .video and .files suffixes for sub-channels",
+      "original_snippets": "consultation.{providerId}.{patientId} | One-on-one consultation messaging ... consultation.{providerId}.{patientId}.video | WebRTC video signaling ... consultation.{providerId}.{patientId}.files | Secure file sharing",
+      "relevant_when": "Creating channels for telemedicine consultations",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use channel pattern waiting-room.{providerId} for patient queues and queue.{departmentId} for department-level queues",
+      "original_snippets": "waiting-room.{providerId} | Patient queue / waiting room ... queue.{departmentId} | Department-level patient queue",
+      "relevant_when": "Implementing virtual waiting rooms or patient queues",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use notification.{userId} channel pattern for personal notification delivery",
+      "original_snippets": "notification.{userId} | Personal notification delivery | notification.dr-smith",
+      "relevant_when": "Sending notifications to patients or providers",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use audit.{organizationId} channel pattern for audit event logging",
+      "original_snippets": "audit.{organizationId} | Audit event log channel | audit.clinic-north",
+      "relevant_when": "Setting up audit logging for compliance",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use emergency.{departmentId} channel pattern for emergency escalation",
+      "original_snippets": "emergency.{departmentId} | Emergency escalation channel | emergency.oncology",
+      "relevant_when": "Implementing emergency escalation features",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use presence.providers.{departmentId} channel pattern for provider availability tracking",
+      "original_snippets": "presence.providers.{departmentId} | Provider availability tracking | presence.providers.cardiology",
+      "relevant_when": "Tracking provider online status and availability",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Implement audit logging that captures all message events, access grants, and consent actions; audit entries must use references (patient ID, consultation ID) instead of raw PHI",
+      "original_snippets": "Audit logs must capture all message events, access grants, and consent actions for HIPAA compliance verification ... Never log PHI to console, application logs, or third-party monitoring services — audit logs must store references, not raw patient data ... Never include raw PHI in audit entries -- use references (patient ID, consultation ID) resolvable through authorized queries",
+      "relevant_when": "Implementing any feature that touches PHI or access control",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Message payloads for PHI should include metadata fields: encrypted: true, consentVerified: true, auditRef with a UUID",
+      "original_snippets": "metadata: { encrypted: true, consentVerified: true, auditRef: crypto.randomUUID() }",
+      "relevant_when": "Sending secure messages containing patient data",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Message payloads should include sender role ('provider' | 'patient' | 'nurse') and use storeInHistory: true for PHI messages",
+      "original_snippets": "sender: { id: message.senderId, role: senderRole // 'provider' | 'patient' | 'nurse' } ... storeInHistory: true",
+      "relevant_when": "Publishing messages on consultation channels",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Never expose the PubNub secret key in client-side code; all token grants must originate from your backend",
+      "original_snippets": "secretKey: process.env.PUBNUB_SECRET_KEY, // Server-side only ... Never expose the PubNub secret key in client-side code; all token grants must originate from your backend",
+      "relevant_when": "Building both client-side and server-side PubNub code",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Never hardcode cipher keys; use environment variables or a key management service (KMS)",
+      "original_snippets": "Never hardcode cipher keys. Use a key management service (KMS) for production deployments.",
+      "relevant_when": "Configuring encryption for PubNub",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Verify patient consent before establishing a consultation channel; block access if consent is not recorded",
+      "original_snippets": "Always verify consent before establishing a consultation channel -- block channel access if consent is not recorded ... const hasConsent = await this.verifyConsent(patientId, 'telehealth'); if (!hasConsent) { throw new Error('Patient telehealth consent required before check-in'); }",
+      "relevant_when": "Starting a consultation or check-in flow",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Store consent using PubNub setUUIDMetadata with key format consent_{consentType}, and support multiple consent types independently (telehealth, data-sharing, recording)",
+      "original_snippets": "await this.pubnub.setUUIDMetadata({ uuid: patientId, data: { custom: { [`consent_${consentDetails.type}`]: JSON.stringify(consentRecord) } } }); ... Support multiple consent types independently (telehealth, data sharing, recording)",
+      "relevant_when": "Implementing consent management",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Record consent events immutably: never delete consent records, only append revocation records",
+      "original_snippets": "Record consent events immutably: never delete consent records, only append revocation records",
+      "relevant_when": "Implementing consent revocation",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Queue entries should use specific status values: checked-in, waiting, in-consultation, completed, no-show; and priority values: emergency, urgent, normal, follow-up",
+      "original_snippets": "status: 'checked-in', // checked-in | waiting | in-consultation | completed | no-show ... priority: 'normal', // emergency | urgent | normal | follow-up",
+      "relevant_when": "Building patient queue or waiting room management",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Queue state should be stored in PubNub channel metadata using setChannelMetadata with a queueState field",
+      "original_snippets": "await this.pubnub.setChannelMetadata({ channel: this.queueChannel, data: { name: `Queue - ${this.departmentId}`, custom: { queueState: JSON.stringify(queue), lastUpdated: new Date().toISOString() } } });",
+      "relevant_when": "Persisting and retrieving queue state",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "For WebRTC video signaling, use iceTransportPolicy: 'relay' to force TURN relay for HIPAA compliance",
+      "original_snippets": "iceTransportPolicy: 'relay' // Force TURN relay for HIPAA compliance ... Force TURN relay mode (iceTransportPolicy: 'relay') to ensure media flows through controlled infrastructure",
+      "relevant_when": "Setting up WebRTC video calls in telemedicine",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Signaling messages for video should use storeInHistory: false since signaling data has no clinical retention value",
+      "original_snippets": "storeInHistory: false // Signaling messages do not need persistence ... Disable signaling message history (storeInHistory: false) since signaling data has no clinical retention value",
+      "relevant_when": "Implementing WebRTC signaling through PubNub",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Video signaling channel follows pattern consultation.{providerId}.{patientId}.video and carries only signaling metadata, never media streams",
+      "original_snippets": "The video signaling channel follows the pattern consultation.{providerId}.{patientId}.video. This channel carries only signaling metadata, never media streams.",
+      "relevant_when": "Setting up video consultation signaling",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Include mobile push notification payloads (pn_apns for iOS, pn_gcm for Android) in notification meta, with emergency.aiff sound for critical priority",
+      "original_snippets": "pn_apns: { aps: { alert: { title: payload.title, body: payload.body }, sound: payload.priority === 'critical' ? 'emergency.aiff' : 'default' } }, pn_gcm: { notification: { title: payload.title, body: payload.body, priority: payload.priority === 'critical' ? 'high' : 'normal' } }",
+      "relevant_when": "Sending notifications to patients or providers",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Restrict shared file types to clinical document formats: application/pdf, image/jpeg, image/png, image/dicom, text/plain; max size 25 MB",
+      "original_snippets": "const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/dicom', 'text/plain']; const maxSizeBytes = 25 * 1024 * 1024; ... Restrict file types to clinical document formats and common image types -- block executable files",
+      "relevant_when": "Implementing file sharing in consultations",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use PubNub sendFile API for file sharing on a .files sub-channel with file category metadata (lab-result, prescription, imaging)",
+      "original_snippets": "await this.pubnub.sendFile({ channel: fileChannel, file: { data: file.data, name: file.name, mimeType: file.type }, message: { type: 'FILE_SHARED', category: file.category, // 'lab-result' | 'prescription' | 'imaging' ...",
+      "relevant_when": "Sharing clinical files during consultations",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Consultation messages should be retained for 7 years, video signaling for 0 (no retention), notifications for 90 days, audit logs for 7 years minimum",
+      "original_snippets": "Consultation messages | 7 years | Medical record retention requirement ... Video signaling | 0 (no retention) | No clinical value ... Notifications | 90 days | Operational reference ... Audit logs | 7 years minimum | Compliance audit trail",
+      "relevant_when": "Configuring message retention policies",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement provider availability tracking using PubNub Presence with setState for status values: available, in-consultation, away, offline",
+      "original_snippets": "available | Ready to see patients ... in-consultation | Currently in a session ... away | Temporarily unavailable ... offline | Not connected ... await this.pubnub.setState({ channels: [this.presenceChannel], state: { status, displayName: details.displayName, specialty: details.specialty ...",
+      "relevant_when": "Tracking which providers are available to see patients",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use hereNow with includeState: true and includeUUIDs: true to get list of available providers",
+      "original_snippets": "const response = await this.pubnub.hereNow({ channels: [this.presenceChannel], includeState: true, includeUUIDs: true });",
+      "relevant_when": "Querying which providers are currently available",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Emergency escalation should publish to emergency.{departmentId} channel with severity levels: urgent, critical, life-threatening",
+      "original_snippets": "await this.pubnub.publish({ channel: `emergency.${departmentId}`, message: { ... severity, // 'urgent' | 'critical' | 'life-threatening' ... }",
+      "relevant_when": "Implementing emergency escalation during consultations",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Provide both client-side and server-side code where the feature requires it",
+      "original_snippets": "Provide both client-side (patient/provider app) and server-side (token grants, audit logging) code where the feature requires it",
+      "relevant_when": "Implementing features that span client and server",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Include channel naming conventions following healthcare-specific patterns in all implementations, e.g., consultation.{providerId}.{patientId}",
+      "original_snippets": "Include channel naming conventions that follow healthcare-specific patterns (e.g., consultation.{providerId}.{patientId})",
+      "relevant_when": "Any telemedicine feature implementation",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Document all compliance considerations inline with code comments explaining why specific security measures are required",
+      "original_snippets": "Document all compliance considerations inline with code comments explaining why specific security measures are required",
+      "relevant_when": "Writing any telemedicine code",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use separate PubNub keysets for production and non-production environments; never use production keys in development",
+      "original_snippets": "Use separate PubNub keysets for production and non-production environments — never use production keys in development",
+      "relevant_when": "Setting up PubNub environments",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Persist audit logs to durable storage beyond PubNub's message retention window, using an external persistence endpoint",
+      "original_snippets": "Audit logs should be persisted to durable storage beyond PubNub's message retention window ... Persist audit logs to immutable storage (append-only database or write-once object store)",
+      "relevant_when": "Setting up audit logging infrastructure",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use Access Manager channel patterns for providers like consultation.{providerId}.* for broad access and notification.{providerId} for notifications",
+      "original_snippets": "patterns: { channels: { [`consultation.${context.providerId}.*`]: { read: true, write: true }, [`notification.${context.providerId}`]: { read: true } } }",
+      "relevant_when": "Granting provider-level access tokens",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Design message payloads to carry minimum necessary PHI; use references (patient ID) instead of inline data (patient name, DOB) where possible",
+      "original_snippets": "Design payloads that include only required PHI fields ... Design message payloads to carry the minimum PHI necessary — use references (patient ID) instead of inline data (patient name, DOB) where possible",
+      "relevant_when": "Designing message payloads for healthcare channels",
+      "why_given": "new knowledge"
+    }
+  ]
+}

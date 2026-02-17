@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent implements patient queue management using PubNub channel metadata, follows the prescribed status and priority values, verifies consent before check-in, uses correct channel naming for queues and notifications, and uses the specified queue state persistence mechanism.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Queue status values",
+      "description": "The queue entry model or code includes the specific status values: checked-in, waiting, in-consultation, completed, and no-show",
+      "max_score": 10
+    },
+    {
+      "name": "Priority values",
+      "description": "The queue entry model or code includes priority levels that contain at least: emergency, urgent, normal, and follow-up",
+      "max_score": 10
+    },
+    {
+      "name": "Channel metadata persistence",
+      "description": "Queue state is stored or retrieved using PubNub's setChannelMetadata or getChannelMetadata API (not just publishing messages)",
+      "max_score": 10
+    },
+    {
+      "name": "Queue channel naming",
+      "description": "Queue channels follow a pattern that includes the department ID (e.g., queue.{departmentId} or queue.cardiology)",
+      "max_score": 10
+    },
+    {
+      "name": "Waiting room channel naming",
+      "description": "A waiting room channel is used that includes the provider ID (e.g., waiting-room.{providerId})",
+      "max_score": 8
+    },
+    {
+      "name": "Consent verification",
+      "description": "The check-in flow verifies patient consent before proceeding and blocks or throws an error if consent is not present",
+      "max_score": 12
+    },
+    {
+      "name": "Provider notification on check-in",
+      "description": "A notification is published to the provider when a patient checks in, using a notification channel that includes the provider ID",
+      "max_score": 10
+    },
+    {
+      "name": "storeInHistory for queue messages",
+      "description": "Queue action messages are published with storeInHistory set to true",
+      "max_score": 8
+    },
+    {
+      "name": "Consultation channel format",
+      "description": "The consultation channel ID is constructed using both provider ID and patient ID (e.g., consultation.{providerId}.{patientId})",
+      "max_score": 10
+    },
+    {
+      "name": "Consent via UUID metadata",
+      "description": "Consent verification reads from PubNub UUID metadata (getUUIDMetadata) or sets consent using setUUIDMetadata, using a key that includes the consent type",
+      "max_score": 12
+    }
+  ]
+}

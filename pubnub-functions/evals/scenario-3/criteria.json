@@ -1,26 +1,66 @@
 {
-  "context": "Tests whether the agent implements proper HTTP endpoint structure for PubNub On Request functions, including CORS headers and OPTIONS preflight handling required for browser-based clients.",
+  "context": "Tests whether the agent correctly implements an On Interval PubNub Function using the event parameter, proper counter retrieval with getCounter, pubnub.publish for subscriber-visible broadcast, and correct async patterns.",
   "type": "weighted_checklist",
   "checklist": [
     {
-      "name": "On Request signature",
-      "description": "Uses export default async (request, response) => {} with both request and response parameters",
-      "max_score": 25
+      "name": "Event parameter",
+      "description": "Function signature uses 'event' parameter (not 'request'): export default async (event) => { ... }",
+      "max_score": 10
     },
     {
-      "name": "CORS headers set",
-      "description": "Sets Access-Control-Allow-Origin and Access-Control-Allow-Methods on response.headers",
-      "max_score": 25
+      "name": "Event.ok() return",
+      "description": "Returns event.ok() on successful execution (not request.ok())",
+      "max_score": 10
     },
     {
-      "name": "OPTIONS preflight",
-      "description": "Handles OPTIONS method separately by returning an empty 200 response for CORS preflight requests",
-      "max_score": 25
+      "name": "Event.abort() on error",
+      "description": "Returns event.abort() in the catch block or on failure (not request.abort())",
+      "max_score": 8
     },
     {
-      "name": "Uses response.send",
-      "description": "Returns responses using response.send(body, statusCode) with appropriate HTTP status codes",
-      "max_score": 25
+      "name": "GetCounter for votes",
+      "description": "Uses db.getCounter() (not db.get()) to read the atomic vote counter values",
+      "max_score": 12
+    },
+    {
+      "name": "Publish for broadcast",
+      "description": "Uses pubnub.publish() (not pubnub.fire() or pubnub.signal()) to broadcast the leaderboard, since it needs to reach subscribers and be stored in history",
+      "max_score": 12
+    },
+    {
+      "name": "Default async export",
+      "description": "Function uses 'export default async' syntax",
+      "max_score": 6
+    },
+    {
+      "name": "Try/catch wrapping",
+      "description": "Main function logic is wrapped in a try/catch block",
+      "max_score": 6
+    },
+    {
+      "name": "Async/await pattern",
+      "description": "Uses async/await for all asynchronous operations, no .then()/.catch() chains",
+      "max_score": 8
+    },
+    {
+      "name": "Require inside function",
+      "description": "Module imports (require('kvstore'), require('pubnub')) are inside the function body",
+      "max_score": 8
+    },
+    {
+      "name": "Operation limit awareness",
+      "description": "The function does not exceed 3 combined operations (KV + publish) per execution, or documents awareness of this limit",
+      "max_score": 8
+    },
+    {
+      "name": "On Interval trigger",
+      "description": "Deployment doc identifies the trigger type as On Interval / scheduled",
+      "max_score": 6
+    },
+    {
+      "name": "Console logging",
+      "description": "Uses console.log() for informational messages and/or console.error() for error messages",
+      "max_score": 6
     }
   ]
 }

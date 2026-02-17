@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent implements GPS location publishing with adaptive frequency, battery optimization, correct PubNub SDK initialization for drivers, and proper channel naming for driver location data.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Driver location channel naming",
+      "description": "Publishes GPS data to a channel matching the pattern driver.<driverId>.location (using dot-separated naming)",
+      "max_score": 10
+    },
+    {
+      "name": "userId set on SDK init",
+      "description": "PubNub is initialized with a userId that includes the driver identifier (e.g., driver-{id} pattern)",
+      "max_score": 8
+    },
+    {
+      "name": "Restore and network detection",
+      "description": "PubNub initialization includes restore: true and autoNetworkDetection: true",
+      "max_score": 8
+    },
+    {
+      "name": "Heartbeat interval configured",
+      "description": "PubNub initialization sets heartbeatInterval to 30 (seconds)",
+      "max_score": 8
+    },
+    {
+      "name": "Adaptive publish frequency",
+      "description": "Publishing interval varies based on driver speed, with at least 3 distinct tiers (e.g., stationary, slow, fast)",
+      "max_score": 10
+    },
+    {
+      "name": "Near-destination high frequency",
+      "description": "Publishing frequency increases (shorter interval, e.g., 1 second) when the driver is near the delivery destination",
+      "max_score": 10
+    },
+    {
+      "name": "Stationary skip threshold",
+      "description": "Skips publishing when the driver has moved less than a small threshold distance (around 5 meters) and speed is near zero",
+      "max_score": 8
+    },
+    {
+      "name": "Max frequency cap",
+      "description": "GPS publishing is capped at no more than once per second regardless of conditions",
+      "max_score": 8
+    },
+    {
+      "name": "Haversine distance calculation",
+      "description": "Uses the haversine formula (with Earth radius ~6371km) for calculating distance between GPS coordinates",
+      "max_score": 10
+    },
+    {
+      "name": "storeInHistory disabled for GPS",
+      "description": "Location publish calls set storeInHistory to false (or omit it to default to false), treating GPS data as ephemeral",
+      "max_score": 10
+    },
+    {
+      "name": "Location message fields",
+      "description": "Published location messages include lat, lng, heading, speed, timestamp, and driverId fields",
+      "max_score": 5
+    },
+    {
+      "name": "Presence for driver status",
+      "description": "Uses PubNub presence features (setState or withPresence) rather than custom heartbeat messages to indicate driver availability",
+      "max_score": 5
+    }
+  ]
+}

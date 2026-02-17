@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent includes proper Admin Portal configuration steps, uses the recommended 'selected channels only' presence mode, configures channel rules in Presence Management, uses a persistent userId, enables Event Engine, and sets appropriate heartbeat values for a real-time chat use case.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Admin Portal enablement",
+      "description": "The guide includes a step to enable the Presence add-on in the PubNub Admin Portal (keyset settings)",
+      "max_score": 10
+    },
+    {
+      "name": "Selected channels mode",
+      "description": "The guide recommends or specifies using 'selected channels only' mode rather than 'all channels'",
+      "max_score": 10
+    },
+    {
+      "name": "Channel rules configuration",
+      "description": "The guide includes configuring channel patterns/rules in the Presence Management section (e.g., 'support-*' or similar wildcard patterns)",
+      "max_score": 10
+    },
+    {
+      "name": "Persistent unique userId",
+      "description": "The PubNub client initialization uses a userId parameter that is described as unique and persistent (not randomly generated each session)",
+      "max_score": 10
+    },
+    {
+      "name": "Event Engine enabled",
+      "description": "The PubNub client configuration includes enableEventEngine: true",
+      "max_score": 10
+    },
+    {
+      "name": "withPresence flag",
+      "description": "The subscription call includes withPresence: true or uses receivePresenceEvents: true",
+      "max_score": 10
+    },
+    {
+      "name": "Heartbeat interval set",
+      "description": "The PubNub client configuration includes a heartbeatInterval setting",
+      "max_score": 10
+    },
+    {
+      "name": "Presence timeout set",
+      "description": "The PubNub client configuration includes a presenceTimeout setting",
+      "max_score": 10
+    },
+    {
+      "name": "Timeout-heartbeat ratio",
+      "description": "The presenceTimeout value is at least 2x the heartbeatInterval value",
+      "max_score": 10
+    },
+    {
+      "name": "Chat-appropriate timing",
+      "description": "The heartbeat interval is 60 seconds or less (appropriate for real-time chat, not the 300-second default)",
+      "max_score": 10
+    }
+  ]
+}

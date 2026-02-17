@@ -1,0 +1,184 @@
+{
+  "instructions": [
+    {
+      "instruction": "Use dot-separated hierarchical channel naming: auction.<itemId>, auction.<itemId>.activity, auction.<itemId>.admin, catalog.active, catalog.upcoming, catalog.completed, user.<userId>.notifications",
+      "original_snippets": "Channel Pattern | Purpose ... auction.<itemId> | Live bid updates ... auction.<itemId>.activity | Bid history feed, notifications ... auction.<itemId>.admin | Admin controls ... catalog.active | Currently active auction listings ... user.<userId>.notifications | Personal outbid and win notifications",
+      "relevant_when": "Setting up channel architecture for an auction platform",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Always validate bids server-side using PubNub Functions (Before Publish event handler); never trust client-submitted bid amounts alone",
+      "original_snippets": "Always validate bids server-side using PubNub Functions; never trust client-submitted bid amounts alone ... PubNub Functions execute server-side on every publish, allowing you to validate bids before they reach other subscribers",
+      "relevant_when": "Implementing bid submission and validation logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use server-authoritative time for countdown synchronization; do not rely on client clocks. Server publishes countdown tick events with authoritative remaining time.",
+      "original_snippets": "Use server-authoritative time for countdown synchronization; do not rely on client clocks ... Client clocks cannot be trusted. The server must be the authoritative source of remaining time for every auction.",
+      "relevant_when": "Implementing countdown timer synchronization across clients",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement idempotent bid processing using idempotency keys to handle duplicate messages from network retries",
+      "original_snippets": "Implement idempotent bid processing to handle duplicate messages from network retries ... Duplicate messages can arrive due to network retries. The PubNub Function must detect and ignore duplicate bids ... idempotencyKey: 'bid-abc123-1700000000' // Prevents duplicate processing",
+      "relevant_when": "Implementing bid processing in PubNub Functions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Store bid history using PubNub message persistence (storeInHistory: true) for audit trails and dispute resolution",
+      "original_snippets": "Store bid history using PubNub message persistence for audit trails and dispute resolution ... Enable storeInHistory: true for all bid and auction state messages to create audit trails",
+      "relevant_when": "Publishing bid and auction state messages",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Enforce minimum bid increments server-side to prevent micro-bid spam, using tiered increments based on current price",
+      "original_snippets": "Enforce minimum bid increments server-side to prevent micro-bid spam ... Auction Current Price | Minimum Increment | $0 - $99 | $1.00 | $100 - $499 | $5.00 ...",
+      "relevant_when": "Implementing bid validation logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Handle auction channel cleanup after completion to avoid stale subscriptions",
+      "original_snippets": "Handle auction channel cleanup after completion to avoid stale subscriptions ... Channel cleanup - Unsubscribe from auction channels when a user leaves an auction page to reduce unnecessary message traffic",
+      "relevant_when": "Implementing auction lifecycle management or client-side subscription handling",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Define auction states as: draft, scheduled, active, closing, paused, completed, cancelled, archived with specific valid transitions between them",
+      "original_snippets": "State | Description | Transitions To | draft | Auction created but not published | scheduled, cancelled | scheduled | Published with a future start time | active, cancelled | active | Open for bidding | closing, paused, cancelled | closing | Final countdown (last 60 seconds) | completed, active (if auto-extended) ...",
+      "relevant_when": "Implementing auction lifecycle state management",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use KV Store locking with compare-and-set patterns and short-lived locks (2-3 seconds) to prevent race conditions between simultaneous bids",
+      "original_snippets": "Implement KV Store locking - Use compare-and-set patterns with short-lived locks to prevent race conditions between simultaneous bids ... Set lock with 3-second TTL ... Time-box lock TTLs - Keep KV Store locks short (2-3 seconds) with automatic expiration to prevent deadlocks",
+      "relevant_when": "Implementing concurrent bid handling in PubNub Functions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Send outbid notifications immediately in the same PubNub Function transaction as bid acceptance, publishing to user.<previousBidderId>.notifications channel",
+      "original_snippets": "Send outbid notifications immediately - Use PubNub Functions to publish outbid notifications in the same transaction as bid acceptance ... pubnub.publish({ channel: `user.${previousBidderId}.notifications`, message: { type: 'bid_outbid' ... } })",
+      "relevant_when": "Implementing bid acceptance flow",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Store reserve prices exclusively server-side in KV Store; never reveal the actual reserve amount to clients. Only broadcast whether reserve has been met.",
+      "original_snippets": "The reserve price is the minimum amount the seller will accept. It is stored server-side and never revealed to bidders ... Reserve prices - Store reserve prices exclusively in KV Store server-side. Only broadcast whether the reserve has been met, never the actual reserve amount.",
+      "relevant_when": "Implementing reserve price functionality",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement auto-extend timers for anti-sniping: when a bid arrives within the final countdown threshold (e.g., 30 seconds), extend the auction end time by the configured auto-extend duration",
+      "original_snippets": "Auto-Extend Timers (Anti-Sniping Protection) ... Sniping is when a bidder places a bid in the final seconds, leaving no time for others to respond. Auto-extend adds time whenever a bid arrives in the final moments ... if (remainingMs <= extendThresholdMs && remainingMs > 0) { const newEndTime = bidTime + extendThresholdMs; ... }",
+      "relevant_when": "Implementing auction timer and bidding logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Enforce auto-extend limits: maxExtensions count and maxTotalDurationHours as hard stops regardless of extensions",
+      "original_snippets": "maxExtensions | 10-50 | Maximum number of extensions allowed | maxTotalDurationHours | 24-48 | Hard stop regardless of extensions ... if (currentExtensions >= maxExtensions) { return { extended: false, reason: 'Maximum extensions reached' }; }",
+      "relevant_when": "Implementing auto-extend timer logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Mask bidder identities in public bid activity feeds to protect privacy while showing distinct participants",
+      "original_snippets": "Mask bidder identities - In public bid feeds, mask bidder IDs to protect privacy while still showing distinct participants ... function maskBidderId(bidderId) { if (bidderId.length <= 4) return '****'; return bidderId.substring(0, 2) + '***' + bidderId.slice(-2); }",
+      "relevant_when": "Implementing bid activity feeds visible to all participants",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use PubNub Presence on auction channels (withPresence: true) to track active bidder count and create urgency",
+      "original_snippets": "Presence tracking - Use PubNub Presence on auction channels to display the number of watchers, which creates urgency ... withPresence: true // Track how many bidders are watching",
+      "relevant_when": "Setting up auction channel subscriptions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Configure restore: true and retry policies (LinearRetryPolicy) for graceful reconnection so bidders automatically reconnect and catch up on missed bids",
+      "original_snippets": "Graceful reconnection - Configure restore: true and retry policies so bidders automatically reconnect and catch up on missed bids ... restore: true, // Reconnect and catch up on missed messages ... retryConfiguration: PubNub.LinearRetryPolicy({ delay: 2, maximumRetry: 5 })",
+      "relevant_when": "Initializing the PubNub SDK for bidder clients",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use Access Manager to restrict admin channels to admin users only; grant bidders read+write on auction channels with short TTLs. Personal notification channels should be read-only for the user.",
+      "original_snippets": "Access Manager - Restrict admin channels to admin users only; grant bidders read+write on auction channels with short TTLs ... write: false, // Only server can write notifications ... ttl: 60 // Minutes",
+      "relevant_when": "Configuring channel permissions and access control",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Bid messages must include type: 'bid', bidderId, auctionId, amount, timestamp, and idempotencyKey fields",
+      "original_snippets": "{ type: 'bid', bidderId: 'bidder-alice-001', auctionId: 'item-5001', amount: 150.00, timestamp: 1700000000000, idempotencyKey: 'bid-abc123-1700000000' }",
+      "relevant_when": "Defining bid message structure",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Validated/accepted bids should be enriched with previousBid, previousBidderId, bidNumber, and validatedAt fields",
+      "original_snippets": "{ type: 'bid_accepted', bidderId: 'bidder-alice-001', auctionId: 'item-5001', amount: 150.00, previousBid: 140.00, previousBidderId: 'bidder-bob-002', bidNumber: 17, validatedAt: 1700000000123 ... }",
+      "relevant_when": "Implementing server-side bid validation that transforms messages",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Check that the bidder is not already the high bidder before accepting a new bid",
+      "original_snippets": "if (auctionState.currentBidderId === message.bidderId) { request.message = { type: 'bid_rejected', reason: 'You are already the high bidder' ... }",
+      "relevant_when": "Implementing bid validation rules in PubNub Functions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Process proxy bids server-side in PubNub Functions; never send a bidder's maximum proxy amount to other clients",
+      "original_snippets": "Proxy bidding security - Process proxy bids server-side in PubNub Functions. Never send a bidder's maximum amount to other clients.",
+      "relevant_when": "Implementing proxy (auto) bidding feature",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use After Publish handlers for analytics to avoid blocking or slowing down bid processing in Before Publish handlers",
+      "original_snippets": "Analytics isolation - Use After Publish handlers for analytics to avoid blocking or slowing down bid processing in Before Publish handlers",
+      "relevant_when": "Implementing auction analytics tracking",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Broadcast countdown every second during closing phase (last 60 seconds), every 10 seconds otherwise",
+      "original_snippets": "Broadcast countdown every second during closing phase, every 10 seconds otherwise ... const isClosing = remainingMs <= 60000; ... }, auction.state === 'closing' ? 1000 : 10000);",
+      "relevant_when": "Implementing server-side countdown broadcast",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Client-side countdown should use local interpolation between server ticks (updating display every 250ms) to provide smooth UI, correcting drift when server updates arrive",
+      "original_snippets": "startLocalInterpolation() ... this.localInterval = setInterval(() => { const elapsed = Date.now() - this.lastServerUpdate; const estimated = Math.max(0, this.serverRemainingMs - elapsed); ... }, 250);",
+      "relevant_when": "Implementing client-side countdown timer display",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement client-side retry logic with exponential backoff for bid submission, using a BidRejectedError class for structured error handling",
+      "original_snippets": "Handle network failures gracefully - Implement retry with exponential backoff and show clear error states to the user ... for (let attempt = 0; attempt < maxRetries; attempt++) ... await new Promise(r => setTimeout(r, 500 * (attempt + 1)));",
+      "relevant_when": "Implementing client-side bid submission",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use fetchMessages with includeMessageActions: true to retrieve bid history for audit trails",
+      "original_snippets": "const response = await pubnub.fetchMessages({ channels: [`auction.${auctionId}`], count: count, includeMessageActions: true });",
+      "relevant_when": "Retrieving historical bid data",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Auction end handling must: broadcast result to auction channel, remove from catalog.active, publish to catalog.completed, and notify winner via user notification channel",
+      "original_snippets": "await pubnub.publish({ channel: `auction.${auction.id}`, message: result ... }); ... await pubnub.publish({ channel: 'catalog.active', message: { type: 'auction_removed' ... } }); ... await pubnub.publish({ channel: 'catalog.completed' ... }); ... await pubnub.publish({ channel: `user.${result.winnerId}.notifications` ... });",
+      "relevant_when": "Implementing auction completion logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Always broadcast extension events so all bidders know the timer has been reset (auction_extended message with newEndTime, remainingMs, extensionNumber)",
+      "original_snippets": "Extension transparency - Always broadcast extension events so all bidders know the timer has been reset, maintaining trust in the auction process ... type: 'auction_extended', auctionId: auctionId, newEndTime: extensionResult.newEndTime, remainingMs: extensionResult.remainingMs, extensionNumber: extensionResult.extensionNumber",
+      "relevant_when": "Implementing auto-extend timer functionality",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Publish catalog snapshots periodically rather than on every bid. Use separate price-update messages for live pricing.",
+      "original_snippets": "Catalog efficiency - Publish catalog snapshots periodically rather than on every bid. Use separate price-update messages for live pricing.",
+      "relevant_when": "Implementing catalog browsing with real-time updates",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "PubNub SDK initialization must include publishKey, subscribeKey, and userId. Server-side instances additionally require secretKey (never exposed to clients).",
+      "original_snippets": "const pubnub = new PubNub({ publishKey: 'pub-c-...', subscribeKey: 'sub-c-...', userId: 'bidder-alice-001' ... }); ... secretKey: 'sec-c-...', // Server-only, never expose to clients",
+      "relevant_when": "Initializing PubNub SDK for auction applications",
+      "why_given": "new knowledge"
+    }
+  ]
+}

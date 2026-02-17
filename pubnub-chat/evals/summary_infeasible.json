@@ -1,0 +1,13 @@
+{
+  "total_infeasible": 2,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "File upload and media sharing",
+      "reasoning": "Testing channel.sendFile() requires an actual File object from a browser environment or file input, which cannot be meaningfully created or tested in a sandboxed file-based eval without a browser runtime. The resulting code would be trivial and untestable."
+    },
+    {
+      "scenarios": "Live Access Manager token refresh flow",
+      "reasoning": "Testing the full PAM error handling flow (PNAccessDeniedCategory detection and auth token refresh) requires a live PubNub keyset with Access Manager enabled and an actual expired/invalid token. This cannot be done without API keys or a running PubNub service."
+    }
+  ]
+}

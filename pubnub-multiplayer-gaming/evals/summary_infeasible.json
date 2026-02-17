@@ -1,0 +1,13 @@
+{
+  "total_infeasible": 2,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "Mobile platform initialization (Swift/Kotlin)",
+      "reasoning": "The eval sandbox runs JavaScript/Node.js. Testing Swift or Kotlin platform-specific PubNub initialization would require Xcode, Android Studio, or native compilers which are not available in the sandbox environment. The mobile-specific configuration patterns (heartbeatInterval, presenceTimeout) are already tested in the JavaScript scenarios."
+    },
+    {
+      "scenarios": "Realistic latency and network simulation testing",
+      "reasoning": "The skill instructs to test with realistic latency and simulated packet loss. This requires running multiple concurrent PubNub-connected clients, live network connections, and network simulation tooling. The eval sandbox has no PubNub keys, no ability to run multiple concurrent processes, and no network simulation infrastructure."
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent uses the correct casino channel naming conventions, runs game logic in PubNub Functions for server authority, uses dedicated channels per table, manages distinct game phases, includes proper PubNub initialization with encryption, and sets up tournament channel hierarchies.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Casino channel naming",
+      "description": "Uses the pattern casino.blackjack.{tableId} for blackjack table channels (dot-separated, game type in path)",
+      "max_score": 10
+    },
+    {
+      "name": "Dedicated table channels",
+      "description": "Each table gets its own channel; game state is published per-table, not to a shared channel",
+      "max_score": 8
+    },
+    {
+      "name": "Server-side game logic",
+      "description": "Game logic (hit, stand, double, dealing) runs in a PubNub Function, not on the client",
+      "max_score": 10
+    },
+    {
+      "name": "Game phase management",
+      "description": "Game state messages include a phase field with distinct values for betting, dealing, player turn, dealer turn, and settlement",
+      "max_score": 10
+    },
+    {
+      "name": "KVStore for state",
+      "description": "Uses kvstore (require('kvstore')) to persist and retrieve game state between actions",
+      "max_score": 8
+    },
+    {
+      "name": "Encryption on init",
+      "description": "Client PubNub initialization includes a cipherKey parameter",
+      "max_score": 8
+    },
+    {
+      "name": "Reconnection handling",
+      "description": "Client handles PNReconnectedCategory or similar reconnection events by fetching current game state",
+      "max_score": 8
+    },
+    {
+      "name": "Tournament channel structure",
+      "description": "Tournament uses hierarchical channels including at least tournament.{id}, tournament.{id}.table.{tableId}, and tournament.{id}.leaderboard",
+      "max_score": 10
+    },
+    {
+      "name": "Tournament lobby channel",
+      "description": "Includes a tournament.{id}.lobby channel for pre-tournament communication",
+      "max_score": 8
+    },
+    {
+      "name": "Leaderboard updates",
+      "description": "Leaderboard messages include player rankings with rank, userId, and chips/score fields",
+      "max_score": 10
+    },
+    {
+      "name": "Table assignment",
+      "description": "Tournament startup assigns players to tables and publishes table_assignment messages",
+      "max_score": 10
+    }
+  ]
+}

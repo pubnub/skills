@@ -1,0 +1,160 @@
+{
+  "instructions": [
+    {
+      "instruction": "Always use default async export for function definitions",
+      "original_snippets": "// Always use default async export\nexport default async (request) => { ... }",
+      "relevant_when": "When creating any PubNub Function regardless of type",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Always use async/await, never .then()/.catch() chains",
+      "original_snippets": "Always use async/await (not .then()/.catch()) ... // INCORRECT: .then()/.catch() chains (avoid)",
+      "relevant_when": "When writing any asynchronous code in PubNub Functions",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Always wrap function logic in try/catch blocks",
+      "original_snippets": "Always wrap logic in try/catch ... try { // Your logic here ... } catch (error) { console.error('Error:', error); return request.abort(); }",
+      "relevant_when": "When implementing any PubNub Function",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use vault for secrets, never hardcode API keys or credentials",
+      "original_snippets": "Use vault for secrets, never hardcode ... const vault = require('vault'); ... const apiKey = await vault.get('my_api_key');",
+      "relevant_when": "When a function needs to access API keys, secrets, or credentials",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Maximum 3 combined operations per execution (KV, XHR, publish)",
+      "original_snippets": "Maximum 3 combined operations per execution (KV + XHR + publish) ... check operation count stays within the 3-operation limit",
+      "relevant_when": "When designing function logic that involves multiple KV, XHR, or publish operations",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Maximum 3 chained function executions",
+      "original_snippets": "Maximum 3 chained function executions ... Function chain depth | 3 executions",
+      "relevant_when": "When designing function chains or publish flows that could trigger other functions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use request.ok() to allow messages to proceed and request.abort() to block messages",
+      "original_snippets": "return request.ok();  // Allow message to proceed ... return request.abort();  // Block message",
+      "relevant_when": "When implementing Before/After Publish functions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "HTTP endpoint functions take (request, response) parameters and use response.send(body, statusCode)",
+      "original_snippets": "export default async (request, response) => { ... return response.send({ success: true }, 200);",
+      "relevant_when": "When implementing On Request (HTTP endpoint) functions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "On Interval functions use event parameter with event.ok() and event.abort()",
+      "original_snippets": "export default async (event) => { ... return event.ok(); ... event.ok() - Signal successful execution ... event.abort() - Signal execution failure",
+      "relevant_when": "When implementing scheduled/interval functions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Wildcard channel patterns must end with .* and have maximum two literal segments before wildcard",
+      "original_snippets": "Wildcard patterns ending with `.*`, max two literal segments before wildcard ... Wildcard (`*`) must be at the **end** ... Maximum **two literal segments** before wildcard",
+      "relevant_when": "When configuring channel patterns for function triggers",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Import modules using require() inside the function body, not at file level",
+      "original_snippets": "const db = require('kvstore');\nconst xhr = require('xhr'); ... // 1. Import required modules ... // Import at top of function",
+      "relevant_when": "When importing any PubNub module (kvstore, xhr, vault, pubnub, crypto, etc.)",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use kvstore module for persistent key-value storage with TTL in minutes",
+      "original_snippets": "const db = require('kvstore'); ... await db.set('user:123', { name: 'Alice', email: 'alice@example.com' }, 1440);  // 24 hours",
+      "relevant_when": "When function needs to persist data across executions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use atomic counters (incrCounter/getCounter) for counting operations, not regular set/get",
+      "original_snippets": "// Atomic increment ... const newCount = await db.incrCounter('page_views'); ... // Counters are separate from regular keys ... // Use incrCounter/getCounter, not set/get",
+      "relevant_when": "When implementing counters, voting, or tracking counts",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use xhr.fetch() for HTTP requests to external APIs",
+      "original_snippets": "const xhr = require('xhr'); ... const response = await xhr.fetch('https://api.example.com/data');",
+      "relevant_when": "When making HTTP requests to external services from within a PubNub function",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use pubnub.fire() for analytics events that should trigger functions but not subscribers",
+      "original_snippets": "// Fire (triggers functions only, not subscribers) ... await pubnub.fire({ channel: 'analytics', message: { event: 'page_view', timestamp: Date.now() } }); ... Use fire for analytics - Avoid triggering subscriber delivery",
+      "relevant_when": "When sending analytics or internal events that should not be delivered to subscribers",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use Promise.all for parallel independent operations",
+      "original_snippets": "// Execute independent operations in parallel ... const [userData, apiKey, config] = await Promise.all([ ... ]);",
+      "relevant_when": "When a function needs to perform multiple independent async operations",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Include complete working function code with proper imports, error handling, and deployment instructions",
+      "original_snippets": "When providing implementations:\n1. Include complete, working function code\n2. Show proper async/await with try/catch\n3. Explain module usage and imports\n4. Note channel pattern configuration\n5. Include deployment instructions",
+      "relevant_when": "When delivering any PubNub Function implementation",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Set CORS headers for On Request HTTP endpoint functions",
+      "original_snippets": "// Set CORS headers ... response.headers['Access-Control-Allow-Origin'] = '*'; ... response.headers['Access-Control-Allow-Methods'] = 'GET, POST'; ... // Handle OPTIONS for CORS preflight",
+      "relevant_when": "When implementing HTTP endpoint functions that will be called from browsers",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Handle OPTIONS method for CORS preflight in HTTP endpoint functions",
+      "original_snippets": "if (method === 'OPTIONS') { return response.send('', 200); }",
+      "relevant_when": "When implementing HTTP endpoint functions that handle CORS",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use pubnub.publish() for messages to subscribers, pubnub.signal() for lightweight messages, pubnub.fire() for function-only triggers",
+      "original_snippets": "publish | Yes | Yes | Yes (if enabled) ... fire | No | Yes | No ... signal | Yes | Yes | No",
+      "relevant_when": "When deciding how to send messages from within a PubNub function",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Identify function type first: Before Publish, After Publish, On Request, or On Interval",
+      "original_snippets": "1. **Identify Function Type**: Before Publish, After Publish, On Request, or On Interval",
+      "relevant_when": "When starting to design a new PubNub Function",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Log errors using console.error and information using console.log for debugging in Admin Portal",
+      "original_snippets": "console.error('Error:', error); ... console.log('Processing message:', JSON.stringify(request.message)); ... View logs in the PubNub Admin Portal under Functions > Your Function > Logs",
+      "relevant_when": "When adding logging and error reporting to functions",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use vault secrets set via PubNub Admin Portal (My Secrets), not environment variables or config files",
+      "original_snippets": "Setting Vault Secrets:\n1. Go to PubNub Admin Portal\n2. Navigate to Functions > Your Module\n3. Click \"My Secrets\"\n4. Add key-value pairs",
+      "relevant_when": "When documenting how to configure secrets for functions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "KVStore set() TTL parameter is in minutes",
+      "original_snippets": "// Set with TTL (minutes) ... await db.set('user:123', { name: 'Alice', email: 'alice@example.com' }, 1440);  // 24 hours",
+      "relevant_when": "When setting values in KVStore with expiration",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use period (.) as the channel name delimiter",
+      "original_snippets": "Period (`.`) is the delimiter ... alerts.*  -> matches alerts.critical, alerts.info",
+      "relevant_when": "When defining channel patterns and naming conventions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Test functions in staging via PubNub Admin Portal before enabling on production channels",
+      "original_snippets": "8. **Test in Staging**: Test the function in PubNub Admin Portal with sample messages before enabling on production channels",
+      "relevant_when": "When providing deployment instructions",
+      "why_given": "reminder"
+    }
+  ]
+}

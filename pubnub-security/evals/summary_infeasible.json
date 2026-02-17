@@ -1,0 +1,13 @@
+{
+  "total_infeasible": 2,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "TLS 1.2 endpoint verification",
+      "reasoning": "The skill instructs to verify TLS 1.2 compatibility by running 'curl https://pubsub-tls12-test.pubnub.com'. Testing this live requires network access to PubNub's test endpoint and the result is transient (not captured in output files). The grader cannot verify whether the curl test was run or what its output was."
+    },
+    {
+      "scenarios": "Admin Portal compliance report access",
+      "reasoning": "The skill describes navigating the PubNub Admin Portal to find compliance reports (My Account > Compliance). This requires an authenticated PubNub account with appropriate plan tier, which is not available in the sandbox environment. No files can be produced to demonstrate this workflow."
+    }
+  ]
+}

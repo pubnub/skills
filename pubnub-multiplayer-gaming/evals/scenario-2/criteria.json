@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent handles player disconnections with grace periods and reconnection logic, uses PubNub presence events correctly, implements state snapshot and history-based recovery, and responds to PubNub SDK status events appropriately.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Presence timeout config",
+      "description": "PubNub is configured with a presenceTimeout between 15 and 30 seconds (not the default 300s)",
+      "max_score": 8
+    },
+    {
+      "name": "Timeout event handled",
+      "description": "Presence listener handles the 'timeout' action separately from 'leave', treating timeout as a potential temporary disconnection",
+      "max_score": 10
+    },
+    {
+      "name": "Join event handled",
+      "description": "Presence listener handles the 'join' action to detect player connections or reconnections",
+      "max_score": 5
+    },
+    {
+      "name": "Leave event handled",
+      "description": "Presence listener handles the 'leave' action to detect voluntary departures",
+      "max_score": 5
+    },
+    {
+      "name": "Reconnection grace period",
+      "description": "After a player disconnects (timeout), a timer of 15-30 seconds is started before treating the player as abandoned",
+      "max_score": 10
+    },
+    {
+      "name": "Abandon after grace",
+      "description": "If the grace period expires without reconnection, the player is treated as abandoned (removed, turn skipped, or AI takeover)",
+      "max_score": 8
+    },
+    {
+      "name": "Reconnect cancels timer",
+      "description": "If a player reconnects within the grace period, the abandon timer is cancelled",
+      "max_score": 8
+    },
+    {
+      "name": "State snapshot mechanism",
+      "description": "Implements a snapshot-request/snapshot-response pattern where a reconnecting player can request the full current game state",
+      "max_score": 10
+    },
+    {
+      "name": "History-based recovery",
+      "description": "Uses pubnub.fetchMessages (or equivalent history API) to retrieve missed state updates since the player's last known timetoken",
+      "max_score": 10
+    },
+    {
+      "name": "PNReconnectedCategory handling",
+      "description": "The network status handler responds to PNReconnectedCategory by triggering state recovery (snapshot request or history fetch)",
+      "max_score": 10
+    },
+    {
+      "name": "PNDisconnectedCategory handling",
+      "description": "The network status handler responds to PNDisconnectedCategory by showing a reconnecting indicator or taking some recovery action",
+      "max_score": 8
+    },
+    {
+      "name": "Multiple status categories",
+      "description": "The network status handler handles at least 4 different PubNub status categories (e.g., PNConnectedCategory, PNReconnectedCategory, PNDisconnectedCategory, PNAccessDeniedCategory, PNNetworkIssuesCategory)",
+      "max_score": 8
+    }
+  ]
+}

@@ -1,0 +1,214 @@
+{
+  "instructions": [
+    {
+      "instruction": "Use specific channel naming conventions: order.<orderId>.status for order updates, driver.<driverId>.location for GPS, driver.<driverId>.commands for driver instructions, dispatch.new-orders for incoming orders, dispatch.assignments for assignment confirmations, fleet.<fleetId>.positions for fleet data, chat.order.<orderId> for driver-customer messaging",
+      "original_snippets": "Channel Naming Conventions table: `order.<orderId>.status` ... `driver.<driverId>.location` ... `driver.<driverId>.commands` ... `dispatch.new-orders` ... `dispatch.assignments` ... `fleet.<fleetId>.positions` ... `chat.order.<orderId>`",
+      "relevant_when": "When designing channel architecture for a delivery tracking system",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use channel groups to let fleet dashboards subscribe to all active driver location channels, adding/removing channels when drivers go on/off duty",
+      "original_snippets": "Use channel groups to let fleet dashboards subscribe to all active driver location channels without managing individual subscriptions. ... await pubnub.channelGroups.addChannels({ channelGroup: `fleet-${fleetId}-locations`, channels: [`driver.${driverId}.location`] })",
+      "relevant_when": "When building fleet management dashboards or monitoring multiple drivers",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use separate channels for location data and status updates -- do not mix high-frequency GPS messages with critical state changes",
+      "original_snippets": "Always use separate channels for location data and status updates to avoid mixing high-frequency GPS messages with critical state changes.",
+      "relevant_when": "When designing channel architecture for delivery tracking",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Implement adaptive frequency GPS publishing -- publish more often when the driver is moving and less often when stationary, with specific intervals: stationary=30s, slow=5s, normal=3s, highway=2s, near destination=1s",
+      "original_snippets": "Use adaptive frequency -- publish more often when the driver is moving and less often when stationary. ... Stationary 0 km/h Every 30 seconds ... Slow / congested 1-15 km/h Every 5 seconds ... Normal driving 16-60 km/h Every 3 seconds ... Highway 61+ km/h Every 2 seconds ... Near destination Any Every 1 second",
+      "relevant_when": "When implementing GPS location publishing from driver apps",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Cap GPS publishing frequency at no more than once per second to avoid exceeding PubNub message quotas and draining device batteries",
+      "original_snippets": "Cap GPS publishing frequency at no more than once per second to avoid exceeding PubNub message quotas and draining driver device batteries.",
+      "relevant_when": "When implementing GPS location publishing",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use haversine formula for distance calculations throughout the delivery system",
+      "original_snippets": "Haversine Distance Utility ... Used throughout the delivery system for distance calculations. ... function haversineDistance(lat1, lng1, lat2, lng2) { const R = 6371e3; ...",
+      "relevant_when": "When calculating distances between GPS coordinates for dispatch, ETA, or geofencing",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Skip GPS publish if driver has moved less than 5 meters and is nearly stationary (speed < 1)",
+      "original_snippets": "const distance = haversineDistance(lastPublishedLocation, location); if (distance < 5 && speed < 1) { return; // Skip publish if moved less than 5 meters and nearly stationary }",
+      "relevant_when": "When implementing GPS location publishing with battery optimization",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Disable storeInHistory for GPS location publishes (ephemeral data) but enable storeInHistory: true for status updates",
+      "original_snippets": "Store location history selectively. Disable `storeInHistory` for GPS publishes to avoid filling message persistence storage with ephemeral data. ... Use `storeInHistory: true` for status updates. Order status messages should be persisted so customers can reload the tracking page and see the full timeline.",
+      "relevant_when": "When publishing location updates or status updates to PubNub",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Set userId on PubNub initialization tied to the driver or customer identity (e.g., driver-{id} or customer-{id})",
+      "original_snippets": "Set a unique `userId` tied to the driver's identity. ... userId: `driver-${driverProfile.id}` ... userId: `customer-${customerId}`",
+      "relevant_when": "When initializing the PubNub SDK for driver or customer apps",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Enable restore: true and autoNetworkDetection: true on PubNub initialization for reconnection handling",
+      "original_snippets": "restore: true,           // Automatically reconnect and catch up ... autoNetworkDetection: true,",
+      "relevant_when": "When initializing PubNub SDK for any delivery app component",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use PubNub presence to track driver online/offline state rather than relying on periodic heartbeat messages in the data channel",
+      "original_snippets": "Use PubNub presence to track driver online/offline state rather than relying on periodic heartbeat messages in the data channel.",
+      "relevant_when": "When tracking whether drivers are online or available",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Follow the defined order state machine with specific states: placed, confirmed, preparing, ready, dispatched, driver-arrived-pickup, picked-up, en-route, driver-nearby, delivered, failed, cancelled -- with specific allowed transitions between them",
+      "original_snippets": "State Definitions table ... Allowed State Transitions table: placed -> confirmed, cancelled ... confirmed -> preparing, cancelled ... etc.",
+      "relevant_when": "When implementing order status management or status transition validation",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Validate status transitions server-side using PubNub Functions (Before Publish or Fire) on order status channels, not just client-side",
+      "original_snippets": "Use a PubNub Function (Before Publish or Fire) on order status channels to validate transitions server-side, preventing invalid states even if the client has bugs. ... Validate transitions on the server. Never rely solely on client-side validation.",
+      "relevant_when": "When implementing order status transition validation",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Include previousStatus in every status update message",
+      "original_snippets": "Include the previous status in every update. This makes it easy for subscribers to detect if they missed a transition and request the full history to reconcile.",
+      "relevant_when": "When publishing order status update messages",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Publish status updates to both the order-specific channel and the dispatch aggregation channel (dispatch.status-updates)",
+      "original_snippets": "await this.pubnub.publish({ channel: `order.${orderId}.status`, message, storeInHistory: true }); ... await this.pubnub.publish({ channel: 'dispatch.status-updates', message, storeInHistory: true });",
+      "relevant_when": "When publishing order status changes",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Debounce ETA updates -- only publish when ETA changes by more than 30 seconds or distance changes by more than 100 meters",
+      "original_snippets": "Debounce ETA updates. Do not publish a new ETA on every GPS tick. Only publish when the ETA changes by more than 30 seconds or the distance changes by more than 100 meters to reduce message volume.",
+      "relevant_when": "When implementing ETA calculation and publishing",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use ETA buffer multipliers: 1.5x for distances under 500m, 1.3x for longer distances",
+      "original_snippets": "const bufferMultiplier = distance < 500 ? 1.5 : 1.3; const adjustedDuration = durationSeconds * bufferMultiplier;",
+      "relevant_when": "When calculating ETA for deliveries",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Never expose raw driver GPS coordinates to customers until the driver is within a reasonable proximity of the delivery address -- implement progressive location disclosure (general area when far, approximate within 3km, exact within 1km)",
+      "original_snippets": "Never expose raw driver GPS coordinates to customers until the driver is within a reasonable proximity of the delivery address. ... Privacy Rules table ... Within 1km: show exact location ... Within 3km: round to ~100m ... Far away: round to ~1km",
+      "relevant_when": "When sharing driver location with customers",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use geofence checks to automatically trigger status transitions: driver-arrived-pickup when within 50m of merchant, driver-nearby when within 200m of customer",
+      "original_snippets": "if (delivery.status === 'dispatched' && distToPickup < 50) { return publishStatusChange(pubnub, delivery.orderId, 'driver-arrived-pickup', driverId) ... if (delivery.status === 'en-route' && distToDropoff < 200) { return publishStatusChange(pubnub, delivery.orderId, 'driver-nearby', driverId)",
+      "relevant_when": "When implementing automatic status transitions based on driver location",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement message deduplication for status updates since network retries can cause duplicate publishes",
+      "original_snippets": "Implement message deduplication for status updates since network retries can cause duplicate publishes. ... Use idempotent status updates. If a status message is published twice due to a network retry, subscribers should detect the duplicate (via orderId + status + timestamp) and discard it.",
+      "relevant_when": "When handling incoming status update messages",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Scope chat channels to orders using the pattern chat.order.<orderId> and never share phone numbers between driver and customer",
+      "original_snippets": "Scope chat channels to orders. Always use `chat.order.<orderId>` as the channel pattern. ... Never share phone numbers. The PubNub chat channel eliminates the need for customers and drivers to exchange personal contact information.",
+      "relevant_when": "When implementing driver-customer communication",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Implement driver-customer chat with quick reply templates (running-late, at-door, cant-find, left-at-door, on-my-way)",
+      "original_snippets": "async sendQuickReply(templateKey) { const templates = { 'running-late': ... 'at-door': ... 'cant-find': ... 'left-at-door': ... 'on-my-way': ...",
+      "relevant_when": "When building driver-customer chat functionality",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Smooth the tracking map by interpolating between GPS points using animation (30-frame linear interpolation at 60fps for half-second smooth transition)",
+      "original_snippets": "Smooth the tracking map. Interpolate between received GPS points with animation ... A 30-frame linear interpolation at 60fps gives a half-second smooth transition. ... animateMarker(marker, newPosition) { ... const frames = 30;",
+      "relevant_when": "When rendering driver position on a customer-facing map",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Fetch last known driver location from history when initializing the tracking page",
+      "original_snippets": "async fetchLastLocation() { const response = await this.pubnub.history({ channel: `driver.${this.driverId}.location`, count: 1 }); if (response.messages.length > 0) { this.updateDriverPosition(response.messages[0].entry); } }",
+      "relevant_when": "When setting up the customer tracking page",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use PubNub Access Manager (PAM) with time-limited tokens scoped to exact channels needed for one delivery -- customers get read-only access, drivers get read+write",
+      "original_snippets": "Use PubNub Access Manager (PAM) to control who can publish and subscribe to which channels. ... Never let customers publish to driver channels or other customers' order channels. Issue time-limited tokens scoped to the exact channels needed for one delivery.",
+      "relevant_when": "When setting up channel security for delivery tracking",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Clean up channels after delivery reaches terminal state: remove from channel groups, revoke access tokens, unsubscribe clients",
+      "original_snippets": "Handle terminal states cleanly. When an order reaches `delivered` or `cancelled`, unsubscribe the customer from the driver location channel and clean up channel group memberships. Revoke access tokens.",
+      "relevant_when": "When handling completed or cancelled deliveries",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement failed delivery flow: publish failure status, notify dispatch for reassignment via dispatch.failed-deliveries channel, free the driver via driver commands channel",
+      "original_snippets": "async function handleFailedDelivery(pubnub, orderId, driverId, reason) { ... await pubnub.publish({ channel: `order.${orderId}.status` ... status: 'failed' ... }); await pubnub.publish({ channel: 'dispatch.failed-deliveries' ... }); await pubnub.publish({ channel: `driver.${driverId}.commands` ...",
+      "relevant_when": "When handling delivery failures and reassignment",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Limit delivery reassignment retries to a maximum of 3 attempts, then cancel the order",
+      "original_snippets": "if (retryCount >= 3) { await pubnub.publish({ ... status: 'cancelled', reason: 'Maximum delivery attempts exceeded' ... });",
+      "relevant_when": "When implementing delivery failure retry logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Include push notification payloads (pn_apns and pn_gcm) in status update messages for key moments: confirmed, dispatched, driver-nearby, delivered",
+      "original_snippets": "Pair PubNub real-time messages with mobile push notifications ... pn_apns: { aps: { alert: { title: pushTitle, body: pushBody }, sound: 'default', 'mutable-content': 1 } } ... pn_gcm: { notification: { title: pushTitle, body: pushBody }, data: { orderId, status } } ... Send push notifications selectively. Focus on key moments: order confirmed, driver dispatched, driver nearby, and delivered.",
+      "relevant_when": "When publishing order status updates that should trigger mobile push notifications",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement proof of delivery mechanisms (photo, PIN code, or signature) and publish proof data alongside the delivered status to the order channel with storeInHistory: true",
+      "original_snippets": "Capture delivery confirmation through photos, signatures, or PIN codes, and publish the proof to the order channel. ... proof: { type: 'photo', url: photoUrl, capturedAt: Date.now() } ... proof: { type: 'pin', verified: true ... } ... proof: { type: 'signature', url: signatureUrl ...",
+      "relevant_when": "When implementing delivery confirmation workflows",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Start implementation output with channel naming convention and architecture diagram, then provide both driver app (publishing) and customer app (subscribing) code, include PubNub Functions for server-side logic, add error handling, and finish with a testing checklist",
+      "original_snippets": "1. Start with the channel naming convention and architecture diagram ... 2. Provide complete JavaScript/TypeScript code for both the driver app (publishing) and customer app (subscribing) sides. 3. Include PubNub Functions code for any server-side validation ... 4. Add error handling for network failures, reconnection, and offline scenarios ... 5. Finish with a testing checklist ...",
+      "relevant_when": "When providing delivery system implementations",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Set heartbeatInterval to 30 seconds for driver app PubNub initialization",
+      "original_snippets": "heartbeatInterval: 30    // Presence heartbeat every 30 seconds",
+      "relevant_when": "When initializing PubNub SDK for the driver app",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use dispatch.failed-deliveries channel to notify the dispatch system when a delivery fails",
+      "original_snippets": "await pubnub.publish({ channel: 'dispatch.failed-deliveries', message: { orderId, previousDriverId: driverId, failureReason: reason ...",
+      "relevant_when": "When implementing delivery failure handling",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "For multi-stop deliveries, manage route and status for each stop independently, and publish remaining stops count with each delivery completion",
+      "original_snippets": "For drivers handling multiple deliveries in a single trip, manage the route and status for each stop independently. ... remainingStops: this.stops.filter((s) => s.status === 'pending').length",
+      "relevant_when": "When implementing multi-stop delivery routes",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use a minimum speed floor of 5 m/s (~18 km/h) when calculating ETA to avoid unrealistically long estimates",
+      "original_snippets": "const effectiveSpeed = Math.max(speed, 5); // At least 5 m/s (~18 km/h)",
+      "relevant_when": "When calculating ETA based on driver speed",
+      "why_given": "new knowledge"
+    }
+  ]
+}

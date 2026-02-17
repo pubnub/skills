@@ -1,0 +1,9 @@
+{
+  "total_infeasible": 1,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "Proxy bidding system",
+      "reasoning": "Proxy bidding requires a multi-step interaction flow where a user sets a maximum bid and then the system automatically counter-bids over time as other bids arrive. Testing this end-to-end requires either a running PubNub instance with real message delivery or a complex simulation with multiple concurrent bidders and timed events, which exceeds the 10-minute eval timeout and cannot be meaningfully graded from static files alone. The core instruction (process proxy bids server-side, never expose max amount to clients) is a single constraint that would need an integration test rather than a code review."
+    }
+  ]
+}

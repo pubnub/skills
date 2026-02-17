@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent implements anonymous voting by hashing voter IDs with a poll-specific salt, uses KV Store rate limiting with per-voter counters for fraud detection, and maintains duplicate prevention even with anonymized identifiers.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Hashed voter ID",
+      "description": "Hashes the voter ID using a cryptographic hash function (e.g., SHA-256) rather than storing the raw voter ID in KV Store",
+      "max_score": 12
+    },
+    {
+      "name": "Poll-specific salt",
+      "description": "The hash includes a poll-specific salt or combines the pollId with the voterId before hashing, so the same voter produces different hashes across different polls",
+      "max_score": 10
+    },
+    {
+      "name": "Duplicate prevention with hash",
+      "description": "Uses the hashed ID as the KV Store key to check for and prevent duplicate votes (checks if the hashed key already exists)",
+      "max_score": 10
+    },
+    {
+      "name": "Rate limiting counter",
+      "description": "Implements rate limiting using a counter in KV Store keyed by voter ID or session, rejecting submissions that exceed a threshold (e.g., more than 10 attempts)",
+      "max_score": 10
+    },
+    {
+      "name": "Rate limit key pattern",
+      "description": "Uses a key pattern like ratelimit:<voterId> or similar dedicated key for tracking attempt counts",
+      "max_score": 8
+    },
+    {
+      "name": "Atomic counter for rate limit",
+      "description": "Uses kvstore.incrCounter (or getCounter) for rate limiting counters rather than get-then-set",
+      "max_score": 8
+    },
+    {
+      "name": "Atomic counter for tallies",
+      "description": "Uses kvstore.incrCounter for incrementing vote tallies per option",
+      "max_score": 8
+    },
+    {
+      "name": "Before Publish pattern",
+      "description": "Uses the PubNub Function Before Publish pattern with export default (request) and request.abort() / request.ok()",
+      "max_score": 8
+    },
+    {
+      "name": "Stored value not identifiable",
+      "description": "The value stored in KV Store for duplicate checking is not the raw voter ID - it stores something like 'voted' or the option ID alongside the hashed key",
+      "max_score": 8
+    },
+    {
+      "name": "Session fingerprint detection",
+      "description": "Includes a secondary fraud detection mechanism beyond basic rate limiting, such as session fingerprint tracking to detect multiple votes from the same session",
+      "max_score": 8
+    },
+    {
+      "name": "Distinct error codes",
+      "description": "Returns distinct error codes for duplicate votes vs rate limiting vs other rejection reasons (e.g. DUPLICATE_VOTE, RATE_LIMITED)",
+      "max_score": 5
+    },
+    {
+      "name": "Truncated hash",
+      "description": "The hash output is truncated or shortened (e.g., substring of the hex digest) to keep KV Store keys within size limits",
+      "max_score": 5
+    }
+  ]
+}

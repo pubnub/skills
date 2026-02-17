@@ -1,0 +1,1 @@
+Multi-sport event publisher with period formatting

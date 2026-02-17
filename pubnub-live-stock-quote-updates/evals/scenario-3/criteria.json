@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent follows skill instructions for data entitlements and multi-exchange support: Access Manager grantToken usage, tiered channel prefixes (delayed/quotes/premium/pro), multi-exchange channel conventions, disclaimer text for delayed data, and server-side enforcement.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "GrantToken usage",
+      "description": "Uses pubnub.grantToken() (PubNub Access Manager) to issue tokens with channel-level read permissions, not a custom auth mechanism",
+      "max_score": 10
+    },
+    {
+      "name": "Delayed channel prefix",
+      "description": "Free-tier users are granted access to channels with a 'delayed.' prefix (e.g., delayed.AAPL) for delayed quotes",
+      "max_score": 10
+    },
+    {
+      "name": "Quotes channel prefix",
+      "description": "Standard-tier users are granted access to channels with a 'quotes.' prefix for real-time data",
+      "max_score": 8
+    },
+    {
+      "name": "Premium channel prefix",
+      "description": "A premium or higher tier is granted access to channels with a 'premium.' prefix",
+      "max_score": 8
+    },
+    {
+      "name": "Professional channel prefix",
+      "description": "The highest tier is granted access to channels with a 'pro.' prefix for full depth data",
+      "max_score": 8
+    },
+    {
+      "name": "Tiered access is additive",
+      "description": "Higher tiers include access to all lower tier channels (e.g., standard includes delayed.* and quotes.*)",
+      "max_score": 8
+    },
+    {
+      "name": "LSE channel convention",
+      "description": "London Stock Exchange symbols use channel names with a LON segment (e.g., quotes.LON.<SYMBOL>)",
+      "max_score": 8
+    },
+    {
+      "name": "TSE channel convention",
+      "description": "Tokyo Stock Exchange symbols use channel names with a TYO segment (e.g., quotes.TYO.<SYMBOL>)",
+      "max_score": 8
+    },
+    {
+      "name": "Delayed data disclaimer",
+      "description": "Free-tier disclaimer text mentions that quotes are delayed by at least 15 minutes",
+      "max_score": 8
+    },
+    {
+      "name": "Data source attribution",
+      "description": "Disclaimer or attribution includes the data source or exchange name (e.g., 'Data provided by NYSE')",
+      "max_score": 8
+    },
+    {
+      "name": "Channel group manage access",
+      "description": "Token grants include manage permission on the user's watchlist channel group (e.g., watchlist_<userId>)",
+      "max_score": 8
+    },
+    {
+      "name": "Token TTL set",
+      "description": "grantToken call includes a ttl (time-to-live) value for token expiration",
+      "max_score": 8
+    }
+  ]
+}

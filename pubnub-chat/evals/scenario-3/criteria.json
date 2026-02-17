@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent uses the correct PubNub Chat SDK APIs for threaded conversations, emoji reactions, user mentions, channel references, and message history retrieval.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "message.getThread()",
+      "description": "Uses message.getThread() to obtain the thread object from a message",
+      "max_score": 10
+    },
+    {
+      "name": "thread.sendText()",
+      "description": "Uses thread.sendText() (not thread.publish or channel.sendText) to send replies within a thread",
+      "max_score": 10
+    },
+    {
+      "name": "thread.getHistory()",
+      "description": "Uses thread.getHistory() with a count parameter to fetch thread replies",
+      "max_score": 8
+    },
+    {
+      "name": "message.toggleReaction()",
+      "description": "Uses message.toggleReaction() with an emoji string to add/remove reactions (not a publish or signal call)",
+      "max_score": 10
+    },
+    {
+      "name": "message.reactions property",
+      "description": "Accesses message.reactions to get the reactions data from a message",
+      "max_score": 8
+    },
+    {
+      "name": "mentionedUsers format",
+      "description": "Passes mentionedUsers as an object with numeric position keys mapping to {id, name} objects in the sendText options",
+      "max_score": 12
+    },
+    {
+      "name": "referencedChannels format",
+      "description": "Passes referencedChannels as an object with numeric position keys mapping to {id, name} objects in the sendText options",
+      "max_score": 12
+    },
+    {
+      "name": "channel.sendText for mentions",
+      "description": "Uses channel.sendText() with a second options argument containing mentionedUsers (not a separate API call)",
+      "max_score": 10
+    },
+    {
+      "name": "channel.getHistory()",
+      "description": "Uses channel.getHistory() with a count parameter for loading message history",
+      "max_score": 10
+    },
+    {
+      "name": "hasThread check",
+      "description": "Checks message.hasThread before attempting to load thread, or handles the case where no thread exists yet",
+      "max_score": 10
+    }
+  ]
+}
