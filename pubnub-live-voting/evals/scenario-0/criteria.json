@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent follows PubNub live voting conventions for channel naming, poll configuration structure, lifecycle state management, meta channel usage, and SDK initialization patterns.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Channel naming convention",
+      "description": "Channel names follow the poll.<pollId>.votes, poll.<pollId>.results, poll.<pollId>.admin pattern with dot-separated hierarchy",
+      "max_score": 10
+    },
+    {
+      "name": "Meta channel for late joiners",
+      "description": "Uses a poll.<pollId>.meta channel to publish poll configuration so that late-joining participants can discover the question and options",
+      "max_score": 10
+    },
+    {
+      "name": "Lifecycle state machine",
+      "description": "Implements poll states including at least created, open, paused, closed, and finalized as distinct states",
+      "max_score": 10
+    },
+    {
+      "name": "Admin channel transitions",
+      "description": "State transitions (open, pause, close, finalize) are published on the admin channel with an action field like 'poll_status_changed'",
+      "max_score": 10
+    },
+    {
+      "name": "Poll config structure - options",
+      "description": "Poll configuration objects include options as an array of objects, each with at least an id and label property",
+      "max_score": 10
+    },
+    {
+      "name": "Poll config structure - type",
+      "description": "Poll configuration includes a type field (e.g. 'single-choice', 'multiple-choice')",
+      "max_score": 8
+    },
+    {
+      "name": "Poll config structure - schedule",
+      "description": "Poll configuration includes scheduling or timing properties (such as closesAt, durationMs, or opensAt)",
+      "max_score": 8
+    },
+    {
+      "name": "SDK init with userId",
+      "description": "PubNub SDK initialization includes publishKey, subscribeKey, and userId parameters",
+      "max_score": 8
+    },
+    {
+      "name": "Separate admin and participant",
+      "description": "Admin and participant clients are initialized with different userId values or different permission levels",
+      "max_score": 8
+    },
+    {
+      "name": "Timestamp on transitions",
+      "description": "Lifecycle transition messages include a timestamp field",
+      "max_score": 6
+    },
+    {
+      "name": "Finalize includes results",
+      "description": "The finalization step publishes or includes final results data alongside the state change",
+      "max_score": 6
+    },
+    {
+      "name": "Listener for poll events",
+      "description": "Participant client uses pubnub.addListener with a message callback to handle incoming poll lifecycle events",
+      "max_score": 6
+    }
+  ]
+}

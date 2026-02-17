@@ -1,15 +1,16 @@
-# Page View Counter
+# Authenticated Rate-Limited Message Gateway
 
-## Context
+## Problem/Feature Description
 
-A content platform wants to track view counts for articles. When a user views an article, a message is published to a `views.*` channel with `request.message.articleId` identifying the article.
+Our platform needs a PubNub Function that acts as a security gateway for messages on our secure API channels. Every incoming message carries a JWT token that must be verified before the message is allowed through. After verification, the function should enforce per-user rate limiting: free-tier users are allowed 100 messages per hour, while pro-tier users get 1000 messages per hour. The user's tier is encoded in the JWT payload.
 
-The function should increment the view count for that article and add the updated total to the message so subscribers can display it. Multiple users may view the same article simultaneously from different regions.
+When rate-limited, the message should be blocked. When authenticated and under the limit, the function should strip the raw token from the message, attach the decoded user identity, and let the message proceed. The JWT signing secret must be securely managed -- it cannot appear anywhere in the code.
 
-## Task
+The function should run on all channels under the `secure.api` namespace (e.g., `secure.api.v1`, `secure.api.v2`).
 
-Write a PubNub Before Publish function that tracks per-article view counts. The counting mechanism must produce correct results even when multiple requests for the same article arrive concurrently.
+## Output Specification
 
-## Expected Outputs
+Produce the following files:
 
-A single JavaScript file containing the complete PubNub Function implementation.
+1. **`auth-gateway.js`** -- The complete PubNub Function source code.
+2. **`deployment.md`** -- Deployment guide covering trigger type, channel pattern, how to configure the JWT secret, and any pre-production steps.

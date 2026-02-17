@@ -1,0 +1,196 @@
+{
+  "instructions": [
+    {
+      "instruction": "Initialize PubNub with gaming-optimized configuration: presenceTimeout of 20, heartbeatInterval of 10, restore: true, and LinearRetryPolicy with delay 1 and maximumRetry 10",
+      "original_snippets": "presenceTimeout: 20, ... heartbeatInterval: 10, ... restore: true, ... retryConfiguration: PubNub.LinearRetryPolicy({ delay: 1, maximumRetry: 10 })",
+      "relevant_when": "Setting up PubNub for any multiplayer game",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use separate channels for game state, chat, and lobby to avoid message congestion",
+      "original_snippets": "Use separate channels for game state, chat, and lobby to avoid message congestion ... Separate chat from game state channels -- game state messages should never be delayed by chat traffic; use dedicated channels for each concern",
+      "relevant_when": "Designing the channel architecture for a multiplayer game",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Follow the channel naming convention: game-lobby, game.{roomId}, game.{roomId}.state, game.{roomId}.chat, game.{roomId}.spectator, player.{playerId}, matchmaking.{queue}",
+      "original_snippets": "game-lobby ... game.{roomId} ... game.{roomId}.state ... game.{roomId}.chat ... game.{roomId}.spectator ... player.{playerId} ... matchmaking.{queue}",
+      "relevant_when": "Creating channels for game rooms, lobbies, matchmaking",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Store room metadata using PubNub App Context (objects.setChannelMetadata) rather than in-memory",
+      "original_snippets": "Set room metadata via App Context ... await pubnub.objects.setChannelMetadata({ channel: roomChannel, data: { ... } }) ... Store room metadata in App Context rather than in-memory, so any client can look up room details",
+      "relevant_when": "Creating or managing game rooms",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Send delta state updates (only changed properties) instead of full game state, keeping messages under 32 KB",
+      "original_snippets": "Keep game state messages under 32 KB; use delta updates instead of full state ... Send delta updates, not full state -- only publish properties that actually changed ... WRONG: Sending full state every update ... CORRECT: Send only what changed",
+      "relevant_when": "Implementing game state synchronization",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Include sequence numbers on every state message for ordering and missed-message detection",
+      "original_snippets": "Use sequence numbers on every state message -- sequence numbers allow receivers to detect missed messages and request resynchronization ... sequenceNum: ++localSequence",
+      "relevant_when": "Sending state updates between players",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Subscribe with withPresence: true on game room channels to track player join/leave/timeout events",
+      "original_snippets": "Always subscribe with withPresence: true on game room channels to track player join/leave/timeout events automatically ... pubnub.subscribe({ channels: [roomChannel, stateChannel, chatChannel], withPresence: true })",
+      "relevant_when": "Subscribing to game room channels",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use PubNub Presence with short timeouts (15-30s) to detect player disconnections quickly",
+      "original_snippets": "Use PubNub Presence with short timeouts (15-30s) to detect player disconnections quickly ... Use short presence timeouts (15-20 seconds) for games so disconnected players are detected quickly",
+      "relevant_when": "Configuring presence for multiplayer games",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement reconnection logic with state recovery for dropped players, including reconnection grace periods of 15-30 seconds",
+      "original_snippets": "Always implement reconnection logic with state recovery for dropped players ... Implement reconnection grace periods -- give disconnected players 15-30 seconds to rejoin before treating them as abandoned",
+      "relevant_when": "Handling player disconnections during a game",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Handle presence events: join, leave, timeout, and state-change with appropriate callbacks",
+      "original_snippets": "case 'join': ... case 'leave': ... case 'timeout': // Player lost connection ... case 'state-change':",
+      "relevant_when": "Setting up presence event handling for a game room",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Validate critical game actions server-side using PubNub Functions (Before Publish triggers) to prevent cheating",
+      "original_snippets": "Validate critical game actions server-side using PubNub Functions to prevent cheating ... use PubNub Functions Before Publish triggers to reject impossible actions (teleportation, excessive damage, invalid moves) before they reach other players",
+      "relevant_when": "Building competitive or ranked game features",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use a room lifecycle with states: waiting, ready, in-progress, paused, finished, cancelled",
+      "original_snippets": "waiting | Room created, waiting for players ... ready | Minimum players joined, can start ... in-progress | Game is actively running ... paused | Game paused (player disconnect) ... finished | Game completed normally ... cancelled | Room closed before finish",
+      "relevant_when": "Creating game room management logic",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Announce room creation in the lobby channel (unless the room is private)",
+      "original_snippets": "if (!config.isPrivate) { await pubnub.publish({ channel: `game-lobby.${config.gameType}`, message: { type: 'room-created', ... } }); }",
+      "relevant_when": "Creating a new game room",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Check room status and player capacity before allowing joins (hereNow for occupancy count, room status check)",
+      "original_snippets": "if (roomInfo.status !== 'waiting' && roomInfo.status !== 'ready') { throw new Error(...) } ... if (currentCount >= roomInfo.maxPlayers) { throw new Error('Room is full') }",
+      "relevant_when": "Implementing player join logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Keep matchmaking logic server-side using PubNub Functions to prevent client manipulation",
+      "original_snippets": "Keep matchmaking server-side -- use PubNub Functions (On Request or After Publish) for matchmaking logic to prevent clients from manipulating queue position or pairing",
+      "relevant_when": "Implementing matchmaking systems",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "For skill-based matchmaking, use an expanding search range that widens over time if no match is found",
+      "original_snippets": "this.searchRange = Math.min(this.searchRange + 50, this.maxRange) ... Expand every 5 seconds",
+      "relevant_when": "Implementing ranked or skill-based matchmaking",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement turn timers with a maximum turn duration; skip or forfeit when exceeded",
+      "original_snippets": "Add turn timers for turn-based games -- always enforce a maximum turn duration; skip or forfeit when a player exceeds the limit to keep the game progressing ... turnTimeout = 30000; // 30 seconds per turn",
+      "relevant_when": "Building turn-based game mechanics",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use a separate spectator channel (game.{roomId}.spectator) with a 3-5 second broadcast delay to prevent stream sniping",
+      "original_snippets": "Use a spectator delay -- broadcast game state to spectators with a 3-5 second delay to prevent stream sniping ... broadcastToSpectators(gameState, delay = 3000)",
+      "relevant_when": "Implementing spectator mode",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Batch frequent game state updates into fewer messages (30-50ms batch window)",
+      "original_snippets": "Batch frequent updates -- for fast-paced games, accumulate changes over a short window (30-50ms) and send them as a single publish call ... batchInterval = options.batchInterval || 50; // ms",
+      "relevant_when": "Building real-time action games with frequent state changes",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use in-game chat with quick-chat phrase keys instead of text strings for localization support",
+      "original_snippets": "Implement quick-chat with phrase keys -- instead of sending text strings, send localized phrase keys (e.g., nice_shot) so the message displays in each player's language",
+      "relevant_when": "Adding in-game chat features",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Store leaderboards in PubNub KV Store via PubNub Functions and broadcast updates to a leaderboard channel",
+      "original_snippets": "Store leaderboards in PubNub KV Store -- use the built-in KV store in PubNub Functions for leaderboard persistence; broadcast updates to a leaderboard channel for real-time display",
+      "relevant_when": "Implementing leaderboard features",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use hereNow for live player counts in room listings rather than maintaining your own counters",
+      "original_snippets": "Use presence for player counts in lobbies -- call hereNow to show live player counts in room listings rather than maintaining your own counters",
+      "relevant_when": "Displaying room occupancy in lobby",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Generate unique, non-guessable room IDs to prevent uninvited players from joining private games",
+      "original_snippets": "Generate unique, non-guessable room IDs to prevent uninvited players from joining private games by guessing channel names ... Date.now().toString(36) + Math.random().toString(36).slice(2, 8)",
+      "relevant_when": "Creating game rooms",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Clean up subscriptions when leaving a room; unsubscribe from all room-related channels",
+      "original_snippets": "Clean up subscriptions when leaving a room or closing the game; unsubscribe from all room-related channels to avoid unnecessary bandwidth",
+      "relevant_when": "Implementing room leave or game end logic",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Implement state snapshot mechanism for reconnecting players or new spectators",
+      "original_snippets": "Implement state snapshots -- provide a mechanism for the host or server to send the full game state to reconnecting players or new spectators ... snapshot-request / snapshot-response pattern",
+      "relevant_when": "Handling reconnection or spectator join mid-game",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Design for eventual consistency: PubNub guarantees message ordering per channel but not cross-channel",
+      "original_snippets": "Design for eventual consistency; PubNub guarantees message ordering per channel but not cross-channel ... even though PubNub guarantees per-channel ordering, cross-channel messages may arrive in any order",
+      "relevant_when": "Designing multi-channel game state architecture",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Rate-limit client publishes to prevent flooding the game state channel",
+      "original_snippets": "Rate limit publishing on the client side to prevent flooding the game state channel ... Rate-limit client publishes -- enforce a maximum message rate on the client side",
+      "relevant_when": "Building real-time game networking",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Handle PubNub status events: PNConnectedCategory, PNReconnectedCategory, PNDisconnectedCategory, PNAccessDeniedCategory, PNNetworkIssuesCategory",
+      "original_snippets": "case 'PNConnectedCategory': ... case 'PNReconnectedCategory': ... requestStateSnapshot() ... case 'PNDisconnectedCategory': ... showReconnectingUI() ... case 'PNAccessDeniedCategory': ... refreshAuthToken()",
+      "relevant_when": "Setting up error handling and connection management",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "On PNReconnectedCategory, request a state snapshot to recover missed state",
+      "original_snippets": "case 'PNReconnectedCategory': console.log('Reconnected - requesting state recovery'); requestStateSnapshot();",
+      "relevant_when": "Handling reconnection after network loss",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use fetchMessages for recovering missed updates from PubNub history during reconnection",
+      "original_snippets": "await pubnub.fetchMessages({ channels: [stateChannel], start: lastKnownTimetoken, count: 100 }) ... Use Message Persistence for recovery -- enable message storage so reconnecting clients can fetch missed updates from PubNub history",
+      "relevant_when": "Recovering game state after reconnection",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "For turn-based games auto-skip disconnected player turns; for action games have AI take over temporarily",
+      "original_snippets": "Design for graceful degradation -- if a player disconnects in a turn-based game, auto-skip their turn; in action games, have AI take over temporarily",
+      "relevant_when": "Handling player disconnections gracefully",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Verify that the host is the one starting the game before allowing game start",
+      "original_snippets": "if (roomInfo.host !== hostPlayerId) { throw new Error('Only the host can start the game') }",
+      "relevant_when": "Implementing game start logic",
+      "why_given": "new knowledge"
+    }
+  ]
+}

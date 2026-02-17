@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements multi-round elimination voting with round-specific KV Store keys, weighted voting with server-side weight lookup, pre-assigned voter weights, and proper round transition management through the admin channel.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Round-specific option keys",
+      "description": "Uses KV Store keys that include the round number for tracking active options per round (e.g. poll:<pollId>:round:<N>:options)",
+      "max_score": 10
+    },
+    {
+      "name": "Round-specific tally keys",
+      "description": "Uses KV Store counter keys that include the round number for per-round tallies (e.g. poll:<pollId>:round:<N>:tally:<optionId>)",
+      "max_score": 10
+    },
+    {
+      "name": "Server-side weight lookup",
+      "description": "Looks up voter weight from KV Store on the server side (e.g. poll:<pollId>:weight:<voterId>) rather than accepting weight from the client vote message",
+      "max_score": 10
+    },
+    {
+      "name": "Weight pre-assignment",
+      "description": "Includes logic to pre-load voter weights into KV Store before the poll opens, as a separate admin setup step",
+      "max_score": 10
+    },
+    {
+      "name": "Weighted increment",
+      "description": "Uses incrCounter with the voter's weight value (not always 1) when tallying votes",
+      "max_score": 10
+    },
+    {
+      "name": "Elimination logic",
+      "description": "After a round completes, identifies the option with the lowest tally and removes it from the active options for the next round",
+      "max_score": 10
+    },
+    {
+      "name": "Next round initialization",
+      "description": "When advancing to a new round, initializes new round-specific counters to zero and stores the remaining active options",
+      "max_score": 8
+    },
+    {
+      "name": "Winner determination",
+      "description": "Detects when only one option remains (or two for a final round) and declares a winner or final result",
+      "max_score": 8
+    },
+    {
+      "name": "Round transitions on admin channel",
+      "description": "Publishes round completion and new round opening events on the admin channel (e.g. poll.<pollId>.admin)",
+      "max_score": 8
+    },
+    {
+      "name": "Duplicate prevention per round",
+      "description": "Prevents the same voter from voting more than once per round",
+      "max_score": 8
+    },
+    {
+      "name": "Atomic counters for weighted tallies",
+      "description": "Uses kvstore.incrCounter (not get-then-set) for incrementing weighted vote tallies",
+      "max_score": 8
+    }
+  ]
+}

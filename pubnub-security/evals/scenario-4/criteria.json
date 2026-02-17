@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent encrypts file content before sending through PubNub, uses revokeToken with awareness of propagation delay, uses parseToken for debugging, separates server and client code, and applies TLS requirements.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Pre-send file encryption",
+      "description": "The client upload function encrypts the file content BEFORE passing it to PubNub's sendFile (not relying solely on cipherKey for file binary encryption)",
+      "max_score": 12
+    },
+    {
+      "name": "Client-side decryption",
+      "description": "The client download function decrypts the file content after downloading from PubNub",
+      "max_score": 8
+    },
+    {
+      "name": "Uses revokeToken()",
+      "description": "The server revocation function calls pubnub.revokeToken() to revoke access",
+      "max_score": 10
+    },
+    {
+      "name": "Revocation delay noted",
+      "description": "The lifecycle demo log or a code comment mentions that revocation may take up to 60 seconds to propagate (or references a caching/propagation delay)",
+      "max_score": 10
+    },
+    {
+      "name": "Uses parseToken()",
+      "description": "The lifecycle demo calls pubnub.parseToken() to inspect the token's permissions",
+      "max_score": 10
+    },
+    {
+      "name": "Uses grantToken()",
+      "description": "The server issues tokens using grantToken() (not legacy grant())",
+      "max_score": 8
+    },
+    {
+      "name": "Server-client separation",
+      "description": "Server code (with secretKey) and client code (without secretKey) are in separate files",
+      "max_score": 8
+    },
+    {
+      "name": "Short TTL for sensitive data",
+      "description": "The file-sharing token uses a TTL of 60 minutes or less, reflecting the sensitive nature of legal documents",
+      "max_score": 8
+    },
+    {
+      "name": "No secretKey on client",
+      "description": "The client-side file sharing module does NOT include a secretKey in its PubNub configuration",
+      "max_score": 8
+    },
+    {
+      "name": "TLS not disabled",
+      "description": "No PubNub instance sets ssl: false across any of the three files",
+      "max_score": 6
+    },
+    {
+      "name": "Error handling",
+      "description": "At least one of the modules includes try/catch error handling around PubNub operations",
+      "max_score": 6
+    },
+    {
+      "name": "Env vars for keys",
+      "description": "Server-side PubNub keys are read from environment variables rather than hardcoded",
+      "max_score": 6
+    }
+  ]
+}

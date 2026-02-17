@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent correctly manages PubNub connection lifecycle in a React component, including proper use of hooks, cleanup on unmount, and adherence to listener-before-subscribe ordering.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "PubNub in useRef",
+      "description": "The PubNub instance is stored in a useRef hook rather than being recreated on every render or stored in useState",
+      "max_score": 10
+    },
+    {
+      "name": "useEffect for setup",
+      "description": "PubNub initialization, listener setup, and subscription are performed inside a useEffect hook",
+      "max_score": 10
+    },
+    {
+      "name": "Cleanup in useEffect return",
+      "description": "The useEffect return function (cleanup) calls removeListener and/or unsubscribeAll to tear down the connection",
+      "max_score": 15
+    },
+    {
+      "name": "unsubscribeAll on cleanup",
+      "description": "The cleanup function calls pubnub.unsubscribeAll() or pubnub.unsubscribe() to stop subscriptions",
+      "max_score": 10
+    },
+    {
+      "name": "removeListener on cleanup",
+      "description": "The cleanup function calls pubnub.removeListener() to remove the message/status listener",
+      "max_score": 5
+    },
+    {
+      "name": "Listener before subscribe",
+      "description": "addListener() is called before subscribe() within the useEffect setup",
+      "max_score": 10
+    },
+    {
+      "name": "userId in PubNub config",
+      "description": "The PubNub constructor includes the userId property set from props or a persistent source",
+      "max_score": 10
+    },
+    {
+      "name": "Dependency array includes props",
+      "description": "The useEffect dependency array includes userId and/or auctionId so the connection re-establishes when props change",
+      "max_score": 10
+    },
+    {
+      "name": "Valid channel name",
+      "description": "The auction channel name does not contain commas, colons, asterisks, slashes, backslashes, spaces, or periods",
+      "max_score": 5
+    },
+    {
+      "name": "Status listener",
+      "description": "The addListener call includes a status callback that handles at least the connected status category",
+      "max_score": 5
+    },
+    {
+      "name": "Try-catch on bid publish",
+      "description": "The bid submission uses try/catch or .catch() around the pubnub.publish() call",
+      "max_score": 5
+    },
+    {
+      "name": "Message listener handles bids",
+      "description": "The message callback in addListener processes incoming bid events and updates component state",
+      "max_score": 5
+    }
+  ]
+}

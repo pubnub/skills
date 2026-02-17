@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent uses atomic counters for tallying, broadcasts consolidated results on the results channel, implements throttled broadcasting for high volume, and handles vote changes by decrementing the old option and incrementing the new one.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Atomic counter increment",
+      "description": "Uses kvstore.incrCounter (not get-then-set) to increment per-option vote tallies",
+      "max_score": 10
+    },
+    {
+      "name": "Results channel broadcast",
+      "description": "Publishes tally updates to a results channel (e.g. poll.<pollId>.results) rather than the votes channel",
+      "max_score": 10
+    },
+    {
+      "name": "Consolidated result message",
+      "description": "The tally broadcast message includes counts per option and a totalVotes field in a single message",
+      "max_score": 10
+    },
+    {
+      "name": "Throttled broadcasting",
+      "description": "Implements a throttling mechanism that limits result broadcasts to at most once per second (or similar interval), using a timestamp stored in KV Store",
+      "max_score": 10
+    },
+    {
+      "name": "Vote change decrement",
+      "description": "When a vote is changed, decrements the counter for the old option using incrCounter with -1 (or negative value)",
+      "max_score": 10
+    },
+    {
+      "name": "Vote change increment",
+      "description": "When a vote is changed, increments the counter for the new option using incrCounter",
+      "max_score": 10
+    },
+    {
+      "name": "Voter record update on change",
+      "description": "Updates the stored voter record in KV Store to reflect the new choice when a vote is changed",
+      "max_score": 8
+    },
+    {
+      "name": "Previous vote lookup",
+      "description": "Reads the voter's previous choice from KV Store before processing a vote change to determine which option to decrement",
+      "max_score": 8
+    },
+    {
+      "name": "Total counter maintained",
+      "description": "Maintains a separate total votes counter that is incremented for new votes but NOT double-incremented on vote changes (total stays the same)",
+      "max_score": 8
+    },
+    {
+      "name": "Percentage calculation",
+      "description": "The client-side code calculates percentages from counts and total votes (count / totalVotes * 100)",
+      "max_score": 8
+    },
+    {
+      "name": "Client subscribes to results",
+      "description": "Client uses pubnub.subscribe on the results channel and pubnub.addListener to handle incoming tally updates",
+      "max_score": 8
+    }
+  ]
+}

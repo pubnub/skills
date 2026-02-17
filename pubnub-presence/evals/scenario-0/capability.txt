@@ -1,0 +1,1 @@
+Presence configuration and subscription setup

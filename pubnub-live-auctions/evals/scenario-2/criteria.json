@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly implements reserve price handling with server-side secrecy, auto-extend anti-sniping timers with extension limits, extension event broadcasting, and outbid notification delivery.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Reserve stored server-side",
+      "description": "Reserve price is stored in KV Store on the server side and is NOT included in messages published to auction channels visible to bidders",
+      "max_score": 10
+    },
+    {
+      "name": "Reserve met broadcast",
+      "description": "When a bid meets or exceeds the reserve price, a 'reserve_met' (or equivalent status-change) message is broadcast to the auction channel without revealing the actual reserve amount",
+      "max_score": 10
+    },
+    {
+      "name": "Auto-extend trigger",
+      "description": "Implements auto-extend logic that detects when a bid arrives within a configurable threshold of the auction end time (e.g., last 30-60 seconds)",
+      "max_score": 10
+    },
+    {
+      "name": "Auto-extend time addition",
+      "description": "When auto-extend triggers, extends the auction end time by the configured auto-extend duration (e.g., 30 seconds)",
+      "max_score": 8
+    },
+    {
+      "name": "Max extensions limit",
+      "description": "Enforces a maximum number of allowed extensions (e.g., maxExtensions), refusing to extend further once the limit is reached",
+      "max_score": 10
+    },
+    {
+      "name": "Max duration limit",
+      "description": "Enforces a maximum total auction duration (e.g., maxTotalDurationHours) as a hard stop regardless of extensions",
+      "max_score": 8
+    },
+    {
+      "name": "Extension broadcast",
+      "description": "Broadcasts an 'auction_extended' event to the auction channel that includes the new end time and remaining time",
+      "max_score": 10
+    },
+    {
+      "name": "Extension number tracking",
+      "description": "Tracks and includes an extension count or extension number in the extension broadcast message",
+      "max_score": 6
+    },
+    {
+      "name": "Outbid notification channel",
+      "description": "Sends outbid notifications to the previous bidder's personal notification channel (following user.<userId>.notifications pattern)",
+      "max_score": 10
+    },
+    {
+      "name": "Outbid notification content",
+      "description": "Outbid notification includes the new high bid amount and the auction identifier",
+      "max_score": 8
+    },
+    {
+      "name": "Outbid in same transaction",
+      "description": "Outbid notification is published within the same PubNub Function execution as the bid acceptance, not as a separate delayed process",
+      "max_score": 10
+    }
+  ]
+}

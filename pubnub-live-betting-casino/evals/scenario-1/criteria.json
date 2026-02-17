@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent implements server-side bet validation using PubNub Functions with correct stake range enforcement, selection count limits, odds drift detection with the correct threshold, price locking with expiry, proper wager channel naming, and standard error codes.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Before Publish handler",
+      "description": "Bet validation is implemented as a PubNub Function with a default export function receiving a request parameter, using request.ok() and request.abort()",
+      "max_score": 10
+    },
+    {
+      "name": "Wager submit channel",
+      "description": "Bets are submitted to a channel named 'wagers.submit'",
+      "max_score": 8
+    },
+    {
+      "name": "User status channel",
+      "description": "Bet acceptance/rejection notifications are sent to a per-user channel following the pattern wagers.{userId}.status",
+      "max_score": 8
+    },
+    {
+      "name": "Minimum stake validation",
+      "description": "Validation rejects stakes below 0.50",
+      "max_score": 8
+    },
+    {
+      "name": "Maximum stake validation",
+      "description": "Validation rejects stakes above 10000",
+      "max_score": 8
+    },
+    {
+      "name": "Max selections limit",
+      "description": "Validation rejects bets with more than 20 selections",
+      "max_score": 8
+    },
+    {
+      "name": "Odds drift threshold",
+      "description": "Odds verification uses a drift threshold of 0.05 (5%) to detect unacceptable price movement",
+      "max_score": 10
+    },
+    {
+      "name": "Price lock with expiry",
+      "description": "Bet slip or odds handling includes a price lock mechanism with a configurable expiry time window",
+      "max_score": 8
+    },
+    {
+      "name": "Same-event restriction",
+      "description": "Bet slip prevents adding multiple selections from the same event",
+      "max_score": 8
+    },
+    {
+      "name": "Accumulator return calc",
+      "description": "Potential return for accumulators is calculated by multiplying stake by the product of all selection odds",
+      "max_score": 8
+    },
+    {
+      "name": "Error codes in rejections",
+      "description": "Rejection messages include a code field with standardized codes (at least INVALID_PAYLOAD, INVALID_STAKE, and ODDS_DRIFT)",
+      "max_score": 8
+    },
+    {
+      "name": "Rate limiting mention",
+      "description": "Code or comments include rate limiting on the wager submission channel to prevent abuse",
+      "max_score": 8
+    }
+  ]
+}

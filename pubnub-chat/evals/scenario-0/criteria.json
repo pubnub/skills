@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent uses the correct PubNub Chat SDK package, initialization pattern, Access Manager configuration, user management pattern, direct conversation API, messaging methods, and cleanup handling.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Correct package import",
+      "description": "Imports Chat from '@pubnub/chat' (not from 'pubnub' or any other package)",
+      "max_score": 10
+    },
+    {
+      "name": "Chat.init() initialization",
+      "description": "Uses Chat.init() with an object containing publishKey, subscribeKey, and userId to create the chat instance",
+      "max_score": 10
+    },
+    {
+      "name": "authKey for Access Manager",
+      "description": "Uses 'authKey' (not 'token') as the property name when passing the authentication token to Chat.init()",
+      "max_score": 15
+    },
+    {
+      "name": "Get-then-create user pattern",
+      "description": "The ensureUser function calls chat.getUser() first, and only calls chat.createUser() if the result is null/falsy",
+      "max_score": 10
+    },
+    {
+      "name": "createDirectConversation API",
+      "description": "Uses chat.createDirectConversation() with a 'user' property (not 'users' or 'userId') to create the 1:1 channel",
+      "max_score": 10
+    },
+    {
+      "name": "channelData in direct conversation",
+      "description": "Passes channelData (with at least a name) in the createDirectConversation call",
+      "max_score": 5
+    },
+    {
+      "name": "channel.connect for receiving",
+      "description": "Uses channel.connect() with a callback function to receive incoming messages",
+      "max_score": 10
+    },
+    {
+      "name": "Stores unsubscribe function",
+      "description": "Captures and returns the return value of channel.connect() as the cleanup/unsubscribe function",
+      "max_score": 10
+    },
+    {
+      "name": "channel.sendText for sending",
+      "description": "Uses channel.sendText() (not channel.publish or other methods) to send messages",
+      "max_score": 10
+    },
+    {
+      "name": "chat.disconnect in cleanup",
+      "description": "Calls chat.disconnect() in the cleanup function",
+      "max_score": 10
+    }
+  ]
+}

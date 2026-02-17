@@ -1,21 +1,66 @@
 {
-  "context": "Tests whether the agent uses the vault module for secret storage instead of hardcoding API keys. PubNub Functions require secrets to be stored in vault and retrieved at runtime.",
+  "context": "Tests whether the agent correctly implements a Before Publish PubNub Function that enriches chat messages using KVStore lookups and atomic counters, following proper function structure, async patterns, and channel pattern rules.",
   "type": "weighted_checklist",
   "checklist": [
     {
-      "name": "Imports vault module",
-      "description": "Code includes require('vault') to import the vault module",
-      "max_score": 30
+      "name": "Default async export",
+      "description": "Function uses 'export default async' syntax for the function definition",
+      "max_score": 8
     },
     {
-      "name": "Retrieves key from vault",
-      "description": "Uses await vault.get() to retrieve the webhook URL at runtime instead of hardcoding it as a string literal",
-      "max_score": 40
+      "name": "Require inside function",
+      "description": "Module imports (require('kvstore'), etc.) are placed inside the function body, not at the file/module level",
+      "max_score": 8
     },
     {
-      "name": "No hardcoded secrets",
-      "description": "The webhook URL does not appear as a string literal anywhere in the function code",
-      "max_score": 30
+      "name": "Try/catch wrapping",
+      "description": "The main function logic is wrapped in a try/catch block",
+      "max_score": 8
+    },
+    {
+      "name": "Async/await usage",
+      "description": "Uses async/await for asynchronous operations, does NOT use .then() or .catch() chains",
+      "max_score": 10
+    },
+    {
+      "name": "KVStore for profile lookup",
+      "description": "Uses require('kvstore') and db.get() (or equivalent) to look up user profile data",
+      "max_score": 8
+    },
+    {
+      "name": "Atomic counter usage",
+      "description": "Uses db.incrCounter() (not db.set() or db.get()) for the message counter increment",
+      "max_score": 10
+    },
+    {
+      "name": "TTL in minutes",
+      "description": "If db.set() is called with a TTL, the TTL value is specified in minutes (not seconds or milliseconds)",
+      "max_score": 8
+    },
+    {
+      "name": "Returns request.ok()",
+      "description": "Returns request.ok() to allow the message to proceed on success",
+      "max_score": 8
+    },
+    {
+      "name": "Returns request.abort() on error",
+      "description": "Returns request.abort() in the catch block or on critical failure to block the message",
+      "max_score": 8
+    },
+    {
+      "name": "Operation limit respected",
+      "description": "The function uses at most 3 combined operations (KV reads, KV writes, XHR calls, publish/fire/signal) per execution path",
+      "max_score": 10
+    },
+    {
+      "name": "Channel pattern with wildcard",
+      "description": "Deployment instructions specify a channel pattern like 'chat.*' (wildcard at end, period delimiter, max two literal segments)",
+      "max_score": 8
+    },
+    {
+      "name": "Staging before production",
+      "description": "Deployment instructions mention testing in staging or the Admin Portal before deploying to production channels",
+      "max_score": 6
     }
   ]
 }

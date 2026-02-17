@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent uses CryptoModule with aesCbcCryptoModule for encryption, generates keys with crypto.randomBytes, uses separate cipher keys per context, and correctly documents what is and is not encrypted.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses CryptoModule",
+      "description": "Private and financial PubNub instances configure encryption using PubNub.CryptoModule.aesCbcCryptoModule() (not just the legacy cipherKey string property)",
+      "max_score": 12
+    },
+    {
+      "name": "crypto.randomBytes for key gen",
+      "description": "The generateCipherKey function uses crypto.randomBytes (or equivalent cryptographically secure method) rather than Math.random or a static string",
+      "max_score": 10
+    },
+    {
+      "name": "32-byte key length",
+      "description": "The key generation produces a 32-byte (256-bit) key, matching AES-256 requirements",
+      "max_score": 8
+    },
+    {
+      "name": "Separate keys per context",
+      "description": "The private client and financial client use DIFFERENT cipher keys (not the same key for both)",
+      "max_score": 10
+    },
+    {
+      "name": "No encryption on public client",
+      "description": "The public client instance does NOT have encryption configured (no cipherKey or cryptoModule)",
+      "max_score": 8
+    },
+    {
+      "name": "Channel names not encrypted",
+      "description": "The documentation comment notes that channel names are NOT encrypted by the cipher key",
+      "max_score": 10
+    },
+    {
+      "name": "Message payload encrypted",
+      "description": "The documentation comment notes that message payloads ARE encrypted by the cipher key",
+      "max_score": 8
+    },
+    {
+      "name": "Publisher UUID not encrypted",
+      "description": "The documentation comment notes that publisher UUID or timetoken is NOT encrypted",
+      "max_score": 8
+    },
+    {
+      "name": "No secretKey in clients",
+      "description": "None of the client instances include a secretKey property",
+      "max_score": 8
+    },
+    {
+      "name": "TLS not disabled",
+      "description": "None of the client instances set ssl: false",
+      "max_score": 8
+    },
+    {
+      "name": "userId set on all clients",
+      "description": "All three client factory functions set the userId parameter on the PubNub instance",
+      "max_score": 5
+    },
+    {
+      "name": "Keys from env vars",
+      "description": "PubNub API keys (subscribeKey, publishKey) are read from environment variables rather than hardcoded",
+      "max_score": 5
+    }
+  ]
+}

@@ -1,1 +1,1 @@
-HTTP endpoint with CORS
+Scheduled interval aggregation function

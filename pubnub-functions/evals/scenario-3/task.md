@@ -1,19 +1,14 @@
-# Public Status API
+# Periodic Leaderboard Aggregation
 
-## Context
+## Problem/Feature Description
 
-A service status page needs a simple API endpoint hosted on PubNub Functions. The endpoint will be called from browser JavaScript on a different domain to display current system status.
+We are running a live polling application where users vote on items throughout the day. Votes are tracked using atomic counters in persistent storage with keys like `votes:item1`, `votes:item2`, etc. We need a PubNub Function that runs on a schedule (every 60 seconds) to collect the current vote tallies, compile them into a summary, and broadcast the leaderboard to subscribers on a `leaderboard` channel so that connected dashboards can update in real time. The broadcast should reach actual subscribers (not just internal function triggers), and the data should be available in message history.
 
-The endpoint should support:
-- **GET**: Return the current status from KVStore (key: `system_status`)
-- **POST**: Update the status (accepts JSON body with a `status` field, stores it in KVStore)
+The function also needs to read a configuration value from persistent storage (key: `poll_status`) to check whether the poll is still active. If the poll is inactive, the function should skip the broadcast and exit successfully.
 
-Browser-based clients from any origin will call this endpoint directly.
+## Output Specification
 
-## Task
+Produce the following files:
 
-Write a PubNub On Request function that implements this status API. Ensure it works correctly when called from web browsers on different domains.
-
-## Expected Outputs
-
-A single JavaScript file containing the complete PubNub Function implementation.
+1. **`leaderboard-aggregator.js`** -- The complete PubNub Function source code.
+2. **`deployment.md`** -- A deployment guide explaining how to set up this function, what trigger type and interval to use, and what to do before putting it into production.

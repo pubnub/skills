@@ -1,0 +1,13 @@
+{
+  "total_infeasible": 2,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "iOS Swift background location publishing",
+      "reasoning": "Testing the iOS (Swift) background location implementation requires Xcode, an Apple developer account, and a physical iOS device or simulator. The eval sandbox does not have macOS-specific tooling or the PubNub Swift SDK installed, and cannot run or compile Swift code in a meaningful way."
+    },
+    {
+      "scenarios": "Android Kotlin background location service",
+      "reasoning": "Testing the Android (Kotlin) background location service requires the Android SDK, Gradle build system, and Google Play Services location APIs. The eval sandbox does not have the Android toolchain installed and cannot compile or verify Kotlin Android code."
+    }
+  ]
+}

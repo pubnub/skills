@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly uses group conversation creation, typing indicator APIs, debouncing of typing signals, channel caching, and proper subscription cleanup as specified by the PubNub Chat SDK.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "createGroupConversation API",
+      "description": "Uses chat.createGroupConversation() with a 'users' array property to create the team channel",
+      "max_score": 10
+    },
+    {
+      "name": "channelId in group conversation",
+      "description": "Passes channelId and channelData (including name) to createGroupConversation",
+      "max_score": 5
+    },
+    {
+      "name": "startTyping method",
+      "description": "Uses channel.startTyping() (not a publish or signal call) to send typing indicators",
+      "max_score": 10
+    },
+    {
+      "name": "stopTyping method",
+      "description": "Calls channel.stopTyping() when sending a message or when typing stops",
+      "max_score": 10
+    },
+    {
+      "name": "onTyping listener",
+      "description": "Uses channel.onTyping() with a callback that receives an array of typing user IDs",
+      "max_score": 10
+    },
+    {
+      "name": "Debounced typing",
+      "description": "The typing handler uses debounce, throttle, or a time-based guard to avoid calling startTyping on every keystroke",
+      "max_score": 10
+    },
+    {
+      "name": "Channel caching",
+      "description": "Uses a Map, object, or similar data structure as a module-level cache to store and retrieve channels, avoiding redundant lookups",
+      "max_score": 10
+    },
+    {
+      "name": "connect for messages",
+      "description": "Uses channel.connect() with a callback to receive incoming messages",
+      "max_score": 10
+    },
+    {
+      "name": "Cleanup both subscriptions",
+      "description": "The returned cleanup function calls the unsubscribe functions from both channel.connect() and channel.onTyping()",
+      "max_score": 10
+    },
+    {
+      "name": "getOrCreateUser pattern",
+      "description": "In setupUsers, checks for existing user with chat.getUser() before calling chat.createUser()",
+      "max_score": 10
+    },
+    {
+      "name": "Correct package import",
+      "description": "Imports Chat from '@pubnub/chat'",
+      "max_score": 5
+    }
+  ]
+}

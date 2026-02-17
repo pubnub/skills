@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements WebRTC video signaling through PubNub using the correct channel naming, forces TURN relay for compliance, disables message history for signaling, and follows the prescribed signaling flow.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "TURN relay policy",
+      "description": "The RTCPeerConnection configuration sets iceTransportPolicy to 'relay' to force media through TURN servers",
+      "max_score": 12
+    },
+    {
+      "name": "Signaling no history",
+      "description": "Signaling messages are published with storeInHistory set to false",
+      "max_score": 10
+    },
+    {
+      "name": "Video channel naming",
+      "description": "The signaling channel name uses a .video suffix appended to the consultation channel (e.g., consultation.{providerId}.{patientId}.video)",
+      "max_score": 10
+    },
+    {
+      "name": "Offer signal type",
+      "description": "The code sends or handles a signal with type 'offer' containing SDP data",
+      "max_score": 8
+    },
+    {
+      "name": "Answer signal type",
+      "description": "The code sends or handles a signal with type 'answer' containing SDP data",
+      "max_score": 8
+    },
+    {
+      "name": "ICE candidate exchange",
+      "description": "The code sends and/or handles signals with type 'ice-candidate' for ICE candidate exchange",
+      "max_score": 8
+    },
+    {
+      "name": "End call signal",
+      "description": "The code sends or handles a signal with type 'end-call' to terminate the video session",
+      "max_score": 8
+    },
+    {
+      "name": "Audit logging for video",
+      "description": "Audit log events are recorded for video session start and/or video session end",
+      "max_score": 10
+    },
+    {
+      "name": "Provider ready notification",
+      "description": "A notification is published to the patient on a notification channel (including the patient ID) when the provider is ready to start the video call",
+      "max_score": 8
+    },
+    {
+      "name": "Consultation channel pattern",
+      "description": "The consultation channel referenced in the video module includes both provider ID and patient ID in the channel name",
+      "max_score": 8
+    },
+    {
+      "name": "Unsubscribe on end",
+      "description": "The code unsubscribes from the signaling channel and/or closes the peer connection when the call ends",
+      "max_score": 10
+    }
+  ]
+}

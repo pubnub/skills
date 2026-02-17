@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent follows skill instructions for price alert implementation: using pubnub.fire() for alerts instead of publish, kvstore for alert storage in PubNub Functions, alerts.<userId> channel naming, triggered state tracking to prevent duplicates, and multiple alert condition types.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Fire not publish",
+      "description": "Alert notifications are sent using pubnub.fire() rather than pubnub.publish() to avoid storing ephemeral alerts in history",
+      "max_score": 12
+    },
+    {
+      "name": "KVStore for alerts",
+      "description": "PubNub Function uses kvstore (require('kvstore')) to retrieve and store alert data, not an external database",
+      "max_score": 10
+    },
+    {
+      "name": "Alert channel naming",
+      "description": "Alert notifications are delivered to a channel following the pattern alerts.<userId> (e.g., alerts.user-123)",
+      "max_score": 10
+    },
+    {
+      "name": "Triggered state tracking",
+      "description": "Alerts are marked as triggered after firing and the Function checks this flag to prevent duplicate notifications",
+      "max_score": 10
+    },
+    {
+      "name": "Persist triggered state",
+      "description": "After marking alerts as triggered, the updated alert list is written back to kvstore via kvstore.set()",
+      "max_score": 8
+    },
+    {
+      "name": "Price above condition",
+      "description": "Supports a price-above alert type that fires when quote.price >= target",
+      "max_score": 8
+    },
+    {
+      "name": "Price below condition",
+      "description": "Supports a price-below alert type that fires when quote.price <= target",
+      "max_score": 8
+    },
+    {
+      "name": "Percentage change condition",
+      "description": "Supports at least one percentage-change-based alert type (up or down) using changePct from the quote",
+      "max_score": 8
+    },
+    {
+      "name": "Volume spike condition",
+      "description": "Supports a volume-based alert type that fires when quote.volume >= a threshold",
+      "max_score": 8
+    },
+    {
+      "name": "Default export function",
+      "description": "PubNub Function uses the correct export pattern: export default (request) => { ... } or module.exports",
+      "max_score": 6
+    },
+    {
+      "name": "Request.ok return",
+      "description": "PubNub Function returns request.ok() to pass the message through after processing",
+      "max_score": 6
+    },
+    {
+      "name": "Client alert listener",
+      "description": "Client-side alert manager subscribes to the user's alert channel to listen for triggered notifications",
+      "max_score": 6
+    }
+  ]
+}

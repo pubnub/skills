@@ -1,0 +1,1 @@
+Poll setup and lifecycle management

@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent initializes PubNub with gaming-optimized configuration, uses the skill's channel naming conventions, stores room metadata via App Context, implements the full room lifecycle state machine, announces rooms in the lobby, generates non-guessable room IDs, and cleans up subscriptions.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Presence timeout config",
+      "description": "PubNub initialization includes presenceTimeout set to a value between 15 and 30 (inclusive)",
+      "max_score": 8
+    },
+    {
+      "name": "Heartbeat interval config",
+      "description": "PubNub initialization includes heartbeatInterval set to approximately half the presenceTimeout value (e.g., 10 if presenceTimeout is 20)",
+      "max_score": 8
+    },
+    {
+      "name": "Restore and retry config",
+      "description": "PubNub initialization includes restore: true AND a retryConfiguration using PubNub.LinearRetryPolicy",
+      "max_score": 8
+    },
+    {
+      "name": "Channel naming: lobby",
+      "description": "Uses a lobby channel named 'game-lobby' or 'game-lobby.{gameType}' (dot-separated, not slash or other delimiter)",
+      "max_score": 8
+    },
+    {
+      "name": "Channel naming: room",
+      "description": "Game room channels follow the pattern 'game.{roomId}' with a dot separator, and state/chat use 'game.{roomId}.state' and 'game.{roomId}.chat'",
+      "max_score": 8
+    },
+    {
+      "name": "App Context for metadata",
+      "description": "Room metadata is stored using pubnub.objects.setChannelMetadata() rather than only held in local variables or a custom database",
+      "max_score": 10
+    },
+    {
+      "name": "Room lifecycle states",
+      "description": "Room status transitions through at least 4 of these states: 'waiting', 'ready', 'in-progress', 'paused', 'finished', 'cancelled'",
+      "max_score": 10
+    },
+    {
+      "name": "Lobby announcements",
+      "description": "When a public room is created, a message is published to a lobby channel; private rooms do NOT publish to the lobby",
+      "max_score": 8
+    },
+    {
+      "name": "Non-guessable room IDs",
+      "description": "Room IDs are generated using randomness (e.g., Math.random, crypto, uuid) not purely sequential integers",
+      "max_score": 8
+    },
+    {
+      "name": "Capacity check on join",
+      "description": "Before allowing a player to join a room, the code checks current occupancy (via hereNow or equivalent) against maxPlayers",
+      "max_score": 8
+    },
+    {
+      "name": "withPresence on subscribe",
+      "description": "Calls to pubnub.subscribe on game room channels include withPresence: true",
+      "max_score": 8
+    },
+    {
+      "name": "Subscription cleanup",
+      "description": "Code includes an unsubscribe call (pubnub.unsubscribe) when leaving a room or when the game ends",
+      "max_score": 8
+    }
+  ]
+}

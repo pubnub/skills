@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent applies mobile battery optimization configuration, background/foreground subscription management, cipherKey-based encryption, efficient listener patterns, and proper initialization with history fetch before subscribe.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Increased heartbeat interval",
+      "description": "The PubNub configuration sets heartbeatInterval to a value higher than default (e.g., 120 seconds or more) for battery savings",
+      "max_score": 10
+    },
+    {
+      "name": "Increased presence timeout",
+      "description": "The PubNub configuration sets presenceTimeout to a higher value (e.g., 600 seconds or more) to complement the increased heartbeat interval",
+      "max_score": 10
+    },
+    {
+      "name": "Suppress leave events",
+      "description": "The PubNub configuration includes suppressLeaveEvents: true to reduce presence traffic",
+      "max_score": 10
+    },
+    {
+      "name": "Background unsubscribe non-critical",
+      "description": "When the app goes to background, it unsubscribes from non-critical channels while keeping the critical emergency channel subscribed",
+      "max_score": 10
+    },
+    {
+      "name": "Foreground re-subscribe",
+      "description": "When the app returns to foreground, it re-subscribes to the channels that were unsubscribed during background",
+      "max_score": 8
+    },
+    {
+      "name": "cipherKey for encryption",
+      "description": "The PubNub instance is configured with a cipherKey parameter for end-to-end message encryption",
+      "max_score": 10
+    },
+    {
+      "name": "History before subscribe",
+      "description": "The initialization function fetches recent message history (using fetchMessages) before or as part of subscribing to channels, so the user sees recent messages immediately",
+      "max_score": 8
+    },
+    {
+      "name": "Catch-up on foreground",
+      "description": "When returning to foreground, the app fetches missed messages (using fetchMessages with a timetoken or similar) for the channels that were unsubscribed",
+      "max_score": 10
+    },
+    {
+      "name": "Efficient listener pattern",
+      "description": "The message listener uses a queue or batch processing approach rather than doing heavy synchronous processing directly in the callback",
+      "max_score": 8
+    },
+    {
+      "name": "Single PubNub instance",
+      "description": "Only one PubNub instance is created and reused throughout the module, not a new instance per function call",
+      "max_score": 8
+    },
+    {
+      "name": "Encryption storage note",
+      "description": "The design notes mention that encrypted messages are stored encrypted and automatically decrypted on retrieval when using the same cipherKey",
+      "max_score": 8
+    }
+  ]
+}

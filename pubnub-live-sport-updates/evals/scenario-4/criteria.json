@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements fan engagement features using PubNub App Context for persistent preferences, separate fan engagement channels, push notification payloads with pn_apns/pn_gcm, platform-specific push gateway registration (apns2 for iOS, gcm for Android), and push only for critical events.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "App Context for preferences",
+      "description": "Uses PubNub objects API (setUUIDMetadata/getUUIDMetadata or equivalent App Context methods) to store and retrieve favorite teams, not local storage or a separate database",
+      "max_score": 12
+    },
+    {
+      "name": "Separate fan engagement channels",
+      "description": "Fan engagement features (polls, reactions) use channels separate from the score and play-by-play channels (e.g. containing 'fan', 'polls', or 'reactions' in the channel name)",
+      "max_score": 10
+    },
+    {
+      "name": "Push payload with pn_apns",
+      "description": "Push notification payload includes a pn_apns key with nested aps.alert structure containing title and body fields",
+      "max_score": 10
+    },
+    {
+      "name": "Push payload with pn_gcm",
+      "description": "Push notification payload includes a pn_gcm key with a notification object containing title and body fields",
+      "max_score": 10
+    },
+    {
+      "name": "iOS uses apns2 gateway",
+      "description": "iOS device registration uses pushGateway: 'apns2' (not 'apns' or 'apns1')",
+      "max_score": 8
+    },
+    {
+      "name": "Android uses gcm gateway",
+      "description": "Android device registration uses pushGateway: 'gcm'",
+      "max_score": 7
+    },
+    {
+      "name": "Critical-only push threshold",
+      "description": "Push notifications are filtered to only fire for critical/scoring events (goals, touchdowns, home runs, game start, game end) -- not for every event type",
+      "max_score": 10
+    },
+    {
+      "name": "Team channel subscription",
+      "description": "Subscribing to favorite teams uses team-level channels following the hierarchy pattern (e.g. sports.<league>.teams.<teamId>)",
+      "max_score": 9
+    },
+    {
+      "name": "Dot-delimited channel names",
+      "description": "All channel names follow dot-delimited hierarchy, not flat or slash-delimited naming",
+      "max_score": 8
+    },
+    {
+      "name": "pubnub.push.addChannels usage",
+      "description": "Device registration for push notifications uses pubnub.push.addChannels (not a raw REST call or third-party push library)",
+      "max_score": 8
+    },
+    {
+      "name": "Cleanup on unsubscribe",
+      "description": "Fan engagement subscription functions return or provide an unsubscribe/cleanup mechanism that removes the listener and unsubscribes from channels",
+      "max_score": 8
+    }
+  ]
+}

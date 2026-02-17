@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly applies wildcard subscription rules, channel group patterns, subscription strategy selection based on channel count, and Stream Controller requirements when designing an IoT monitoring system.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Wildcard ends with .*",
+      "description": "All wildcard subscription patterns in the code end with .* (the wildcard character is at the end, not the middle or start)",
+      "max_score": 10
+    },
+    {
+      "name": "Max 2 dots in wildcards",
+      "description": "No wildcard subscription pattern contains more than 2 dots (i.e., no more than 3 levels of hierarchy in any wildcard pattern)",
+      "max_score": 10
+    },
+    {
+      "name": "Period as delimiter",
+      "description": "The channel naming hierarchy uses period (.) as the level delimiter, not slash or dash or other separators",
+      "max_score": 8
+    },
+    {
+      "name": "No publishing to wildcards",
+      "description": "Sensor data is published to specific concrete channels, never to wildcard patterns or channel groups",
+      "max_score": 10
+    },
+    {
+      "name": "Wildcard for floor monitor",
+      "description": "The floor monitoring subscription uses a wildcard subscribe pattern (not channel multiplexing or channel groups) to receive all sensors on a floor",
+      "max_score": 10
+    },
+    {
+      "name": "Channel groups for ops center",
+      "description": "The operations center uses channel groups (not individual channel multiplexing) to manage its ~500 sensor subscriptions",
+      "max_score": 10
+    },
+    {
+      "name": "Stream Controller mentioned",
+      "description": "The design document or code comments mention that Stream Controller must be enabled in the Admin Portal for channel groups and/or wildcard subscriptions to work",
+      "max_score": 8
+    },
+    {
+      "name": "Channel group limit noted",
+      "description": "The design document mentions at least one channel group limit (2000 channels per group, 10 groups per client, or 20000 total channels)",
+      "max_score": 8
+    },
+    {
+      "name": "Message size validation",
+      "description": "The publisher module includes a check or validation related to message size (referencing the 32KB limit or a size calculation before publishing)",
+      "max_score": 8
+    },
+    {
+      "name": "Channel group management APIs",
+      "description": "The ops center module uses channelGroups.addChannels and channelGroups.removeChannels (or equivalent SDK methods) for managing the subscription set",
+      "max_score": 8
+    },
+    {
+      "name": "Channel name length",
+      "description": "The channel naming scheme keeps channel names within 92 characters, or the design document notes the 92-character channel name limit",
+      "max_score": 10
+    }
+  ]
+}

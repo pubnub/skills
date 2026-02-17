@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent builds a client that uses the modern token-based auth (setToken), excludes the secret key, handles PNAccessDeniedCategory errors, implements proactive token refresh, and keeps TLS enabled.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses setToken()",
+      "description": "After receiving credentials from the server, the code calls pubnub.setToken() to apply the token (not setting authKey in the constructor)",
+      "max_score": 12
+    },
+    {
+      "name": "No secretKey on client",
+      "description": "The client-side PubNub initialization does NOT include a secretKey property",
+      "max_score": 10
+    },
+    {
+      "name": "PNAccessDeniedCategory handler",
+      "description": "Uses pubnub.addListener() with a status callback that checks for 'PNAccessDeniedCategory' specifically",
+      "max_score": 12
+    },
+    {
+      "name": "Re-auth on access denied",
+      "description": "When access denied is detected, the handler attempts to re-fetch credentials or refresh the token rather than just logging an error",
+      "max_score": 8
+    },
+    {
+      "name": "Proactive token refresh",
+      "description": "Schedules a timer (setTimeout or setInterval) to refresh the token BEFORE it expires, not after",
+      "max_score": 12
+    },
+    {
+      "name": "Refresh buffer time",
+      "description": "The refresh is scheduled with a buffer (e.g. several minutes before expiry) rather than at the exact expiry time",
+      "max_score": 8
+    },
+    {
+      "name": "TLS not disabled",
+      "description": "The PubNub constructor does NOT set ssl: false (leaving TLS enabled by default, or explicitly setting ssl: true)",
+      "max_score": 8
+    },
+    {
+      "name": "userId in config",
+      "description": "The PubNub client initialization includes a userId parameter",
+      "max_score": 8
+    },
+    {
+      "name": "Token update on refresh",
+      "description": "When refreshing credentials, the code calls setToken() again with the new token (not recreating the PubNub instance)",
+      "max_score": 10
+    },
+    {
+      "name": "Cleanup on destroy",
+      "description": "The destroy() method clears any scheduled refresh timers (clearTimeout or clearInterval)",
+      "max_score": 6
+    },
+    {
+      "name": "Server-client separation",
+      "description": "The module is purely client-side with no server setup code, no secretKey usage, and credentials come from a fetch call to an external server URL",
+      "max_score": 6
+    }
+  ]
+}

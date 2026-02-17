@@ -1,0 +1,160 @@
+{
+  "instructions": [
+    {
+      "instruction": "Use the channel naming convention poll.<pollId>.votes for vote submission, poll.<pollId>.results for live tally updates, poll.<pollId>.admin for lifecycle control, poll.<pollId>.meta for metadata",
+      "original_snippets": "Design channel names with a consistent hierarchy such as `poll.<pollId>.votes` and `poll.<pollId>.results` ... | `poll.<pollId>.votes` | Vote submission | ... | `poll.<pollId>.results` | Live tally updates | ... | `poll.<pollId>.admin` | Poll lifecycle control | ... | `poll.<pollId>.meta` | Poll metadata and config |",
+      "relevant_when": "When setting up channels for a voting or polling system with PubNub",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Always validate votes server-side using PubNub Functions (Before Publish Function); never trust client-only validation",
+      "original_snippets": "Always validate votes server-side using PubNub Functions; never trust client-only validation ... Client-side validation is for UX only. The Before Publish Function is the source of truth for vote acceptance.",
+      "relevant_when": "When implementing vote submission and validation logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use KV Store for duplicate vote prevention, storing each voter's choice with key pattern poll:<pollId>:voter:<voterId>",
+      "original_snippets": "Use KV Store for duplicate vote prevention to ensure each voter can only vote once per poll ... | `poll:<pollId>:voter:<voterId>` | Option ID string | Records which option a voter selected |",
+      "relevant_when": "When implementing duplicate vote detection logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use atomic counter operations (kvstore.incrCounter) for tallying votes to avoid race conditions, never use get-then-set",
+      "original_snippets": "Use atomic counter operations (incrCounter) in PubNub Functions to avoid race conditions in tallying ... Never use `get` then `set` to update counts. The `incrCounter` method prevents race conditions under concurrent load.",
+      "relevant_when": "When implementing vote counting and tally logic",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Close polls by timestamp and reject late votes in the Before Publish Function",
+      "original_snippets": "Close polls by timestamp and reject late votes in the Before Publish Function ... The actual close-time enforcement happens server-side in a Before Publish Function",
+      "relevant_when": "When implementing poll closing and time-based vote rejection",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Keep vote payloads small; include only pollId, optionId, and voterId",
+      "original_snippets": "Keep vote payloads small; include only pollId, optionId, and voterId",
+      "relevant_when": "When designing the vote message structure published to PubNub",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use the Before Publish Function event type (export default (request) => {}) on the votes channel for intercepting and processing votes",
+      "original_snippets": "// PubNub Function: Before Publish on poll.*.votes\nexport default (request) => { ... return request.abort(); ... return request.ok(); }",
+      "relevant_when": "When writing PubNub Functions for vote validation",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use the KV Store key schema: poll:<pollId>:status for poll state, poll:<pollId>:tally:<optionId> for per-option counters, poll:<pollId>:total for total votes, poll:<pollId>:options for valid option IDs list",
+      "original_snippets": "| `poll:<pollId>:status` | Status string | Current poll lifecycle state | ... | `poll:<pollId>:tally:<optionId>` | Counter (integer) | Atomic vote count per option | ... | `poll:<pollId>:total` | Counter (integer) | Total votes across all options | ... | `poll:<pollId>:options` | JSON string | List of valid option IDs |",
+      "relevant_when": "When implementing KV Store data layout for poll state and tallies",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Check poll status in KV Store before accepting a vote and reject if not 'open'",
+      "original_snippets": "return kvstore.get(`poll:${pollId}:status`).then((status) => { if (status !== 'open') { ... return request.abort(); } }",
+      "relevant_when": "When implementing server-side vote validation",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Broadcast tally updates on the results channel after each valid vote by fetching all option counters and publishing a consolidated result with counts and totalVotes",
+      "original_snippets": "After each valid vote, the Function fetches all option tallies and publishes a consolidated result. ... return pubnub.publish({ channel: `poll.${pollId}.results`, message: { type: 'tally_update', pollId, counts, totalVotes: totalVotes || 0, updatedAt: Date.now() } })",
+      "relevant_when": "When implementing result broadcasting after votes are processed",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement poll lifecycle states: created -> open -> paused/closed -> finalized, and publish state transitions on the admin channel with action 'poll_status_changed'",
+      "original_snippets": "| `created` | Poll defined but not yet visible | `open`, `deleted` | ... | `open` | Accepting votes | `paused`, `closed` | ... | `paused` | Temporarily not accepting votes | `open`, `closed` | ... | `closed` | No longer accepting votes | `finalized` | ... | `finalized` | Results locked and published | None (terminal) | ... message: { action: 'poll_status_changed', pollId, status: 'open', timestamp: Date.now() }",
+      "relevant_when": "When implementing poll lifecycle management",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Initialize KV Store with poll configuration (status, options list, counters at zero) before opening a poll",
+      "original_snippets": "Initialize KV Store before opening polls: Ensure all option counters, status, and configuration are set before transitioning to the open state ... async function initializePollState(kvstore, poll) { ... await kvstore.set(`poll:${pollId}:status`, 'created'); await kvstore.set(`poll:${pollId}:options`, JSON.stringify(options.map(o => o.id)));",
+      "relevant_when": "When setting up a new poll before it accepts votes",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use request.abort() to reject invalid votes and request.ok() to accept valid ones in the Before Publish Function",
+      "original_snippets": "request.message = { error: 'INVALID_VOTE', detail: 'Missing required fields' }; return request.abort(); ... return request.ok();",
+      "relevant_when": "When implementing the Before Publish Function for vote validation",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use specific error codes for vote rejection: INVALID_VOTE, POLL_NOT_OPEN, DUPLICATE_VOTE, INVALID_OPTION, POLL_EXPIRED, RATE_LIMITED, SUSPICIOUS_ACTIVITY, TOO_MANY_SELECTIONS, EMPTY_VOTE",
+      "original_snippets": "| `INVALID_VOTE` | 400 | Missing or malformed vote fields | ... | `POLL_NOT_OPEN` | 409 | Poll is not in the open state | ... | `DUPLICATE_VOTE` | 409 | Voter has already voted |",
+      "relevant_when": "When implementing error handling for rejected votes",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "For vote change support, decrement the old option counter and increment the new one using incrCounter with -1 and +1",
+      "original_snippets": "If the poll allows voters to change their vote, decrement the old option and increment the new one. ... ops.push(kvstore.incrCounter(`poll:${pollId}:tally:${previousOptionId}`, -1)); ... ops.push(kvstore.incrCounter(`poll:${pollId}:tally:${newOptionId}`, 1));",
+      "relevant_when": "When implementing vote change functionality",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "For high-throughput polls, throttle result broadcasts to at most once per second using a timestamp in KV Store",
+      "original_snippets": "For high-throughput polls, broadcast at most once per second to avoid overwhelming clients ... const throttleKey = `poll:${pollId}:lastBroadcast`; ... if (lastTime && (now - parseInt(lastTime, 10)) < 1000) return Promise.resolve();",
+      "relevant_when": "When building a voting system expected to handle high vote volume",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement rate limiting per voter using a counter in KV Store with key pattern ratelimit:<voterId>",
+      "original_snippets": "const rateKey = `ratelimit:${voterId}`; return kvstore.getCounter(rateKey).then((attempts) => { if (attempts && attempts > 10) throw new Error('RATE_LIMITED');",
+      "relevant_when": "When implementing fraud detection in a voting system",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "For anonymous voting, hash the voter ID with a poll-specific salt using SHA-256 to prevent tracing while still preventing duplicates",
+      "original_snippets": "Hash voter IDs for anonymous polls: Use a one-way hash with a poll-specific salt so anonymous votes cannot be traced back to users but duplicates are still prevented ... const hashedId = crypto.createHash('sha256').update(`${pollId}:${voterId}:anonymous-salt-value`).digest('hex').substring(0, 32);",
+      "relevant_when": "When implementing anonymous voting functionality",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "For multi-round elimination voting, store round-specific options and tallies with keys like poll:<pollId>:round:<round>:options and poll:<pollId>:round:<round>:tally:<optionId>",
+      "original_snippets": "const activeOptions = JSON.parse(await kvstore.get(`poll:${pollId}:round:${round}:options`)); ... const count = await kvstore.getCounter(`poll:${pollId}:round:${round}:tally:${optId}`);",
+      "relevant_when": "When implementing multi-round or elimination voting",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "For weighted voting, pre-assign voter weights in KV Store before the poll opens with key pattern poll:<pollId>:weight:<voterId>; never let clients specify their own weight",
+      "original_snippets": "Pre-assign weights before opening the poll: For weighted voting, load all voter weights into KV Store before the poll opens. Never let clients specify their own weight ... await kvstore.set(`poll:${pollId}:weight:${vw.voterId}`, String(vw.weight));",
+      "relevant_when": "When implementing weighted voting systems like shareholder votes",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Publish poll configuration on the meta channel so late-joining participants can fetch the poll question and options",
+      "original_snippets": "Publish poll configuration on the meta channel: This allows late-joining participants to fetch the poll question and options without a separate API call ... await pubnub.publish({ channel: `poll.${pollId}.meta`, message: { action: 'poll_config', poll: pollConfig } })",
+      "relevant_when": "When implementing poll creation and opening logic",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Include PubNub SDK initialization with publishKey, subscribeKey, and userId",
+      "original_snippets": "Include PubNub SDK initialization with publish and subscribe keys ... const pubnub = new PubNub({ publishKey: 'pub-c-...', subscribeKey: 'sub-c-...', userId: 'admin-001' });",
+      "relevant_when": "When writing any PubNub voting client code",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use poll configuration objects with pollId, question, options (each with id and label), type, settings, and schedule properties",
+      "original_snippets": "const pollConfig = { pollId: '...', question: '...', ... options: [ { id: 'opt-1', label: '...', order: 1 }, ... ], settings: { allowChangeVote: false, anonymousVoting: false, showLiveResults: true, maxVotesPerUser: 1 ... }, schedule: { opensAt: null, closesAt: null, durationMs: 300000 } }",
+      "relevant_when": "When creating poll configuration objects",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Separate vote submission from result broadcasting - never let clients read the votes channel directly; route votes through PubNub Functions for validation before results are published",
+      "original_snippets": "Separate vote submission from result broadcasting: Never let clients read the votes channel directly. Route votes through PubNub Functions for validation before results are published.",
+      "relevant_when": "When designing channel permissions and access control for a voting system",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Set TTLs on Access Manager grants that match the expected poll duration",
+      "original_snippets": "Set TTLs on Access Manager grants: Always use time-limited grants that match the expected poll duration to minimize security exposure.",
+      "relevant_when": "When setting up access control for voting channels",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Grant participants write-only on votes channel and read-only on results/admin/meta channels",
+      "original_snippets": "// Grant participants vote-only access ... channels: [`poll.${pollId}.votes`], ... read: false, write: true ... // Grant participants read-only on results/admin/meta ... read: true, write: false",
+      "relevant_when": "When configuring Access Manager permissions for voters",
+      "why_given": "new knowledge"
+    }
+  ]
+}

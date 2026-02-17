@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements spectator mode with a broadcast delay, persists leaderboards in PubNub KV Store, uses quick-chat phrase keys for internationalization, separates chat from game state channels, uses hereNow for spectator counts, and validates game actions server-side via PubNub Functions.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Spectator channel separation",
+      "description": "Spectators subscribe to a dedicated spectator channel (e.g., game.{roomId}.spectator), separate from the main game state channel",
+      "max_score": 10
+    },
+    {
+      "name": "Spectator broadcast delay",
+      "description": "Game state is broadcast to the spectator channel with a deliberate delay (e.g., 3-5 seconds via setTimeout or equivalent) to prevent stream sniping",
+      "max_score": 10
+    },
+    {
+      "name": "Leaderboard KVStore persistence",
+      "description": "Leaderboard data is stored using PubNub Functions KV Store (require('kvstore') with db.get/db.set), not just in-memory",
+      "max_score": 10
+    },
+    {
+      "name": "Leaderboard real-time updates",
+      "description": "Score updates are broadcast to a dedicated leaderboard channel so subscribed clients see changes in real-time",
+      "max_score": 8
+    },
+    {
+      "name": "Leaderboard PubNub Function",
+      "description": "Leaderboard score submission or retrieval is handled by a PubNub Function (On Request handler with export default), not purely client-side",
+      "max_score": 8
+    },
+    {
+      "name": "Quick-chat phrase keys",
+      "description": "The chat module supports sending pre-defined messages as phrase keys (e.g., 'nice_shot', 'good_game') rather than only free-text strings",
+      "max_score": 10
+    },
+    {
+      "name": "Separate chat channel",
+      "description": "Chat messages are sent on a dedicated chat channel (e.g., game.{roomId}.chat), not on the same channel as game state updates",
+      "max_score": 8
+    },
+    {
+      "name": "hereNow for spectator count",
+      "description": "Uses pubnub.hereNow() on the spectator channel to get the current spectator/viewer count",
+      "max_score": 8
+    },
+    {
+      "name": "Before Publish validation",
+      "description": "The action validator is written as a PubNub Function Before Publish trigger (export default with request.ok() / request.abort()) that intercepts messages before delivery",
+      "max_score": 10
+    },
+    {
+      "name": "Action rejection mechanism",
+      "description": "Invalid game actions are either blocked (request.abort) or replaced with a rejection message, preventing the original invalid action from reaching other clients",
+      "max_score": 10
+    },
+    {
+      "name": "Specific validation rules",
+      "description": "The validator checks at least two concrete game action properties (e.g., movement speed limits, damage range limits, timestamp validity)",
+      "max_score": 8
+    }
+  ]
+}

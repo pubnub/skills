@@ -1,21 +1,66 @@
 {
-  "context": "Tests whether the agent selects the correct PubNub messaging method. publish delivers to subscribers and stores in history, fire triggers functions only without subscriber delivery, and signal is lightweight with no persistence. Choosing the wrong method causes either unnecessary subscriber notifications or missed function triggers.",
+  "context": "Tests whether the agent uses vault for secrets instead of hardcoding, uses xhr.fetch for external API calls, uses pubnub.fire for analytics events that should not reach subscribers, and follows proper function structure and deployment practices.",
   "type": "weighted_checklist",
   "checklist": [
     {
-      "name": "Uses fire for analytics",
-      "description": "Uses pubnub.fire() (not publish or signal) for the internal analytics event, since analytics should trigger downstream functions without notifying subscribers",
-      "max_score": 45
+      "name": "Vault for secrets",
+      "description": "Uses require('vault') and vault.get() to retrieve the Slack webhook URL and any other credentials, rather than hardcoding them",
+      "max_score": 12
     },
     {
-      "name": "Uses signal for typing",
-      "description": "Uses pubnub.signal() (not publish) for the typing indicator, since typing status is ephemeral and should not be stored in history",
-      "max_score": 35
+      "name": "No hardcoded secrets",
+      "description": "The source code does NOT contain any hardcoded webhook URLs, API keys, or credentials as string literals",
+      "max_score": 10
     },
     {
-      "name": "Correct module import",
-      "description": "Imports the pubnub module with require('pubnub')",
-      "max_score": 20
+      "name": "XHR fetch for webhook",
+      "description": "Uses require('xhr') and xhr.fetch() to send the HTTP request to the external Slack webhook",
+      "max_score": 10
+    },
+    {
+      "name": "Fire for analytics",
+      "description": "Uses pubnub.fire() (not pubnub.publish() or pubnub.signal()) for the analytics event, since it should only trigger functions and not reach subscribers",
+      "max_score": 12
+    },
+    {
+      "name": "Default async export",
+      "description": "Function uses 'export default async' syntax",
+      "max_score": 6
+    },
+    {
+      "name": "Try/catch wrapping",
+      "description": "Main function logic is wrapped in a try/catch block",
+      "max_score": 6
+    },
+    {
+      "name": "Async/await pattern",
+      "description": "Uses async/await for all asynchronous operations, no .then()/.catch() chains",
+      "max_score": 8
+    },
+    {
+      "name": "Operation limit respected",
+      "description": "The function uses at most 3 combined operations (vault.get counts as KV, xhr.fetch, pubnub.fire) per execution path",
+      "max_score": 8
+    },
+    {
+      "name": "Channel pattern for orders",
+      "description": "Deployment doc specifies a channel pattern like 'orders.*' with wildcard at end and period delimiter",
+      "max_score": 8
+    },
+    {
+      "name": "Vault setup instructions",
+      "description": "Deployment doc explains that secrets should be configured via the PubNub Admin Portal under 'My Secrets' or equivalent vault mechanism",
+      "max_score": 10
+    },
+    {
+      "name": "After Publish trigger",
+      "description": "Deployment doc identifies the trigger type as After Publish (since the function runs after message delivery, not before)",
+      "max_score": 5
+    },
+    {
+      "name": "Staging recommendation",
+      "description": "Deployment doc recommends testing in staging or the Admin Portal before deploying to production",
+      "max_score": 5
     }
   ]
 }

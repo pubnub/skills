@@ -1,21 +1,66 @@
 {
-  "context": "Tests whether the agent uses KVStore atomic counter operations (incrCounter/getCounter) for counting instead of a non-atomic get+increment+set pattern. PubNub Functions execute at the edge with concurrent requests, so non-atomic counting will produce incorrect results under load.",
+  "context": "Tests whether the agent correctly uses vault for JWT secrets, jwt module for token verification, atomic counters for rate limiting, proper async/await patterns, and follows channel pattern rules for a Before Publish function.",
   "type": "weighted_checklist",
   "checklist": [
     {
-      "name": "Uses incrCounter",
-      "description": "Uses db.incrCounter() for incrementing the count, not a manual get() + set() pattern",
-      "max_score": 45
+      "name": "Vault for JWT secret",
+      "description": "Uses require('vault') and vault.get() to retrieve the JWT signing secret, not hardcoded",
+      "max_score": 12
     },
     {
-      "name": "Imports kvstore",
-      "description": "Imports the kvstore module with require('kvstore')",
-      "max_score": 20
+      "name": "JWT module usage",
+      "description": "Uses require('jwt') and jwt.verify() to validate the token from the message",
+      "max_score": 8
     },
     {
-      "name": "Returns count to client",
-      "description": "Enriches the message with the current count value by setting it on request.message",
-      "max_score": 35
+      "name": "IncrCounter for rate limit",
+      "description": "Uses db.incrCounter() (not db.set()/db.get()) for tracking the per-user request count atomically",
+      "max_score": 12
+    },
+    {
+      "name": "Abort on auth failure",
+      "description": "Returns request.abort() when authentication fails (missing or invalid token)",
+      "max_score": 8
+    },
+    {
+      "name": "Abort on rate limit",
+      "description": "Returns request.abort() when the user has exceeded their rate limit",
+      "max_score": 8
+    },
+    {
+      "name": "Ok on success",
+      "description": "Returns request.ok() when the message passes both authentication and rate limiting",
+      "max_score": 6
+    },
+    {
+      "name": "Async/await not then",
+      "description": "Uses async/await for all asynchronous operations, does NOT use .then() or .catch() chains",
+      "max_score": 8
+    },
+    {
+      "name": "Default async export",
+      "description": "Function uses 'export default async' syntax",
+      "max_score": 6
+    },
+    {
+      "name": "Try/catch wrapping",
+      "description": "Main function logic is wrapped in a try/catch block",
+      "max_score": 6
+    },
+    {
+      "name": "Channel pattern validity",
+      "description": "Deployment doc specifies a valid channel pattern like 'secure.api.*' (wildcard at end, period delimiter, at most two literal segments before wildcard)",
+      "max_score": 10
+    },
+    {
+      "name": "Require inside function",
+      "description": "Module imports (require('vault'), require('jwt'), require('kvstore')) are inside the function body, not at file level",
+      "max_score": 8
+    },
+    {
+      "name": "Operation limit respected",
+      "description": "The function uses at most 3 combined operations (vault.get, incrCounter, etc.) per execution path",
+      "max_score": 8
     }
   ]
 }

@@ -1,0 +1,17 @@
+{
+  "total_infeasible": 3,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "Delta compression for high-frequency updates",
+      "reasoning": "Delta compression is a performance optimization pattern that would require measuring actual bandwidth reduction and real-time message throughput. In the eval sandbox without a running PubNub instance, it is impossible to verify that delta messages are smaller or that full-state fallback works correctly under load."
+    },
+    {
+      "scenarios": "Mobile SDK initialization (Swift/Kotlin)",
+      "reasoning": "The skill includes iOS (Swift) and Android (Kotlin) SDK initialization patterns, but the eval sandbox only has a Node.js/JavaScript runtime. Compiling and validating Swift or Kotlin code is not feasible without Xcode or Android SDK toolchains."
+    },
+    {
+      "scenarios": "Game replay with timed playback",
+      "reasoning": "The game replay feature (replayGame function) requires Message Persistence enabled and actual historical messages stored in PubNub channels. Without API keys and pre-populated channel history, the replay functionality cannot be meaningfully tested in a file-based eval."
+    }
+  ]
+}

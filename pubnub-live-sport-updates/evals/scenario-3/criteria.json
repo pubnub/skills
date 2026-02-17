@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent implements a multi-sport event publisher with correct sport-specific period labels, the universal event envelope structure, game status transitions as distinct events, tier-based routing, compact payloads, and proper channel hierarchy.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "NFL period labels",
+      "description": "NFL periods are labeled as Q1, Q2, Q3, Q4 (and OT for overtime), not 'Quarter 1' or 'Period 1'",
+      "max_score": 8
+    },
+    {
+      "name": "NBA period labels",
+      "description": "NBA periods are labeled as Q1-Q4 (and OT), matching the NFL quarter format",
+      "max_score": 6
+    },
+    {
+      "name": "NHL period labels",
+      "description": "NHL periods are labeled as P1, P2, P3 (and OT), not Q1 or 'Period 1'",
+      "max_score": 8
+    },
+    {
+      "name": "Soccer period labels",
+      "description": "Soccer periods are labeled as '1st Half' and '2nd Half' (and ET1/ET2 for extra time), not Q1/Q2 or 'Half 1'",
+      "max_score": 8
+    },
+    {
+      "name": "MLB period labels",
+      "description": "MLB periods use 'Top/Bot' with ordinal suffixes (e.g. 'Top 1st', 'Bot 3rd'), not 'Inning 1' or 'Q1'",
+      "max_score": 8
+    },
+    {
+      "name": "Universal event envelope",
+      "description": "Every published event includes type, gameId, sport, sequence, timestamp, and period fields",
+      "max_score": 10
+    },
+    {
+      "name": "Game status as distinct events",
+      "description": "Game lifecycle changes (start, halftime, final, etc.) are published as explicit game_status type events with the status in the payload, not inferred from score data",
+      "max_score": 10
+    },
+    {
+      "name": "Critical event dual routing",
+      "description": "Critical/scoring events are published to both the game channel and the plays channel, not just one",
+      "max_score": 10
+    },
+    {
+      "name": "Informational event single routing",
+      "description": "Non-critical/informational events are published only to the plays channel, not the main game channel",
+      "max_score": 8
+    },
+    {
+      "name": "Compact payload design",
+      "description": "Event payloads use team abbreviations or short codes (e.g. 'SF', 'BOS') rather than embedding full team rosters, full names, or historical data",
+      "max_score": 8
+    },
+    {
+      "name": "Dot-delimited channels",
+      "description": "Channel names follow the sports.<league>.games.<gameId> and sports.<league>.games.<gameId>.plays hierarchy",
+      "max_score": 8
+    },
+    {
+      "name": "Sequence counter per game",
+      "description": "Sequence numbers are tracked independently per game (not a single global counter), using a Map or similar per-game structure",
+      "max_score": 8
+    }
+  ]
+}

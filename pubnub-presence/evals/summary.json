@@ -1,0 +1,13 @@
+{
+  "total_scenarios": 5,
+  "instructions_coverage": {
+    "total_instructions": 26,
+    "instructions_tested": 26,
+    "coverage_percentage": 100
+  },
+  "reason_distribution": {
+    "reminder": "3",
+    "new knowledge": "16",
+    "preference": "7"
+  }
+}

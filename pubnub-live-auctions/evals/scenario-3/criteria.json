@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly implements client-side auction features including PubNub SDK initialization with reconnection settings, Presence for watcher counts, local countdown interpolation between server ticks, bid submission retry logic, bid history retrieval, and channel cleanup.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "SDK restore setting",
+      "description": "PubNub SDK initialization includes restore: true for automatic reconnection and catching up on missed messages",
+      "max_score": 10
+    },
+    {
+      "name": "Retry policy configuration",
+      "description": "PubNub SDK initialization includes a retry configuration using LinearRetryPolicy (or equivalent retry policy)",
+      "max_score": 10
+    },
+    {
+      "name": "Presence subscription",
+      "description": "Subscribes to auction channels with withPresence: true to track active bidder/watcher count",
+      "max_score": 10
+    },
+    {
+      "name": "Local countdown interpolation",
+      "description": "Implements client-side countdown that interpolates locally between server tick updates (updating display more frequently than server broadcasts, e.g., every 250ms)",
+      "max_score": 10
+    },
+    {
+      "name": "Server time correction",
+      "description": "When a new server countdown message arrives, updates the local reference values (server remaining time and last update timestamp) to correct drift",
+      "max_score": 10
+    },
+    {
+      "name": "Bid retry with backoff",
+      "description": "Implements bid submission retry logic with increasing delay between attempts (exponential or linear backoff)",
+      "max_score": 10
+    },
+    {
+      "name": "Max retry limit",
+      "description": "Limits the number of bid submission retry attempts (e.g., maxRetries parameter)",
+      "max_score": 5
+    },
+    {
+      "name": "Bid history fetch",
+      "description": "Uses pubnub.fetchMessages() to retrieve historical bids from an auction channel",
+      "max_score": 10
+    },
+    {
+      "name": "Channel cleanup",
+      "description": "Implements cleanup logic that unsubscribes from auction channels when the user leaves (e.g., on component unmount or page navigation)",
+      "max_score": 10
+    },
+    {
+      "name": "SDK userId",
+      "description": "PubNub SDK initialization includes a userId parameter",
+      "max_score": 5
+    },
+    {
+      "name": "Structured error handling",
+      "description": "Distinguishes between different bid rejection reasons (e.g., too low, auction ended, already winning) and provides appropriate user feedback for each",
+      "max_score": 10
+    }
+  ]
+}

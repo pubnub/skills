@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements the user feed channel group pattern, uses fetchMessages for history retrieval with pagination, implements catch-up with timetokens, uses storeInHistory: false for ephemeral messages, implements soft delete via message actions, and documents persistence setup requirements.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "User feed group naming",
+      "description": "Channel groups for users follow a per-user naming pattern that includes the user ID (e.g., user-{userId}-feeds or similar user-specific group name)",
+      "max_score": 10
+    },
+    {
+      "name": "Channel group add/remove",
+      "description": "Uses channelGroups.addChannels and channelGroups.removeChannels (or equivalent SDK methods) to manage topics within the user's feed group",
+      "max_score": 8
+    },
+    {
+      "name": "Personal channels in group",
+      "description": "The user's channel group includes personal channels (notifications and/or direct messages) in addition to topic feed channels",
+      "max_score": 8
+    },
+    {
+      "name": "fetchMessages for history",
+      "description": "Uses pubnub.fetchMessages (not the deprecated history method) to retrieve stored messages",
+      "max_score": 10
+    },
+    {
+      "name": "Timetoken-based catch-up",
+      "description": "The reconnection/catch-up function saves and uses a timetoken (last received message timetoken) to fetch only messages received since the user went offline",
+      "max_score": 10
+    },
+    {
+      "name": "Ephemeral storeInHistory false",
+      "description": "The ephemeral/system announcement publish uses storeInHistory: false to prevent the message from being stored in history",
+      "max_score": 10
+    },
+    {
+      "name": "Soft delete via message action",
+      "description": "Message deletion is implemented using addMessageAction (with a type like 'deleted') rather than actually removing the message from storage",
+      "max_score": 10
+    },
+    {
+      "name": "Filter deleted on retrieval",
+      "description": "When loading history, the code uses includeMessageActions: true and filters out messages that have been marked as deleted",
+      "max_score": 8
+    },
+    {
+      "name": "Message Persistence setup noted",
+      "description": "The setup guide mentions enabling Message Persistence (or Storage & Playback) add-on in the PubNub Admin Portal",
+      "max_score": 8
+    },
+    {
+      "name": "Stream Controller setup noted",
+      "description": "The setup guide mentions enabling Stream Controller in the Admin Portal for channel groups to work",
+      "max_score": 8
+    },
+    {
+      "name": "Default buffer behavior noted",
+      "description": "The setup guide mentions that without persistence, messages are only buffered briefly (~20 minutes or ~100 messages) and can be lost",
+      "max_score": 10
+    }
+  ]
+}

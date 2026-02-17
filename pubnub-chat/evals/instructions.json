@@ -1,0 +1,166 @@
+{
+  "instructions": [
+    {
+      "instruction": "Import Chat from '@pubnub/chat' package (not from 'pubnub' or other packages)",
+      "original_snippets": "import { Chat } from '@pubnub/chat'; ... npm install @pubnub/chat",
+      "relevant_when": "Initializing a PubNub Chat SDK application or writing any chat code",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Initialize with Chat.init() using publishKey, subscribeKey, and userId as required fields",
+      "original_snippets": "const chat = await Chat.init({ publishKey: 'pub-c-...', subscribeKey: 'sub-c-...', userId: 'user-123' });",
+      "relevant_when": "Setting up PubNub Chat SDK initialization",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use authKey (not token) for Access Manager authentication",
+      "original_snippets": "Use `authKey` (not `token`) for Access Manager authentication ... authKey: 'auth-token-from-server'  // CORRECT ... token: 'auth-token-from-server'    // WRONG - will not work",
+      "relevant_when": "Configuring Access Manager / PAM authentication in Chat SDK init",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "userId must be persistent and unique per user",
+      "original_snippets": "userId must be persistent and unique per user ... userId: 'unique-user-id',           // REQUIRED - persistent per user",
+      "relevant_when": "Setting up user identity for Chat SDK",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Explicitly create or retrieve users before creating conversations",
+      "original_snippets": "Explicitly create/retrieve users before conversations ... let user = await chat.getUser('other-user-id'); if (!user) { user = await chat.createUser('other-user-id', { ... }); }",
+      "relevant_when": "Setting up users before creating direct or group conversations",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use the getOrCreateUser pattern - check getUser first, then createUser if null",
+      "original_snippets": "async function getOrCreateUser(chat, userId, userData) { let user = await chat.getUser(userId); if (!user) { user = await chat.createUser(userId, userData); } return user; }",
+      "relevant_when": "Managing users in chat applications, ensuring idempotent user setup",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use createDirectConversation with a user object and channelData for 1:1 chat",
+      "original_snippets": "const { channel } = await chat.createDirectConversation({ user: interlocutor, channelData: { name: 'Direct Chat' } });",
+      "relevant_when": "Creating direct messaging / 1:1 chat channels",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use createGroupConversation with users array for group chat",
+      "original_snippets": "const { channel } = await chat.createGroupConversation({ users: [user1, user2, user3], channelId: 'team-alpha', channelData: { ... } });",
+      "relevant_when": "Creating group chat channels with multiple members",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use createPublicConversation for public/open channels",
+      "original_snippets": "const channel = await chat.createPublicConversation({ channelId: 'public-lobby', channelData: { name: 'Public Lobby', description: 'Open discussion' } });",
+      "relevant_when": "Creating public channels that anyone can join",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use channel.connect() callback to receive messages, storing the unsubscribe function",
+      "original_snippets": "const unsubscribe = channel.connect((message) => { console.log('Message from:', message.userId); ... }); ... unsubscribe();",
+      "relevant_when": "Subscribing to receive real-time messages on a channel",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use channel.sendText() for sending chat messages",
+      "original_snippets": "await channel.sendText('Hello!'); ... await channel.sendText('Check this out!', { meta: { ... } });",
+      "relevant_when": "Sending messages in a chat channel",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Cache channels to avoid recreating on each load",
+      "original_snippets": "Cache channels to avoid recreating on each load ... const activeChannels = new Map(); ... if (activeChannels.has(cacheKey)) { return activeChannels.get(cacheKey); }",
+      "relevant_when": "Managing multiple channel references in a chat application",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Clean up subscriptions on logout/unmount",
+      "original_snippets": "Clean up subscriptions on logout/unmount ... return () => { unsubscribe(); }; ... await chat.disconnect();",
+      "relevant_when": "React components unmounting, user logging out, or app cleanup",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use channel.startTyping() and channel.stopTyping() for typing indicators",
+      "original_snippets": "await channel.startTyping(); ... await channel.stopTyping(); ... channel.onTyping((typingUserIds) => { ... });",
+      "relevant_when": "Implementing typing indicator features",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use message.toggleReaction() for adding/removing emoji reactions",
+      "original_snippets": "await message.toggleReaction('thumbsup'); ... await message.toggleReaction('heart');",
+      "relevant_when": "Implementing message reaction/emoji features",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use message.getThread() and thread.sendText() for threaded conversations",
+      "original_snippets": "const thread = await message.getThread(); ... await thread.sendText('This is a reply in the thread');",
+      "relevant_when": "Implementing threaded message replies",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use channel.setLastReadMessage(message) for read receipts",
+      "original_snippets": "await channel.setLastReadMessage(message); ... const unreadCount = await channel.getUnreadMessagesCount();",
+      "relevant_when": "Implementing read receipts and unread message counts",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use TimetokenUtils from '@pubnub/chat' for time conversions",
+      "original_snippets": "import { TimetokenUtils } from '@pubnub/chat'; ... const date = TimetokenUtils.timetokenToDate(message.timetoken);",
+      "relevant_when": "Converting between PubNub timetokens and JavaScript Date objects",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use React Context Provider pattern for sharing chat instance across components",
+      "original_snippets": "const ChatContext = createContext(null); ... export function ChatProvider({ userId, children }) { ... } ... export function useChat() { return useContext(ChatContext); }",
+      "relevant_when": "Building React chat applications with shared chat state",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use mentionedUsers object with position-indexed entries when mentioning users in messages",
+      "original_snippets": "await channel.sendText('Hey @alice, check this out!', { mentionedUsers: { 0: { id: 'alice-123', name: 'Alice' } } });",
+      "relevant_when": "Implementing user mentions in chat messages",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use referencedChannels object with position-indexed entries when referencing channels in messages",
+      "original_snippets": "await channel.sendText('Check out #general for updates', { referencedChannels: { 0: { id: 'general', name: 'General' } } });",
+      "relevant_when": "Implementing channel references/links in chat messages",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use channel.getHistory() for fetching past messages with count parameter",
+      "original_snippets": "const history = await channel.getHistory({ count: 50, startTimetoken: '17000000000000000' }); ... history.messages.forEach(msg => { ... });",
+      "relevant_when": "Loading message history in a chat channel",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Include Chat SDK initialization, user creation/retrieval, channel connect, message handling, and cleanup/disconnect in implementations",
+      "original_snippets": "When providing implementations: 1. Include Chat SDK initialization with proper configuration 2. Show user creation/retrieval patterns 3. Include channel connect and message handling 4. Add cleanup/disconnect handling 5. Note Access Manager integration if needed",
+      "relevant_when": "Providing any chat implementation",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use chat.currentUser to access the current user after initialization",
+      "original_snippets": "const currentUser = chat.currentUser; ... await currentUser.update({ name: 'Alice Smith', ... });",
+      "relevant_when": "Accessing or updating the current user profile after Chat.init()",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use channel.sendFile() for sending files/media in chat",
+      "original_snippets": "await channel.sendFile({ file: fileObject, message: 'Check out this document' });",
+      "relevant_when": "Implementing file/media sharing in chat",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Debounce typing signals - do not send typing signal on every keystroke",
+      "original_snippets": "Debounce typing - Don't send typing signal on every keystroke ... const debouncedTyping = useMemo(() => debounce(() => channel?.startTyping(), 1000), [channel]);",
+      "relevant_when": "Implementing typing indicators with text input handlers",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use channel caching with sorted user IDs as cache key for direct channels",
+      "original_snippets": "const cacheKey = [chat.currentUser.id, otherUser.id].sort().join('_'); ... if (activeChannels.has(cacheKey)) { return activeChannels.get(cacheKey); }",
+      "relevant_when": "Managing direct channel lookups and avoiding duplicate channels",
+      "why_given": "particular preference"
+    }
+  ]
+}

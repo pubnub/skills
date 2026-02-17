@@ -1,0 +1,238 @@
+{
+  "instructions": [
+    {
+      "instruction": "Use the channel naming convention: event.{sport}.{eventId}.market.{marketId} for market-level odds updates",
+      "original_snippets": "Channel Pattern: event.{sport}.{eventId}.market.{marketId} ... Purpose: Market-level odds updates ... Example: event.football.12345.market.match-winner",
+      "relevant_when": "Setting up market channels for any betting event or publishing odds updates",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use channel groups to manage market subscriptions instead of subscribing to channels individually",
+      "original_snippets": "Use channel groups to manage market subscriptions instead of subscribing to channels individually ... await pubnub.channelGroups.addChannels({ channelGroup: 'event-football-12345-markets', channels: [...] })",
+      "relevant_when": "Subscribing to multiple markets for an event or managing subscription hierarchies",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Broadcast odds in all three format types: decimal, fractional, and American",
+      "original_snippets": "Provide odds broadcasting with all three format types (decimal, fractional, American) ... odds: { decimal: 2.10, fractional: '11/10', american: '+110' }",
+      "relevant_when": "Publishing any odds update message",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Include movement metadata in odds messages ('up', 'down', or 'stable')",
+      "original_snippets": "movement: sel.movement, // 'up', 'down', or 'stable'",
+      "relevant_when": "Publishing odds updates with price movement information",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Include sequence numbers in odds messages for ordering guarantees",
+      "original_snippets": "sequence: market.sequenceNumber // For ordering guarantees ... Include sequence numbers in odds messages to handle out-of-order delivery",
+      "relevant_when": "Publishing odds or game state messages that need ordering",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Include a suspended flag and selection status fields in odds messages",
+      "original_snippets": "suspended: market.suspended ... status: sel.status // 'active', 'suspended', 'resulted'",
+      "relevant_when": "Publishing odds updates or market state changes",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Always validate bets server-side using PubNub Functions (Before Publish handler); never trust client-side odds or stake values",
+      "original_snippets": "Always validate bets server-side using PubNub Functions; never trust client-side odds or stake values ... PubNub Function: Before Publish on 'wagers.submit'",
+      "relevant_when": "Implementing wager submission and validation logic",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Lock the odds price at the moment of bet placement with configurable expiry window (e.g. 30 seconds)",
+      "original_snippets": "Lock the odds price at the moment of bet placement to protect against rapid price movement ... lockExpiry: Date.now() + 30000",
+      "relevant_when": "Implementing bet placement or odds movement protection",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use Access Manager to restrict publish permissions on odds channels to authorized trading engines only; separate read and write permissions",
+      "original_snippets": "Use Access Manager to restrict publish permissions on odds channels to authorized trading engines only ... Separate read and write permissions so clients cannot publish to odds channels",
+      "relevant_when": "Setting up platform security and channel permissions",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Suspend markets immediately when events occur (goals, red cards) before publishing new odds",
+      "original_snippets": "Suspend markets immediately when events occur (goals, red cards) before publishing new odds ... Step 1: Suspend all markets immediately ... Step 2: Publish incident ... Step 3: Recalculate and reopen",
+      "relevant_when": "Handling live/in-play events with incident-triggered market changes",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement rate limiting on wager submission channels to prevent abuse",
+      "original_snippets": "Implement rate limiting on wager submission channels to prevent abuse ... Rate-limit wager submissions per user to prevent automated abuse",
+      "relevant_when": "Implementing wager submission channels",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Encrypt all wager and balance messages using PubNub's built-in AES encryption via cipherKey",
+      "original_snippets": "Encrypt all wager and balance messages using PubNub's built-in AES encryption ... cipherKey: 'aes-256-encryption-key' ... Encrypt all financial channels (wagers, balances, cash-out) with AES-256",
+      "relevant_when": "Initializing PubNub for any betting or financial data channels",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Include PubNub SDK initialization with encryption and Access Manager configuration (cipherKey and authKey)",
+      "original_snippets": "Include PubNub SDK initialization with encryption and Access Manager configuration ... cipherKey: 'your-encryption-key', authKey: 'auth-token-from-server'",
+      "relevant_when": "Initializing PubNub client for betting platform",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use wagers.submit channel for wager submission and wagers.{userId}.status for per-user bet status updates",
+      "original_snippets": "wagers.submit: Wager submission channel ... wagers.{userId}.status: Per-user bet status updates",
+      "relevant_when": "Implementing wager submission and status notification flows",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use balance.{userId} channel for per-user balance updates",
+      "original_snippets": "balance.{userId}: Per-user balance updates ... balance.user-789",
+      "relevant_when": "Implementing balance management or financial notifications",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Include bet type support: single, double, treble, accumulator, each way",
+      "original_snippets": "Bet Type: Single, Double, Treble, Accumulator, Each Way ... Payout Calculation: stake * odds, stake * odds1 * odds2, ...",
+      "relevant_when": "Implementing bet slip or wager placement functionality",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use the wager lifecycle states: pending, accepted, rejected, live, won, lost, void, cashed_out",
+      "original_snippets": "State: pending, accepted, rejected, live, won, lost, void, cashed_out",
+      "relevant_when": "Implementing wager status tracking and state management",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use casino channel naming: casino.{gameType}.{tableId} for table-based games",
+      "original_snippets": "casino.blackjack.{tableId} ... casino.roulette.{tableId} ... casino.poker.{tableId}",
+      "relevant_when": "Implementing casino game state synchronization channels",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use dedicated channels per game table to isolate game state and prevent cross-table interference",
+      "original_snippets": "Use dedicated channels per game table to isolate game state and prevent cross-table interference",
+      "relevant_when": "Setting up casino game channel architecture",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Run all game logic in PubNub Functions to ensure the server is the single source of truth",
+      "original_snippets": "Run all game logic in PubNub Functions to ensure the server is the single source of truth",
+      "relevant_when": "Implementing casino game logic (blackjack, roulette etc.)",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Implement responsible gambling features: deposit limits, loss limits, session tracking, self-exclusion",
+      "original_snippets": "Implement responsible gambling checks and regulatory compliance patterns ... session_duration alert ... loss_limit alert ... Self-Exclusion ... Deposit and Loss Limits",
+      "relevant_when": "Building any betting or casino platform with user-facing features",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use responsible.{userId} channel for responsible gambling alerts",
+      "original_snippets": "channel: `responsible.${this.userId}` ... type: 'responsible_gambling_alert'",
+      "relevant_when": "Implementing responsible gambling notifications",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement geo-fencing verification before granting access to betting channels; re-verify periodically (every 30 minutes)",
+      "original_snippets": "Verify user location before granting access to betting channels ... Re-verify geolocation periodically (every 30 minutes) to detect VPN usage ... expiresAt: Date.now() + 1800000",
+      "relevant_when": "Implementing regulatory compliance and user access control",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Enable Message Persistence for audit trails on all channels",
+      "original_snippets": "Enable Message Persistence to store all odds changes and wager messages for regulatory review ... Enable Message Persistence on all channels for regulatory audit trails",
+      "relevant_when": "Setting up the platform infrastructure and regulatory compliance",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use TLS/SSL for all connections without exception (ssl: true)",
+      "original_snippets": "ssl: true // Always use TLS ... Use TLS/SSL for all connections without exception",
+      "relevant_when": "Initializing PubNub client configuration",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Implement reconnection logic that refreshes stale odds on network recovery",
+      "original_snippets": "Implement reconnection logic that refreshes stale odds on network recovery ... case 'PNReconnectedCategory': console.log('Reconnected - refreshing odds'); refreshAllOdds();",
+      "relevant_when": "Implementing error handling and connection management",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use tournament channel hierarchy: tournament.{id}, tournament.{id}.table.{tableId}, tournament.{id}.leaderboard, tournament.{id}.lobby",
+      "original_snippets": "tournament.{id} ... tournament.{id}.table.{tableId} ... tournament.{id}.leaderboard ... tournament.{id}.lobby",
+      "relevant_when": "Implementing multi-table tournament support",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Cash-out calculation should use a 0.95 margin factor",
+      "original_snippets": "const MARGIN = 0.95; ... return Math.round(bet.stake * (bet.selections[0].oddsAtSelection / current) * MARGIN * 100) / 100",
+      "relevant_when": "Implementing cash-out functionality",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Set cash-out offer expiry to prevent stale offers from being accepted after odds movement",
+      "original_snippets": "Set cash-out offer expiry to prevent stale offers from being accepted after odds movement ... expiresAt: Date.now() + 10000",
+      "relevant_when": "Broadcasting cash-out offers to users",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Validate stake range: minimum $0.50 and maximum $10,000",
+      "original_snippets": "if (message.stake < 0.50 || message.stake > 10000) { ... reason: 'Stake out of range', code: 'INVALID_STAKE' }",
+      "relevant_when": "Implementing server-side bet validation",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Limit accumulator selections to maximum of 20",
+      "original_snippets": "if (message.selections.length > 20) { ... reason: 'Maximum 20 selections', code: 'TOO_MANY_SELECTIONS' }",
+      "relevant_when": "Implementing server-side bet validation for accumulator bets",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use odds drift threshold (DRIFT_THRESHOLD = 0.05) for odds verification",
+      "original_snippets": "const DRIFT_THRESHOLD = 0.05; ... const drift = Math.abs(parseFloat(storedOdds.decimal) - selection.oddsAtSelection) / selection.oddsAtSelection; if (drift > DRIFT_THRESHOLD)",
+      "relevant_when": "Verifying odds at bet acceptance time",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Include bet rejection error codes: INVALID_PAYLOAD, INVALID_STAKE, INSUFFICIENT_FUNDS, MARKET_SUSPENDED, MARKET_NOT_FOUND, ODDS_DRIFT, SELF_EXCLUDED, GEO_RESTRICTED",
+      "original_snippets": "INVALID_PAYLOAD ... INVALID_STAKE ... INSUFFICIENT_FUNDS ... MARKET_SUSPENDED ... MARKET_NOT_FOUND ... ODDS_DRIFT ... SELF_EXCLUDED ... GEO_RESTRICTED",
+      "relevant_when": "Implementing bet validation error handling",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement cool-down periods between rapid betting actions to promote responsible gambling",
+      "original_snippets": "Implement cool-down periods between rapid betting actions to promote responsible gambling",
+      "relevant_when": "Implementing responsible gambling features in betting flows",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use PubNub Presence to track active players and manage seat availability",
+      "original_snippets": "Use PubNub Presence to track active players and manage seat availability ... Use presence to track active users for responsible gambling monitoring",
+      "relevant_when": "Tracking active users on betting markets and casino tables",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Prevent adding multiple selections from the same event in accumulator/combo bets",
+      "original_snippets": "if (this.selections.find(s => s.eventId === selection.eventId)) { throw new Error('Cannot add multiple selections from the same event'); }",
+      "relevant_when": "Implementing bet slip with multiple selections",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Publish settlement notifications to both wager status and balance channels simultaneously",
+      "original_snippets": "Publish settlement notifications to both the wager status and balance channels simultaneously",
+      "relevant_when": "Implementing bet settlement",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use token-based authentication with grantToken for fine-grained per-user resource permissions",
+      "original_snippets": "async function generateUserToken(userId) { const token = await pubnub.grantToken({ ... authorized_uuid: userId, resources: { channels: { ... }, channelGroups: { ... } } })",
+      "relevant_when": "Setting up user authentication and access control",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Design channel names with consistent dot-separated hierarchies for easy pattern matching",
+      "original_snippets": "Design channel names with consistent dot-separated hierarchies for easy pattern matching",
+      "relevant_when": "Setting up any channel naming convention",
+      "why_given": "particular preference"
+    }
+  ]
+}

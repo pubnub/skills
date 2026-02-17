@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent grants access to both the channel and its -pnpres companion channel when using Access Manager, handles connection status events for reconnection, fetches initial state on PNConnectedCategory, and configures appropriate heartbeat values for real-time chat.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Channel grant",
+      "description": "The server grant code grants permissions (read/write) on the consultation channel itself",
+      "max_score": 8
+    },
+    {
+      "name": "Presence channel grant",
+      "description": "The server grant code also grants read access on the -pnpres companion channel (e.g., 'consult-{roomId}-pnpres')",
+      "max_score": 12
+    },
+    {
+      "name": "PNConnectedCategory handler",
+      "description": "The client code handles the PNConnectedCategory status event",
+      "max_score": 10
+    },
+    {
+      "name": "PNReconnectedCategory handler",
+      "description": "The client code handles the PNReconnectedCategory status event",
+      "max_score": 10
+    },
+    {
+      "name": "PNDisconnectedCategory handler",
+      "description": "The client code handles the PNDisconnectedCategory or PNNetworkDownCategory status event",
+      "max_score": 8
+    },
+    {
+      "name": "Initial fetch on connect",
+      "description": "The code fetches initial presence state (via hereNow) specifically when the PNConnectedCategory status fires, not before",
+      "max_score": 10
+    },
+    {
+      "name": "Refresh on reconnect",
+      "description": "The code refreshes presence state after receiving PNReconnectedCategory (re-fetches hereNow or similar)",
+      "max_score": 10
+    },
+    {
+      "name": "Heartbeat configuration",
+      "description": "The client sets a heartbeatInterval appropriate for real-time chat (60 seconds or less)",
+      "max_score": 8
+    },
+    {
+      "name": "Timeout-heartbeat ratio",
+      "description": "The presenceTimeout is at least 2x the heartbeatInterval",
+      "max_score": 8
+    },
+    {
+      "name": "Event Engine enabled",
+      "description": "The PubNub client configuration includes enableEventEngine: true",
+      "max_score": 8
+    },
+    {
+      "name": "Persistent userId",
+      "description": "The PubNub client uses a unique, persistent userId",
+      "max_score": 8
+    }
+  ]
+}

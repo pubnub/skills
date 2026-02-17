@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly implements auction completion with multi-channel broadcasts, winner notification, catalog updates, Access Manager permission grants, bidder identity masking in activity feeds, and analytics tracking via After Publish handlers.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Auction end broadcast",
+      "description": "Publishes an auction_ended (or equivalent) message to the auction channel with the winning bid and winner information",
+      "max_score": 8
+    },
+    {
+      "name": "Catalog removal",
+      "description": "Publishes a removal message to catalog.active (or equivalent active catalog channel) when the auction ends",
+      "max_score": 8
+    },
+    {
+      "name": "Completed catalog update",
+      "description": "Publishes the completed auction details to catalog.completed (or equivalent completed catalog channel) with storeInHistory: true",
+      "max_score": 8
+    },
+    {
+      "name": "Winner notification",
+      "description": "Sends a personal notification to the winner via user.<winnerId>.notifications channel with the auction result",
+      "max_score": 10
+    },
+    {
+      "name": "Reserve met check on end",
+      "description": "Checks whether the reserve price was met before declaring a winner; if reserve is not met, does NOT send a win notification",
+      "max_score": 10
+    },
+    {
+      "name": "Bidder read-write grant",
+      "description": "Access Manager grants bidders read and write permissions on auction channels (not admin channels)",
+      "max_score": 8
+    },
+    {
+      "name": "Admin channel restriction",
+      "description": "Access Manager grants admin users access to the .admin channel but does NOT grant bidders access to admin channels",
+      "max_score": 10
+    },
+    {
+      "name": "Notification channel read-only",
+      "description": "User notification channels are granted with read: true but write: false for the user (only server writes notifications)",
+      "max_score": 8
+    },
+    {
+      "name": "Short TTL for bidder grants",
+      "description": "Access Manager grants for bidders use a short TTL value (e.g., 60 minutes or less) rather than unlimited duration",
+      "max_score": 8
+    },
+    {
+      "name": "Bidder identity masking",
+      "description": "Implements a masking function for bidder IDs in the activity feed that partially hides the ID while keeping it distinguishable (e.g., showing first/last characters with asterisks)",
+      "max_score": 10
+    },
+    {
+      "name": "Analytics via After Publish",
+      "description": "Analytics tracking (bid counts, unique bidders, or similar metrics) uses an After Publish event handler rather than being embedded in the Before Publish bid validation",
+      "max_score": 12
+    }
+  ]
+}

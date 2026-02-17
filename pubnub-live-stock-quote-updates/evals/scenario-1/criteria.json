@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent follows skill instructions for portfolio tracking: channel group usage for watchlists, channel group cleanup on removal, stale data detection, fetchMessages for initial load, restore:true, gain/loss calculation formulas, and handling both message and signal listeners.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Channel groups for watchlist",
+      "description": "Uses PubNub channel groups (channelGroups.addChannels) for managing watchlist subscriptions, with group name following the pattern watchlist_<userId> or similar user-scoped naming",
+      "max_score": 10
+    },
+    {
+      "name": "Subscribe via channel group",
+      "description": "Subscribes using channelGroups parameter (e.g., pubnub.subscribe({ channelGroups: [...] })) rather than listing individual channels",
+      "max_score": 10
+    },
+    {
+      "name": "Channel group cleanup",
+      "description": "When removing a symbol, calls channelGroups.removeChannels() to clean up the channel group membership",
+      "max_score": 10
+    },
+    {
+      "name": "FetchMessages on load",
+      "description": "Fetches last known quotes on initialization using fetchMessages with count: 1 so users see data before live updates arrive",
+      "max_score": 10
+    },
+    {
+      "name": "Stale data detection",
+      "description": "Implements a stale-data check that flags quotes older than a configurable threshold (around 30 seconds) as potentially outdated",
+      "max_score": 10
+    },
+    {
+      "name": "Dual listener types",
+      "description": "Adds listener that handles both 'message' events (full quotes) and 'signal' events (price ticks) separately",
+      "max_score": 8
+    },
+    {
+      "name": "Gain/loss calculation",
+      "description": "Computes position gain/loss as (shares * currentPrice) - (shares * avgCost) and gainLossPct as a percentage of total cost",
+      "max_score": 8
+    },
+    {
+      "name": "Day change calculation",
+      "description": "Computes day change using shares * (currentPrice - prevClose) rather than only total gain/loss",
+      "max_score": 8
+    },
+    {
+      "name": "Portfolio summary totals",
+      "description": "Computes aggregate portfolio values: totalMarketValue, totalCost, totalGainLoss, and totalDayChange across all positions",
+      "max_score": 8
+    },
+    {
+      "name": "Restore true",
+      "description": "PubNub client initialization includes restore: true for auto-reconnect and catching up on missed messages",
+      "max_score": 8
+    },
+    {
+      "name": "Quotes channel naming",
+      "description": "Channels follow the dot-delimited quotes.<SYMBOL> naming convention",
+      "max_score": 5
+    },
+    {
+      "name": "Client retry policy",
+      "description": "PubNub client initialization includes a retryConfiguration using LinearRetryPolicy",
+      "max_score": 5
+    }
+  ]
+}

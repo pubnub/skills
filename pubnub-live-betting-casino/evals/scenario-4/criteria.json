@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent implements correct bet settlement with dual-channel notification, accumulator settlement with voided leg handling, cash-out calculation using the 0.95 margin, cash-out offer expiry, balance reserve/release mechanics, and the complete wager lifecycle states and error codes.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Dual-channel settlement",
+      "description": "Settlement publishes notifications to BOTH the wager status channel (wagers.{userId}.status) AND the balance channel (balance.{userId})",
+      "max_score": 10
+    },
+    {
+      "name": "Won/lost/void outcomes",
+      "description": "Settlement logic handles at least three outcomes: won (pays potential return), lost (no payout), and void (returns stake)",
+      "max_score": 8
+    },
+    {
+      "name": "Accumulator voided legs",
+      "description": "Accumulator settlement handles voided selections by treating their odds as 1.0 rather than voiding the entire bet",
+      "max_score": 10
+    },
+    {
+      "name": "Cash-out margin factor",
+      "description": "Cash-out calculation uses a margin/multiplier of 0.95",
+      "max_score": 10
+    },
+    {
+      "name": "Cash-out offer expiry",
+      "description": "Cash-out offers include an expiresAt field with a short validity window (e.g., 10 seconds)",
+      "max_score": 10
+    },
+    {
+      "name": "Balance reserve on placement",
+      "description": "When a bet is placed, the stake is subtracted from available balance and added to reserved balance",
+      "max_score": 8
+    },
+    {
+      "name": "Balance release on settlement",
+      "description": "On settlement, the reserved amount is decreased by the stake and available is increased by the payout",
+      "max_score": 8
+    },
+    {
+      "name": "Wager lifecycle states",
+      "description": "Defines at least these wager states: pending, accepted, rejected, live, won, lost, void, cashed_out",
+      "max_score": 10
+    },
+    {
+      "name": "Error codes defined",
+      "description": "Includes at least 5 of the standard error codes: INVALID_PAYLOAD, INVALID_STAKE, INSUFFICIENT_FUNDS, MARKET_SUSPENDED, MARKET_NOT_FOUND, ODDS_DRIFT, SELF_EXCLUDED, GEO_RESTRICTED",
+      "max_score": 8
+    },
+    {
+      "name": "Balance channel naming",
+      "description": "Balance updates are published to a channel following the pattern balance.{userId}",
+      "max_score": 8
+    },
+    {
+      "name": "Atomic balance operations",
+      "description": "Balance check and reservation are performed together to prevent race conditions (e.g., check-then-set pattern using KV store)",
+      "max_score": 5
+    },
+    {
+      "name": "Bet ID in all messages",
+      "description": "All settlement, cash-out, and balance messages include a betId field for end-to-end tracing",
+      "max_score": 5
+    }
+  ]
+}

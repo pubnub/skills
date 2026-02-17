@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent follows the PubNub Chat SDK patterns for React integration: context provider for shared chat instance, proper initialization with Chat.init(), cleanup via chat.disconnect() on unmount, channel.connect() subscription cleanup in useEffect, and message history loading.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "React Context created",
+      "description": "Creates a React context using createContext() for sharing the chat instance",
+      "max_score": 8
+    },
+    {
+      "name": "Chat.init in provider",
+      "description": "Calls Chat.init() inside the ChatProvider component (within a useEffect) with publishKey, subscribeKey, and userId",
+      "max_score": 10
+    },
+    {
+      "name": "Provider disconnect cleanup",
+      "description": "The ChatProvider's useEffect return function calls chat.disconnect() or equivalent cleanup",
+      "max_score": 10
+    },
+    {
+      "name": "Custom useChat hook",
+      "description": "Exports a useChat hook that calls useContext with the chat context",
+      "max_score": 8
+    },
+    {
+      "name": "channel.connect in ChatRoom",
+      "description": "Uses channel.connect() with a message callback to subscribe to real-time messages in the ChatRoom component",
+      "max_score": 10
+    },
+    {
+      "name": "Unsubscribe in useEffect cleanup",
+      "description": "Stores the return value of channel.connect() and calls it in the useEffect cleanup function",
+      "max_score": 10
+    },
+    {
+      "name": "getHistory for past messages",
+      "description": "Calls channel.getHistory() with a count parameter to load past messages when the channel is loaded",
+      "max_score": 10
+    },
+    {
+      "name": "sendText for messages",
+      "description": "Uses channel.sendText() to send messages (not channel.publish or other methods)",
+      "max_score": 8
+    },
+    {
+      "name": "currentUser access",
+      "description": "Accesses chat.currentUser at least once in the code (e.g., for displaying the current user or filtering)",
+      "max_score": 8
+    },
+    {
+      "name": "Correct package import",
+      "description": "Imports Chat from '@pubnub/chat' (not 'pubnub')",
+      "max_score": 8
+    },
+    {
+      "name": "Mounted guard in async init",
+      "description": "Uses a mounted/cancelled flag or AbortController pattern in the Chat.init useEffect to prevent state updates after unmount",
+      "max_score": 10
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements server-side matchmaking via PubNub Functions, uses an expanding search range for skill-based pairing, enforces turn timers with timeout handling, validates host authorization for game start, and handles player disconnection during turn-based play.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Server-side matchmaking",
+      "description": "The matchmaker module is written as a PubNub Function (On Request or After Publish handler) using 'export default', not as client-side code that pairs players locally",
+      "max_score": 10
+    },
+    {
+      "name": "KVStore for queue",
+      "description": "The PubNub Function uses the kvstore module (require('kvstore') or db) to persist the matchmaking queue, not in-memory variables",
+      "max_score": 10
+    },
+    {
+      "name": "Skill-based pairing",
+      "description": "Matchmaking compares player ratings/ELO and only pairs players within a defined rating range",
+      "max_score": 8
+    },
+    {
+      "name": "Expanding search range",
+      "description": "The client-side matchmaker gradually widens the acceptable rating range over time if no match is found (e.g., increasing every few seconds)",
+      "max_score": 10
+    },
+    {
+      "name": "Match notification via player channel",
+      "description": "When a match is found, both players are notified via their personal player channels (e.g., player.{playerId}), not via the queue channel",
+      "max_score": 8
+    },
+    {
+      "name": "Turn timer enforcement",
+      "description": "Each turn has a maximum duration enforced by a timer (setTimeout or equivalent), with a timeout value defined in the code",
+      "max_score": 10
+    },
+    {
+      "name": "Turn timeout action",
+      "description": "When the turn timer expires, the turn is automatically skipped to the next player (not left hanging indefinitely)",
+      "max_score": 10
+    },
+    {
+      "name": "Turn rotation",
+      "description": "The turn manager cycles through players in order using modular arithmetic (currentIndex + 1) % players.length or equivalent",
+      "max_score": 6
+    },
+    {
+      "name": "Host-only game start",
+      "description": "The code verifies that only the host/room creator can start the game, rejecting start requests from other players",
+      "max_score": 10
+    },
+    {
+      "name": "Disconnect handling in turns",
+      "description": "If a player disconnects during a turn-based game, their turn is auto-skipped or forfeited rather than blocking the game",
+      "max_score": 10
+    },
+    {
+      "name": "Queue leave cleanup",
+      "description": "Players can leave the matchmaking queue, and the code removes them from the queue data structure",
+      "max_score": 8
+    }
+  ]
+}

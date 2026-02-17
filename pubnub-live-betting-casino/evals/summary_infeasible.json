@@ -1,0 +1,17 @@
+{
+  "total_infeasible": 3,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "Live PubNub Presence tracking",
+      "reasoning": "PubNub Presence requires a live PubNub keyset with Presence enabled and active connections to observe join/leave events. Cannot be tested in a file-based eval sandbox without API keys or a running PubNub service."
+    },
+    {
+      "scenarios": "Message Persistence audit trail",
+      "reasoning": "Message Persistence is a PubNub infrastructure feature enabled via the Admin Portal. Verifying that messages are persisted requires a live keyset and querying the History API, which is not feasible without API keys in the sandbox."
+    },
+    {
+      "scenarios": "iOS Swift and Android Kotlin native clients",
+      "reasoning": "The skill includes Swift and Kotlin initialization examples for iOS and Android. Building and verifying native mobile clients requires Xcode/Android SDK toolchains and platform-specific build environments not available in the eval sandbox."
+    }
+  ]
+}

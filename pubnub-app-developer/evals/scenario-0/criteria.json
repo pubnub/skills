@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly initializes the PubNub JavaScript SDK with persistent userId, avoids exposing secret keys on the client, uses recommended configuration options, and creates a single reusable PubNub instance.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses userId parameter",
+      "description": "SDK initialization uses the 'userId' property (not 'uuid') when constructing the PubNub instance",
+      "max_score": 10
+    },
+    {
+      "name": "Persistent userId",
+      "description": "The userId is derived from the authenticated agent's ID or persisted via localStorage/sessionStorage rather than generating a new random ID on each call",
+      "max_score": 10
+    },
+    {
+      "name": "No random UUID per session",
+      "description": "Does NOT call crypto.randomUUID() or Math.random() or similar to generate a fresh userId on every initialization without persisting it",
+      "max_score": 10
+    },
+    {
+      "name": "publishKey and subscribeKey present",
+      "description": "The PubNub constructor includes both publishKey and subscribeKey configuration",
+      "max_score": 5
+    },
+    {
+      "name": "No secretKey in client code",
+      "description": "The code does NOT include a secretKey property in the PubNub configuration or any hardcoded secret key string",
+      "max_score": 10
+    },
+    {
+      "name": "enableEventEngine option",
+      "description": "The PubNub configuration includes enableEventEngine set to true",
+      "max_score": 10
+    },
+    {
+      "name": "Single PubNub instance",
+      "description": "The module creates or reuses a single PubNub instance rather than creating a new instance on every function call",
+      "max_score": 10
+    },
+    {
+      "name": "SSL/TLS not disabled",
+      "description": "The code does NOT set ssl to false (leaving it at default true is acceptable)",
+      "max_score": 10
+    },
+    {
+      "name": "Listener before subscribe",
+      "description": "addListener() is called before subscribe() in the connection flow",
+      "max_score": 10
+    },
+    {
+      "name": "Status event handling",
+      "description": "The listener includes a status callback that checks for at least PNConnectedCategory",
+      "max_score": 10
+    },
+    {
+      "name": "Try-catch on publish",
+      "description": "The reply/publish function uses try/catch or .catch() for error handling around the publish call",
+      "max_score": 5
+    }
+  ]
+}

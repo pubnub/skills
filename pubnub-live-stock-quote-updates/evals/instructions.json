@@ -1,0 +1,178 @@
+{
+  "instructions": [
+    {
+      "instruction": "Use dot-delimited namespace channel naming: quotes.<SYMBOL>, sector.<NAME>, index.<NAME>, market.status, news.<SYMBOL>, trades.<SYMBOL>",
+      "original_snippets": "Use dot-delimited namespaces to organize market data channels. This enables wildcard subscriptions and clean filtering. ... | `quotes.<SYMBOL>` | Per-symbol quote updates | ... | `sector.<NAME>` | Sector-level aggregates | ... | `index.<NAME>` | Index values | ... Design channel names with dot-delimited namespaces (e.g., `quotes.AAPL`, `sector.tech`, `index.SPX`) for clean wildcard subscriptions",
+      "relevant_when": "When designing channel architecture for any stock quote or market data PubNub application",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Use PubNub signals for high-frequency price-only ticks with compact payload ({p: price, t: timestamp}), and reserve publish for full quote snapshots",
+      "original_snippets": "Use PubNub signals for high-frequency price ticks to stay within message rate limits and reduce cost ... Use `signal` for rapid price-only updates. Signals have a 64-byte payload limit but are lower cost. ... message: { p: price, t: Date.now() } ... Use signals for sub-second price ticks and reserve full publish for quote snapshots every 1-5 seconds",
+      "relevant_when": "When implementing quote broadcasting or a market data feed publisher that handles both full quotes and rapid price ticks",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Full quote publish messages should include: symbol, price, bid, ask, volume, open, high, low, prevClose, change, changePct, timestamp",
+      "original_snippets": "message: { symbol: quote.symbol, price: quote.price, bid: quote.bid, ask: quote.ask, volume: quote.volume, open: quote.open, high: quote.high, low: quote.low, prevClose: quote.prevClose, change: quote.change, changePct: quote.changePct, timestamp: quote.timestamp }",
+      "relevant_when": "When publishing full stock quote updates to PubNub channels",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use channel groups for user watchlists (named watchlist_<userId>) instead of subscribing to individual channels",
+      "original_snippets": "Channel groups are the foundation for user watchlists. Each user gets a dedicated channel group that maps to their subscribed symbols. ... this.groupName = `watchlist_${userId}` ... Use channel groups instead of subscribing to individual channels. This simplifies subscription management",
+      "relevant_when": "When building watchlist or portfolio subscription features",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Clean up channel group memberships when users remove symbols from watchlists using channelGroups.removeChannels()",
+      "original_snippets": "Clean up channel group memberships when users remove symbols from watchlists to avoid unnecessary subscription overhead ... Clean up channel groups when users delete their account or watchlist. Orphaned channel groups continue to consume subscription resources",
+      "relevant_when": "When implementing watchlist symbol removal or account deletion",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Implement stale-data detection: flag quotes older than a configurable threshold (default 30 seconds) so users see fresh data status",
+      "original_snippets": "Implement stale-data detection on clients: flag quotes older than a configurable threshold so users see fresh data status ... const STALE_THRESHOLD_MS = 30000; function isQuoteStale(quote) { if (!quote || !quote.timestamp) return true; return (Date.now() - quote.timestamp) > STALE_THRESHOLD_MS; }",
+      "relevant_when": "When building a client-side quote display or portfolio tracker",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Normalize provider data into a consistent schema before publishing, decoupling clients from vendor formats",
+      "original_snippets": "Normalize all provider data into a consistent schema before publishing. This decouples clients from any specific market data vendor format. ... function normalizeQuote(raw) { return { symbol: raw.sym || raw.symbol || raw.ticker, price: parseFloat(raw.last || raw.price || raw.ltp), ... } }",
+      "relevant_when": "When ingesting market data from external providers for PubNub distribution",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Enrich quotes with computed change and changePct fields derived from prevClose before publishing",
+      "original_snippets": "function enrichQuote(quote) { if (quote.prevClose > 0) { quote.change = parseFloat((quote.price - quote.prevClose).toFixed(4)); quote.changePct = parseFloat(((quote.change / quote.prevClose) * 100).toFixed(4)); } return quote; }",
+      "relevant_when": "When processing and publishing stock quotes",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use PubNub Access Manager (grantToken) to enforce data tier access (free/delayed, standard, premium, professional) with appropriate channel patterns",
+      "original_snippets": "Never store or redistribute raw exchange data without proper entitlements; use PubNub Access Manager to enforce data tier access ... Enforce data tier access with PubNub Access Manager. Never rely on client-side checks alone to restrict premium data ... const token = await pubnub.grantToken({ ttl: 60, authorizedUuid: userId, resources: { channels: ... } })",
+      "relevant_when": "When implementing data entitlement or access control for market data tiers",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use delayed.* channel prefix for free-tier (15-minute delayed) data, quotes.* for standard real-time, premium.* for Level 2, pro.* for professional full depth",
+      "original_snippets": "| Free | Basic quotes | 15-minute delay | `delayed.` | ... | Standard | Real-time quotes | None | `quotes.` | ... | Premium | Real-time + Level 2 | None | `premium.` | ... | Professional | Full depth, trades | None | `pro.` |",
+      "relevant_when": "When implementing tiered market data access with different data quality levels",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use pubnub.fire() instead of publish() for alert notifications to avoid storing them in history",
+      "original_snippets": "Fire alerts with `pubnub.fire()` instead of `publish()` to avoid storing alert notifications in history. Alerts are ephemeral ... pubnub.fire({ channel: `alerts.${alert.userId}`, message: { ... } })",
+      "relevant_when": "When implementing price alert notification delivery",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "PubNub Functions for alert evaluation should use kvstore for alert storage, check alert conditions server-side, and mark triggered alerts to prevent duplicates",
+      "original_snippets": "const kvstore = require('kvstore'); ... return kvstore.get(`alerts_${quote.symbol}`).then((data) => { ... alerts.forEach((alert) => { if (alert.triggered) return; ... alert.triggered = true; ... return kvstore.set(`alerts_${quote.symbol}`, JSON.stringify(alerts))",
+      "relevant_when": "When building server-side price alert evaluation with PubNub Functions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement throttling for per-symbol publish rates using a Map to track last-published timestamps, defaulting to 250ms throttle interval",
+      "original_snippets": "Throttle per-symbol publish rates to avoid exceeding rate limits during volatile markets ... const lastPublished = new Map(); const THROTTLE_MS = 250; function throttledPublish(pubnub, quote) { const now = Date.now(); const lastTime = lastPublished.get(quote.symbol) || 0; if (now - lastTime >= THROTTLE_MS) { lastPublished.set(quote.symbol, now); publishQuote(pubnub, quote); } else { publishTick(pubnub, quote.symbol, quote.price); } }",
+      "relevant_when": "When publishing high-frequency market data updates",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Store full quote snapshots in history (storeInHistory: true) so clients joining mid-session can fetch with fetchMessages()",
+      "original_snippets": "Store full quote snapshots in history so that clients joining mid-session can fetch the last known quote immediately with `fetchMessages()` ... storeInHistory: true",
+      "relevant_when": "When publishing full quote updates and implementing client reconnection",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Fetch last known quotes via fetchMessages with count: 1 on app load so users see prices immediately before live updates",
+      "original_snippets": "Fetch last known quotes via `fetchMessages` with `count: 1` on app load so users see current prices immediately before live updates arrive ... const result = await pubnub.fetchMessages({ channels, count: 1 });",
+      "relevant_when": "When initializing a client-side watchlist or portfolio view",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Server-side PubNub config should include secretKey, ssl: true, and LinearRetryPolicy; client-side should use restore: true and LinearRetryPolicy",
+      "original_snippets": "secretKey: 'sec-c-...', // Server-side only for Access Manager ... ssl: true, retryConfiguration: PubNub.LinearRetryPolicy({ delay: 2, maximumRetry: 5 }) ... restore: true, // Auto-reconnect and catch up on missed messages ... retryConfiguration: PubNub.LinearRetryPolicy({ delay: 3, maximumRetry: 10 })",
+      "relevant_when": "When initializing PubNub SDK for either server-side or client-side market data applications",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Tag published messages with metadata (sector, exchange) using the meta field for server-side filtering",
+      "original_snippets": "Tag messages with metadata (sector, exchange) using the `meta` field on publish. This enables server-side filtering in PubNub Functions without parsing the message body ... meta: { sector: getSector(quote.symbol), exchange: getExchange(quote.symbol) }",
+      "relevant_when": "When publishing full quote updates",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Implement market hours logic with pre-market (4:00-9:30 ET), regular (9:30-16:00 ET), after-hours (16:00-20:00 ET), and closed sessions, including holiday handling",
+      "original_snippets": "| Pre-Market | 4:00 AM - 9:30 AM | `.pre` | Lower liquidity, wider spreads | ... | Regular | 9:30 AM - 4:00 PM | (none) | Primary session | ... | After-Hours | 4:00 PM - 8:00 PM | `.post` | Lower liquidity, wider spreads | ... Handle market holidays and half-days in your market hours logic",
+      "relevant_when": "When building any stock quote application that needs to handle different trading sessions",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Display required disclaimers based on data tier and exchange, including delayed-data notice with data source attribution for free-tier users",
+      "original_snippets": "Comply with market data vendor agreements by enforcing delayed-quote tiers and attribution/disclaimer requirements ... Display required disclaimers based on the data tier and exchange. Free-tier users must see the delayed-data notice with data source attribution",
+      "relevant_when": "When building client-side UI for stock quote display",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use separate channels per symbol rather than multiplexing multiple symbols on a single channel",
+      "original_snippets": "Separate channels per symbol rather than multiplexing multiple symbols on a single channel. This allows clients to subscribe only to what they need and enables efficient wildcard subscriptions",
+      "relevant_when": "When designing channel architecture for market data",
+      "why_given": "preference"
+    },
+    {
+      "instruction": "Multi-exchange support uses exchange-specific channel conventions: quotes.<SYMBOL> for NYSE/NASDAQ, quotes.LON.<SYMBOL> for LSE, quotes.TYO.<SYMBOL> for TSE, quotes.HKG.<SYMBOL> for HKEX",
+      "original_snippets": "| NYSE / NASDAQ | ... | `quotes.<SYMBOL>` | ... | LSE | ... | `quotes.LON.<SYMBOL>` | ... | TSE | ... | `quotes.TYO.<SYMBOL>` | ... | HKEX | ... | `quotes.HKG.<SYMBOL>` |",
+      "relevant_when": "When building a market data application supporting multiple exchanges",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Validate incoming quote data before rendering: check for invalid prices, crossed bid/ask, timestamps too far in the past",
+      "original_snippets": "Validate all incoming quote data before rendering. Drop quotes with invalid prices, crossed bid/ask, or timestamps too far in the past ... function validateQuote(quote) { ... if (typeof quote.price !== 'number' || quote.price <= 0) errors.push('Invalid price'); ... if (quote.bid && quote.ask && quote.bid > quote.ask) errors.push('Crossed market');",
+      "relevant_when": "When processing incoming quote data on the client side",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Debounce UI rendering at 100-250ms using requestAnimationFrame when receiving high-frequency updates",
+      "original_snippets": "Debounce UI rendering when receiving high-frequency updates. Use `requestAnimationFrame` or a 100-250ms debounce to avoid excessive DOM updates that degrade performance",
+      "relevant_when": "When building a real-time quote display UI",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Implement batch publishing with configurable batch size (default 20) and inter-batch delay (default 100ms) using Promise.allSettled",
+      "original_snippets": "async function batchPublishQuotes(pubnub, quotes) { const BATCH_SIZE = 20; const BATCH_DELAY_MS = 100; for (let i = 0; i < quotes.length; i += BATCH_SIZE) { const batch = quotes.slice(i, i + BATCH_SIZE); await Promise.allSettled(batch.map((q) => publishQuote(pubnub, q))); ... } }",
+      "relevant_when": "When publishing quotes for many symbols at once",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Build OHLCV bars from tick data by grouping ticks by time interval and tracking open/high/low/close/volume per bar",
+      "original_snippets": "function aggregateToOHLCV(ticks, intervalMs = 60000) { const bars = new Map(); ticks.forEach((tick) => { const barTime = Math.floor(tick.timestamp / intervalMs) * intervalMs; if (!bars.has(barTime)) { bars.set(barTime, { open: tick.price, high: tick.price, low: tick.price, close: tick.price, volume: tick.volume || 0, timestamp: barTime }); } else { ... } }); }",
+      "relevant_when": "When building charting features or historical data aggregation",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Alert delivery channel should be named alerts.<userId>",
+      "original_snippets": "pubnub.fire({ channel: `alerts.${alert.userId}`, message: { ... } }) ... this.alertChannel = `alerts.${userId}`",
+      "relevant_when": "When implementing price alert delivery to users",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use PubNub's restore: true option on client-side for auto-reconnect and catching up on missed messages",
+      "original_snippets": "restore: true, // Auto-reconnect and catch up on missed messages ... Implement reconnection logic on both the server ingestion side and the client subscription side. Use PubNub's `restore: true` and retry policies to handle network blips",
+      "relevant_when": "When initializing client-side PubNub for market data subscription",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "React hook for stock quotes should handle both message (full quote) and signal (tick) listeners, and clean up with unsubscribeAll and destroy on unmount",
+      "original_snippets": "pn.addListener({ message: (event) => { setQuotes((prev) => ({ ...prev, [event.message.symbol]: event.message })); }, signal: (event) => { const sym = event.channel.replace('quotes.', ''); setQuotes(...) } }); ... return () => { pn.unsubscribeAll(); pn.destroy(); };",
+      "relevant_when": "When building a React component that displays live stock quotes",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Portfolio gain/loss calculation should compute totalGainLoss (marketValue - totalCost), totalGainLossPct, and dayChange (shares * (currentPrice - prevClose))",
+      "original_snippets": "const marketValue = pos.shares * pos.currentPrice; const totalCost = pos.shares * pos.avgCost; const gainLoss = marketValue - totalCost; const gainLossPct = totalCost > 0 ? (gainLoss / totalCost) * 100 : 0; const dayChange = pos.prevClose > 0 ? pos.shares * (pos.currentPrice - pos.prevClose) : 0;",
+      "relevant_when": "When building a portfolio tracker that shows position-level and total gain/loss",
+      "why_given": "new knowledge"
+    }
+  ]
+}
