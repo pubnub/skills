@@ -1,0 +1,29 @@
+{
+  "name": "@pubnub/skills",
+  "version": "0.1.2",
+  "description": "A comprehensive set of skills for building real-time applications with PubNub's platform",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pubnub/skills.git"
+  },
+  "homepage": "https://github.com/pubnub/skills#readme",
+  "bugs": {
+    "url": "https://github.com/pubnub/skills/issues"
+  },
+  "author": "PubNub (https://www.pubnub.com/)",
+  "keywords": [
+    "pubnub",
+    "real-time",
+    "skills",
+    "websocket",
+    "sse",
+    "messaging",
+    "chat",
+    "presence"
+  ],
+  "devDependencies": {
+    "snyk": "^1.1303.0"
+  }
+}
