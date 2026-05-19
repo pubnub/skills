@@ -1,0 +1,24 @@
+{
+  "name": "pubnub/pubnub-events-and-actions",
+  "version": "0.1.0",
+  "private": false,
+  "summary": "Route PubNub events to webhook, SQS, Kinesis, S3, Kafka, IFTTT, AMQP via Events & Actions",
+  "skills": {
+    "pubnub-events-and-actions": {
+      "path": "SKILL.md"
+    }
+  },
+  "dependencies": {
+    "pubnub-keyset-management": ">=0.1.0",
+    "pubnub-functions": ">=0.1.0",
+    "pubnub-app-context": ">=0.1.0",
+    "pubnub-presence": ">=0.1.0",
+    "pubnub-app-developer": ">=0.1.0",
+    "pubnub-chat": ">=0.1.0",
+    "pubnub-history": ">=0.1.0",
+    "pubnub-illuminate": ">=0.1.0",
+    "pubnub-observability": ">=0.1.0",
+    "pubnub-reliability": ">=0.1.0",
+    "pubnub-security": ">=0.1.0"
+  }
+}

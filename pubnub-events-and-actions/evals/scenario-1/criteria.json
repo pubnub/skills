@@ -1,0 +1,51 @@
+{
+  "context": "Tests whether the agent writes syntactically correct JSONPath filter expressions wrapped in $.[?(...)] with the right operators for each use case.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "All filters wrapped in $.[?(...)]",
+      "description": "Every filter expression starts with $.[?( and closes with )]",
+      "max_score": 14
+    },
+    {
+      "name": "tenantOnly uses regex with /i",
+      "description": "tenantOnly uses the =~ operator with a regex literal anchored to t42. (e.g., /^t42\\./i) including the i flag for case-insensitivity",
+      "max_score": 12
+    },
+    {
+      "name": "highPriorityChat combines && correctly",
+      "description": "highPriorityChat ANDs (using &&) a regex match on @.channel against chat. and an equality check on @.message.priority == 'high'",
+      "max_score": 14
+    },
+    {
+      "name": "sensorThreshold uses == and >",
+      "description": "sensorThreshold tests @.channel == 'sensors' AND @.meta.reading > 80 (numeric, not string)",
+      "max_score": 12
+    },
+    {
+      "name": "excludeSystem uses !",
+      "description": "excludeSystem uses the negation operator ! around a predicate testing @.message.system == true (e.g., $.[?(!(@.message.system == true))])",
+      "max_score": 12
+    },
+    {
+      "name": "botOrAdmin uses in [...]",
+      "description": "botOrAdmin uses the in operator with an array literal containing the three user ids on the @.uuid field",
+      "max_score": 12
+    },
+    {
+      "name": "References @ for current node",
+      "description": "All filters use @ (e.g., @.channel, @.message, @.meta, @.uuid) to address fields of the current event, not $.",
+      "max_score": 8
+    },
+    {
+      "name": "Filters target correct fields",
+      "description": "Each filter uses the documented path: @.channel for channel name, @.message for publish payload fields, @.meta for publish metadata fields, @.uuid for publisher",
+      "max_score": 8
+    },
+    {
+      "name": "NOTES mentions silent drop",
+      "description": "Exported NOTES string explicitly mentions that wrong JSONPath syntax silently drops every event with no error",
+      "max_score": 8
+    }
+  ]
+}
