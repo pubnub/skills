@@ -1,0 +1,20 @@
+{
+  "name": "pubnub/pubnub-keyset-management",
+  "version": "0.1.0",
+  "private": false,
+  "summary": "Manages PubNub apps, keysets, environment separation, key rotation, demo keys, and custom origins",
+  "skills": {
+    "pubnub-keyset-management": {
+      "path": "SKILL.md"
+    }
+  },
+  "dependencies": {
+    "pubnub-security": ">=0.1.0",
+    "pubnub-app-developer": ">=0.1.0",
+    "pubnub-app-context": ">=0.1.0",
+    "pubnub-history": ">=0.1.0",
+    "pubnub-observability": ">=0.1.0",
+    "pubnub-presence": ">=0.1.0",
+    "pubnub-scale": ">=0.1.0"
+  }
+}

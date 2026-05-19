@@ -1,0 +1,51 @@
+{
+  "context": "Tests whether the agent uses pubnub.addListener with an objects handler, correctly switches on event.message.type (uuid/channel/membership) and event.message.event (set/delete), and subscribes to the object's own channel to receive events.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses objects handler",
+      "description": "subscribeToMetadataEvents passes an objects: function to pubnub.addListener (not message:, not status:)",
+      "max_score": 16
+    },
+    {
+      "name": "Switches on event.message.type",
+      "description": "Inside the handler, code reads event.message.type and compares it against 'uuid', 'channel', and 'membership'",
+      "max_score": 14
+    },
+    {
+      "name": "Switches on event.message.event",
+      "description": "Inside the handler, code reads event.message.event and compares it against 'set' and 'delete'",
+      "max_score": 14
+    },
+    {
+      "name": "Routes uuid events",
+      "description": "Handler routes uuid+set to onUserSet and uuid+delete to onUserDelete with the event's data",
+      "max_score": 10
+    },
+    {
+      "name": "Routes channel events",
+      "description": "Handler routes channel+set to onChannelSet and channel+delete to onChannelDelete",
+      "max_score": 10
+    },
+    {
+      "name": "Routes membership events",
+      "description": "Handler routes membership+set to onMembershipSet and membership+delete to onMembershipDelete",
+      "max_score": 10
+    },
+    {
+      "name": "watchUserChannels subscribes to userIds and channelIds",
+      "description": "watchUserChannels calls pubnub.subscribe with channels: [...channelIds, ...userIds] (or equivalent combined array) so events on each object are received",
+      "max_score": 14
+    },
+    {
+      "name": "Returns unsubscribe function",
+      "description": "subscribeToMetadataEvents returns a function that removes the listener (e.g., via pubnub.removeListener) when called",
+      "max_score": 8
+    },
+    {
+      "name": "ES module syntax",
+      "description": "Uses import/export rather than CommonJS",
+      "max_score": 4
+    }
+  ]
+}

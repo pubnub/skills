@@ -1,0 +1,71 @@
+{
+  "context": "Tests whether the agent implements the documented 5-step cost projection in transactions-not-bytes terms, with subscribe = publish × fan-out, function invocations per publish, and a per-category limit check.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "publish formula",
+      "description": "publish category equals dau * publishesPerUserPerSession * daysPerMonth (with daysPerMonth defaulting to 30 when omitted)",
+      "max_score": 10
+    },
+    {
+      "name": "subscribe = publish × fan-out",
+      "description": "subscribe category equals publish multiplied by avgFanOutPerPublish (NOT dau × fanOut directly)",
+      "max_score": 16
+    },
+    {
+      "name": "signal formula",
+      "description": "signal category equals dau * signalsPerUserPerSession * daysPerMonth",
+      "max_score": 6
+    },
+    {
+      "name": "fire formula",
+      "description": "fire category equals dau * firesPerUserPerSession * daysPerMonth",
+      "max_score": 6
+    },
+    {
+      "name": "history formula",
+      "description": "history category equals dau * historyReadsPerUserPerSession * daysPerMonth",
+      "max_score": 6
+    },
+    {
+      "name": "appContext formula",
+      "description": "appContext category equals dau * appContextOpsPerUserPerSession * daysPerMonth",
+      "max_score": 6
+    },
+    {
+      "name": "functions = publish × invocationsPerPublish",
+      "description": "functions category equals publish multiplied by functionInvocationsPerPublish (per-publish fan-out, not per-user)",
+      "max_score": 12
+    },
+    {
+      "name": "total is sum of categories",
+      "description": "total equals the sum of all category values returned",
+      "max_score": 8
+    },
+    {
+      "name": "dominantCategory is argmax",
+      "description": "dominantCategory is the key in categories whose value is the maximum",
+      "max_score": 10
+    },
+    {
+      "name": "exceeded list per-category",
+      "description": "exceeded contains the names of all categories whose value exceeds the corresponding planLimits entry (when that planLimits entry is provided)",
+      "max_score": 10
+    },
+    {
+      "name": "exceeded includes 'total'",
+      "description": "exceeded includes the string 'total' precisely when planLimits.total is provided and total exceeds it",
+      "max_score": 8
+    },
+    {
+      "name": "Comment on transactions-not-bytes",
+      "description": "Top-of-file comment explicitly says PubNub bills by transactions (not bytes) AND that fan-out × publish rate is the dominant cost driver",
+      "max_score": 10
+    },
+    {
+      "name": "daysPerMonth default 30",
+      "description": "When inputs.daysPerMonth is undefined, the function defaults to 30",
+      "max_score": 6
+    }
+  ]
+}

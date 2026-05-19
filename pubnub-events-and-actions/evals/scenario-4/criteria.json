@@ -1,0 +1,51 @@
+{
+  "context": "Tests whether the agent applies the E&A-vs-Functions decision rule correctly across three requirements, and surfaces the right cross-cutting concerns (Free tier retry, S3 batching).",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Requirement 1 owner is pubnub-functions",
+      "description": "Requirement 1 (PII redaction before delivery) is owned by pubnub-functions, not pubnub-events-and-actions",
+      "max_score": 16
+    },
+    {
+      "name": "Requirement 1 reason mentions inline / pre-delivery",
+      "description": "Requirement 1's Reason explicitly notes that the redaction must happen before subscribers see the message (inline transform), which E&A cannot do",
+      "max_score": 10
+    },
+    {
+      "name": "Requirement 2 owner is pubnub-events-and-actions",
+      "description": "Requirement 2 (forward to Slack) is owned by pubnub-events-and-actions",
+      "max_score": 14
+    },
+    {
+      "name": "Requirement 2 sketch names a Webhook target",
+      "description": "Requirement 2's Sketch describes a Webhook action target (Slack inbound webhook) — not 'use a PubNub Function to call Slack'",
+      "max_score": 10
+    },
+    {
+      "name": "Requirement 2 filter scopes to support.priority.*",
+      "description": "Requirement 2's Sketch describes filtering by channel to support.priority.* (Basic Filter contains or JSONPath regex)",
+      "max_score": 8
+    },
+    {
+      "name": "Requirement 3 owner is pubnub-events-and-actions",
+      "description": "Requirement 3 (S3 data lake dump) is owned by pubnub-events-and-actions",
+      "max_score": 12
+    },
+    {
+      "name": "Requirement 3 sketch names S3 target with batching",
+      "description": "Requirement 3's Sketch describes an S3 action target with batching configuration (item count and/or time window)",
+      "max_score": 10
+    },
+    {
+      "name": "Cross-cutting mentions Free tier",
+      "description": "Cross-cutting Notes explicitly says PubNub Free tier has no retry and is inappropriate for the listed production requirements",
+      "max_score": 10
+    },
+    {
+      "name": "Cross-cutting mentions S3 batching cost",
+      "description": "Cross-cutting Notes explicitly says S3 batching is required to keep per-PUT costs reasonable",
+      "max_score": 10
+    }
+  ]
+}

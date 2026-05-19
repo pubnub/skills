@@ -1,0 +1,1 @@
+Pre-commit hook to detect PubNub key prefixes

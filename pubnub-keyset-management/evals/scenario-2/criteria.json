@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent writes a pre-commit hook that scans git diff --cached for PubNub key prefixes with the documented regex, exits non-zero on hit, and adds the documented guidance comments.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Shebang line",
+      "description": "First line of the file is #!/usr/bin/env node",
+      "max_score": 6
+    },
+    {
+      "name": "Executes git diff --cached",
+      "description": "Code executes a shell command containing 'git diff --cached' (via execSync, spawnSync, or equivalent) and captures stdout",
+      "max_score": 14
+    },
+    {
+      "name": "Correct regex",
+      "description": "Code uses a regex matching all three of pub-c-, sub-c-, sec-c- prefixes followed by [a-f0-9-]{36}",
+      "max_score": 18
+    },
+    {
+      "name": "Exit code 1 on hit",
+      "description": "When a key is detected, the script calls process.exit(1) (or returns a non-zero exit code from the entry path)",
+      "max_score": 14
+    },
+    {
+      "name": "ERROR message on stderr",
+      "description": "On hit, the script prints the documented error message to stderr (console.error or process.stderr.write) — not just stdout",
+      "max_score": 10
+    },
+    {
+      "name": "Exit code 0 on clean",
+      "description": "When no key is detected, the script exits with code 0 (either implicit or explicit process.exit(0))",
+      "max_score": 8
+    },
+    {
+      "name": "Comment mentions all three prefixes",
+      "description": "Top-of-file comment explicitly lists pub-c-, sub-c-, and sec-c- as the prefixes being detected",
+      "max_score": 8
+    },
+    {
+      "name": "Comment recommends a real tool",
+      "description": "Top-of-file comment recommends a real-world tool — names at least one of gitleaks, truffleHog, or detect-secrets",
+      "max_score": 10
+    },
+    {
+      "name": "Comment notes history risk",
+      "description": "Top-of-file comment notes that if a key is found in repo history it must be rotated immediately; the hook only prevents new leaks",
+      "max_score": 8
+    },
+    {
+      "name": "ES module syntax",
+      "description": "Uses import/export rather than CommonJS",
+      "max_score": 4
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "context": "Tests whether the agent correctly disambiguates inline message moderation as pubnub-functions (per-message edge logic) rather than pubnub-events-and-actions (forward-to-external-system).",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses handoff template",
+      "description": "Output contains all five labeled lines (Intent, Skill, MCP tool, Docs source, Next step) in order",
+      "max_score": 10
+    },
+    {
+      "name": "Skill is pubnub-functions",
+      "description": "The Skill line names pubnub-functions",
+      "max_score": 18
+    },
+    {
+      "name": "Skill is not pubnub-events-and-actions",
+      "description": "The Skill line does NOT name pubnub-events-and-actions (the wrong owner for inline message moderation)",
+      "max_score": 14
+    },
+    {
+      "name": "Mentions disambiguation rationale",
+      "description": "Either the Intent line or the Next step line clearly characterizes the moderation as inline / per-message / before-delivery (not as an external forward)",
+      "max_score": 10
+    },
+    {
+      "name": "Names a concrete MCP tool",
+      "description": "The MCP tool line names a real user-pubnub MCP tool (e.g. get_sdk_documentation, how_to, or write_pubnub_app)",
+      "max_score": 10
+    },
+    {
+      "name": "Docs source references Functions",
+      "description": "The Docs source line references PubNub Functions documentation (e.g. 'Functions 2.0 docs' or 'PubNub Functions docs')",
+      "max_score": 10
+    },
+    {
+      "name": "Next step is actionable",
+      "description": "The Next step line offers a single, concrete action (e.g. 'Open the pubnub-functions skill' or 'Read references/intent-to-tool.md for the full owner mapping')",
+      "max_score": 8
+    },
+    {
+      "name": "No implementation code",
+      "description": "Output contains no code blocks implementing the obscenity-replacement logic",
+      "max_score": 12
+    },
+    {
+      "name": "Single handoff",
+      "description": "Output contains exactly one handoff block, not multiple",
+      "max_score": 8
+    }
+  ]
+}

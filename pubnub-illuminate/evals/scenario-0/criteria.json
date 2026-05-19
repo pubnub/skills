@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent correctly POSTs to admin-api.pubnub.com/v2/illuminate/business-objects with both required headers, the API key from ILLUMINATE_API_KEY env var, and the correct JSONPath prefixes for message fields.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Posts to admin-api.pubnub.com",
+      "description": "Request URL is https://admin-api.pubnub.com/v2/illuminate/business-objects",
+      "max_score": 12
+    },
+    {
+      "name": "Authorization header from env",
+      "description": "Authorization header value is process.env.ILLUMINATE_API_KEY (not a hardcoded literal, not from a function argument)",
+      "max_score": 14
+    },
+    {
+      "name": "PubNub-Version header",
+      "description": "PubNub-Version header is set with value '2026-02-09' (exactly that string)",
+      "max_score": 12
+    },
+    {
+      "name": "Content-Type header",
+      "description": "Content-Type header is set to application/json",
+      "max_score": 6
+    },
+    {
+      "name": "POST method",
+      "description": "Request method is POST",
+      "max_score": 6
+    },
+    {
+      "name": "userId jsonPath is $.message.userId",
+      "description": "fields array contains an entry with name: 'userId' and jsonPath: '$.message.userId'",
+      "max_score": 10
+    },
+    {
+      "name": "channel jsonPath is $.message.channel",
+      "description": "fields array contains an entry with name: 'channel' and jsonPath: '$.message.channel'",
+      "max_score": 8
+    },
+    {
+      "name": "text jsonPath is $.message.body.text",
+      "description": "fields array contains an entry with name: 'text' and jsonPath: '$.message.body.text' (uses the body prefix for the published payload)",
+      "max_score": 10
+    },
+    {
+      "name": "score jsonPath is $.message.body.moderation.score",
+      "description": "fields array contains an entry with name: 'score' and jsonPath: '$.message.body.moderation.score' and dataType 'NUMERIC'",
+      "max_score": 10
+    },
+    {
+      "name": "isActive false on creation",
+      "description": "Body includes isActive: false so fields can still be edited after creation",
+      "max_score": 6
+    },
+    {
+      "name": "Parses JSON response",
+      "description": "Awaits response.json() and returns it (or throws on non-ok)",
+      "max_score": 6
+    }
+  ]
+}

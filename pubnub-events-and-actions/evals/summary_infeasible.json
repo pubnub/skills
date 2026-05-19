@@ -1,0 +1,17 @@
+{
+  "total_infeasible": 3,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "End-to-end Admin Portal configuration of a listener and action",
+      "reasoning": "E&A is currently configured via the Admin Portal UI; there is no MCP tool for object manipulation of listeners and actions. The eval can verify that the agent describes the correct configuration shape and parameters but cannot exercise the actual Admin Portal API."
+    },
+    {
+      "scenarios": "Live retry behavior verification (jittered backoff timing)",
+      "reasoning": "Observing E&A's actual jittered exponential backoff between attempts requires a deliberately-failing receiver and real PubNub traffic over multiple retry intervals (up to 15 minutes). This cannot be reproduced in a sandboxed file-based eval."
+    },
+    {
+      "scenarios": "JSONPath evaluation parity between PubNub's engine and a local tester",
+      "reasoning": "PubNub evaluates JSONPath in its own engine, which may differ subtly from local testers (jsonpath.com, jsonpath-ng, jq). The eval can verify syntactic correctness but cannot guarantee parity with PubNub's live evaluation."
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent correctly uses storeInHistory: false for ephemeral publishes, prefers pubnub.signal() for signal-style messages, uses pubnub.messageCounts for cheap count queries, and writes a publish-then-fetch verification that matches by the published timetoken.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "publishEphemeral opts out of storage",
+      "description": "publishEphemeral passes storeInHistory: false to pubnub.publish",
+      "max_score": 14
+    },
+    {
+      "name": "publishStored is stored",
+      "description": "publishStored does not pass storeInHistory: false (omitting it or explicitly setting storeInHistory: true)",
+      "max_score": 10
+    },
+    {
+      "name": "sendSignal uses pubnub.signal",
+      "description": "sendSignal calls pubnub.signal() (not pubnub.publish with storeInHistory: false)",
+      "max_score": 12
+    },
+    {
+      "name": "messageCounts for cheap counts",
+      "description": "countInWindow uses pubnub.messageCounts with channels and channelTimetokens (not by fetching pages and counting client-side)",
+      "max_score": 12
+    },
+    {
+      "name": "verifyStored waits before fetching",
+      "description": "verifyStored introduces a non-zero delay (setTimeout / Promise) between publish and fetch to allow storage to flush",
+      "max_score": 10
+    },
+    {
+      "name": "verifyStored uses fetchMessages",
+      "description": "verifyStored uses pubnub.fetchMessages (not pubnub.history or any other method) to confirm the message was stored",
+      "max_score": 10
+    },
+    {
+      "name": "Matches by publish timetoken",
+      "description": "verifyStored captures the timetoken returned from pubnub.publish and asserts that timetoken is present in the fetched results, rather than matching by payload equality alone",
+      "max_score": 12
+    },
+    {
+      "name": "Ephemeral cannot be retrieved comment",
+      "description": "Includes a comment, docstring, or constant that explicitly states publishEphemeral / sendSignal messages are not retrievable from History",
+      "max_score": 8
+    },
+    {
+      "name": "Awaits async publish",
+      "description": "publishStored, publishEphemeral, and verifyStored await the publish promise (rather than firing and forgetting)",
+      "max_score": 6
+    },
+    {
+      "name": "ES module syntax",
+      "description": "Uses import/export rather than CommonJS",
+      "max_score": 6
+    }
+  ]
+}

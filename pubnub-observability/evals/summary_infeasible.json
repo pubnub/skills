@@ -1,0 +1,17 @@
+{
+  "total_infeasible": 3,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "Live get_pubnub_usage_metrics invocation with real billing reconciliation",
+      "reasoning": "Pulling actual transaction counts and reconciling against a real PubNub invoice requires a live keyset and Admin Portal billing data. The eval can verify the agent calls the MCP tool with the right parameters but cannot exercise the live data flow."
+    },
+    {
+      "scenarios": "End-to-end incident triage against a real production incident",
+      "reasoning": "Validating the incident runbook end-to-end requires reproducing real failure modes (dropped messages, latency spikes, presence flapping) in a live environment. The eval can verify the agent follows the documented steps in order but cannot reproduce the underlying failures."
+    },
+    {
+      "scenarios": "Load test execution against a real keyset",
+      "reasoning": "Running an actual load test that simulates 10k+ concurrent subscribers requires PubNub Support pre-coordination and a non-prod keyset with capacity. The eval can verify the agent's test scaffolding but cannot run the load test itself."
+    }
+  ]
+}

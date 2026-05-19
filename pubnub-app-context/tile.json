@@ -1,0 +1,18 @@
+{
+  "name": "pubnub/pubnub-app-context",
+  "version": "0.1.0",
+  "private": false,
+  "summary": "Manages PubNub App Context (Objects API) for users, channels, memberships, and metadata",
+  "skills": {
+    "pubnub-app-context": {
+      "path": "SKILL.md"
+    }
+  },
+  "dependencies": {
+    "pubnub-keyset-management": ">=0.1.0",
+    "pubnub-app-developer": ">=0.1.0",
+    "pubnub-security": ">=0.1.0",
+    "pubnub-chat": ">=0.1.0",
+    "pubnub-illuminate": ">=0.1.0"
+  }
+}

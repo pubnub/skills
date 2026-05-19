@@ -1,0 +1,51 @@
+{
+  "context": "Tests whether the agent routes a runtime/incident-triage question to pubnub-history with the get_pubnub_messages MCP tool, producing a tight handoff suitable for on-call use.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses handoff template",
+      "description": "Output contains all five labeled lines (Intent, Skill, MCP tool, Docs source, Next step) in order",
+      "max_score": 10
+    },
+    {
+      "name": "Skill is pubnub-history",
+      "description": "The Skill line names pubnub-history",
+      "max_score": 18
+    },
+    {
+      "name": "MCP tool is get_pubnub_messages",
+      "description": "The MCP tool line names get_pubnub_messages",
+      "max_score": 18
+    },
+    {
+      "name": "Recognizes runtime/triage framing",
+      "description": "Either the Intent line or the Next step line characterizes this as runtime inspection or incident triage, not as a design/architecture question",
+      "max_score": 12
+    },
+    {
+      "name": "Next step references the channel and time window",
+      "description": "Next step explicitly mentions the channel name (support-incidents-prod) and/or the time window (last hour)",
+      "max_score": 10
+    },
+    {
+      "name": "Docs source is appropriate",
+      "description": "Docs source line is either 'n/a' (runtime triage has no docs surface) or History/Storage docs — not an unrelated docs surface like Chat SDK or Functions",
+      "max_score": 8
+    },
+    {
+      "name": "No implementation code",
+      "description": "Output contains no code blocks implementing the fetch",
+      "max_score": 12
+    },
+    {
+      "name": "Single handoff",
+      "description": "Output contains exactly one handoff block",
+      "max_score": 6
+    },
+    {
+      "name": "Concise",
+      "description": "Output is tight and on-call-friendly (not a long preamble before the handoff)",
+      "max_score": 6
+    }
+  ]
+}

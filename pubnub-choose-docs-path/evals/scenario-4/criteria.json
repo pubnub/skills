@@ -1,0 +1,51 @@
+{
+  "context": "Tests whether the agent routes a threshold-triggered anomaly-detection question to pubnub-illuminate with the manage_illuminate MCP tool, not to pubnub-functions with custom logic.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses handoff template",
+      "description": "Output contains all five labeled lines (Intent, Skill, MCP tool, Docs source, Next step) in order",
+      "max_score": 10
+    },
+    {
+      "name": "Skill is pubnub-illuminate",
+      "description": "The Skill line names pubnub-illuminate",
+      "max_score": 18
+    },
+    {
+      "name": "MCP tool is manage_illuminate",
+      "description": "The MCP tool line names manage_illuminate",
+      "max_score": 16
+    },
+    {
+      "name": "Skill is not pubnub-functions",
+      "description": "The Skill line does NOT name pubnub-functions (the wrong owner per the disambiguation heuristic for threshold-triggered actions)",
+      "max_score": 12
+    },
+    {
+      "name": "Intent reflects KPI + threshold",
+      "description": "The Intent line characterizes the goal as KPI tracking with a threshold-triggered action (e.g., 'detect anomalous publish rate and auto-mute')",
+      "max_score": 10
+    },
+    {
+      "name": "Docs source references Illuminate",
+      "description": "The Docs source line references PubNub Illuminate documentation",
+      "max_score": 8
+    },
+    {
+      "name": "Next step is actionable",
+      "description": "The Next step line offers a single, concrete action (e.g., 'Open the pubnub-illuminate skill' or 'Define a metric in Illuminate that counts channels per user per minute')",
+      "max_score": 8
+    },
+    {
+      "name": "No implementation code",
+      "description": "Output contains no code blocks implementing the rate detection or mute action",
+      "max_score": 10
+    },
+    {
+      "name": "Single handoff",
+      "description": "Output contains exactly one handoff block",
+      "max_score": 8
+    }
+  ]
+}

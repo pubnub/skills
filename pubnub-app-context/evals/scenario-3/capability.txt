@@ -1,0 +1,1 @@
+eTag-based optimistic concurrency with retry

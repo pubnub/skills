@@ -1,0 +1,124 @@
+{
+  "instructions": [
+    {
+      "instruction": "Log all four correlation fields (channel, message_id, user_id, timetoken) on every send and every receive",
+      "original_snippets": "Every send and receive code path logs **at minimum**: | `channel` | The PubNub channel name | | `message_id` | The client-generated UUID for idempotent publish | | `user_id` | The PubNub `userId` of the publisher (and the subscriber, separately) | | `timetoken` | The server-assigned 17-digit timetoken |",
+      "relevant_when": "Implementing any PubNub publish or receive code path",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Always emit structured logs (JSON or key=value), never free-form console.log strings",
+      "original_snippets": "Always emit structured logs (JSON or key=value), never `console.log(\"Sent \" + channel)`. ... Free-form string logs | Structured key=value or JSON",
+      "relevant_when": "Adding logging anywhere in a PubNub code path",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Log connection-state events on the status listener with category, operation, affectedChannels, lastTimetoken, currentTimetoken",
+      "original_snippets": "pubnub.addListener({ status: (s) => { log.info('pubnub.status', { category: s.category, operation: s.operation, affectedChannels: s.affectedChannels, lastTimetoken: s.lastTimetoken, currentTimetoken: s.currentTimetoken }); } });",
+      "relevant_when": "Setting up listeners on a PubNub instance",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Sample high-volume logs by message_id hash (deterministic), not random, so all logs for a sampled message are kept together",
+      "original_snippets": "Sample by **`message_id` hash**, not random — so you keep all logs for a sampled message ... Random sampling that drops correlated events | Sample by `message_id` hash",
+      "relevant_when": "Adding log sampling on a high-volume publish or receive path",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Always log errors and connection-state changes in full — never sample those",
+      "original_snippets": "Always log **errors** and **status changes** in full (no sampling).",
+      "relevant_when": "Configuring sampling rules",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "PubNub bills by transactions, not bytes — fan-out × publish rate is the dominant cost driver",
+      "original_snippets": "PubNub bills by **transactions**, not bytes. The dominant cost drivers in most apps: ... The single largest factor in most apps is **fan-out × publish rate**.",
+      "relevant_when": "Estimating, projecting, or investigating PubNub cost",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Project cost before launch using the 5-step audit: publish rate, fan-out, history rate, function invocations, app context operations — multiplied by projected DAU",
+      "original_snippets": "Before any new feature ships, walk through: 1. **Publish rate**: how many publishes per second per active user? 2. **Fan-out**: per channel, how many subscribers? 3. **History rate**: how often are history reads triggered? 4. **Function invocations**: how many per publish? 5. **App Context operations**: how often per session? Multiply by your projected DAU.",
+      "relevant_when": "Auditing cost for a new PubNub feature before launch",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Coalesce updates on the producer side when state changes faster than the UI renders (cursor position, scroll, game tick deltas, sensor 'latest wins')",
+      "original_snippets": "When state changes faster than a UI can render, **coalesce on the producer side**: ... For a cursor that moves 60 times per second, this drops publish rate to 10/s with no visible UX change. ... Cursor / pointer position | Yes (10–30 Hz max) ... Game tick (deltas) | Yes (30 Hz typical) ... Sensor reading where only latest matters | Yes",
+      "relevant_when": "Publishing rapidly-changing state where only the latest value matters to subscribers",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Do NOT coalesce chat messages, order placement events, or other discrete events where every message matters",
+      "original_snippets": "Chat message | No — every message matters | Order placement | No — every event is discrete",
+      "relevant_when": "Deciding whether to coalesce a particular update stream",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use signal() for ephemeral updates (typing indicators, presence-like updates) instead of publish() — cheaper and ~64-byte cap",
+      "original_snippets": "`signal()` | No | Yes | Ephemeral signals (typing indicators, presence-like updates); cheaper than `pubnub.publish()`, smaller max payload (~64 bytes) | ... `publish()` for ephemeral signals | `signal()` (also smaller payload limit)",
+      "relevant_when": "Sending an ephemeral indicator that doesn't need to be received-and-stored",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use fire() to trigger server-side Functions without delivering to subscribers",
+      "original_snippets": "`fire()` | No | Yes | Triggering server-side Functions only; not delivered to subscribers | ... `publish()` for fire-only Function triggers | `fire()`",
+      "relevant_when": "Triggering Functions without subscriber delivery",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Test pyramid: unit (envelope/reducer/dedup logic), integration (round-trip on test keyset), load (fan-out concurrency), E2E (real devices in staging)",
+      "original_snippets": "| Unit | Envelope shape, schema versioning, reducer logic | | Integration | Full publish → subscribe round trip in a test keyset | | Load | Fan-out, presence updates, history fetch concurrency | | End-to-end | Real device flows in staging |",
+      "relevant_when": "Designing a test plan for a PubNub feature",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use a dedicated test keyset for integration tests — never test against prod, and never use demo keys",
+      "original_snippets": "Use a dedicated test keyset (separate from dev — see [environment separation]) ... Integration tests against prod keyset | Use a dedicated test keyset ... Demo keyset behavior | Demo keys are public and throttled; they're not your prod keys",
+      "relevant_when": "Setting up an integration test environment",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use unique channel names per test (test-${uuid()}) so parallel test runs do not collide",
+      "original_snippets": "Use unique channel names per test (`test-${uuid()}`; see [naming]) so parallel test runs don't collide. ... Shared channel name across parallel test runs | Use a unique channel per test (`test-${uuid()}`)",
+      "relevant_when": "Writing integration tests with shared infrastructure",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Pull get_pubnub_usage_metrics per-keyset (per-environment) — mixing environments distorts the picture",
+      "original_snippets": "Pull per-environment (per-keyset) — see [keysets-and-environments]. Mixing environments distorts the picture. ... One big shared keyset across envs makes attribution impossible | One keyset per env; metrics are per-keyset",
+      "relevant_when": "Pulling usage metrics for cost reconciliation or capacity planning",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Cost spike investigation starts with per-category breakdown — never just total transactions",
+      "original_snippets": "1. **Pull usage metrics for the spike window. Categorize by transaction type (publish, subscribe, function, history, app context, presence).** 2. **Identify the dominant transaction type.** Most cost spikes come from one category. ... Cost spike investigated without categorizing transactions | Always start with per-category breakdown",
+      "relevant_when": "Investigating a cost spike",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "General incident triage order: (1) collect four correlation fields, (2) check status.pubnub.com, (3) pull usage metrics for window, (4) run the specific runbook",
+      "original_snippets": "For **any** PubNub incident, run this sequence first: 1. **Identify the four correlation fields** ... 2. **Check PubNub status**: open `https://status.pubnub.com` ... 3. **Check `get_pubnub_usage_metrics`** for the affected keyset and time window ... 4. **Run the runbook** for the specific incident class.",
+      "relevant_when": "Beginning triage on any PubNub-related production incident",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Files do not belong in publish() — use the File Sharing API; base64 in publish() is the most common cost mistake",
+      "original_snippets": "For files (images, PDFs, audio), use the [File Sharing API], which uploads to PubNub-managed storage and delivers a reference. Stuffing base64 in `publish()` payloads is the most common cost mistake. ... Files in `publish()` payloads | File Sharing API",
+      "relevant_when": "Sending image, PDF, audio, or other file content through PubNub",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Echoing publishes back to the publisher doubles fan-out — filter on receive when publisher_id === self",
+      "original_snippets": "| Echoing publishes back to the publisher | Doubles fan-out | Filter on receive (publisher_id !== self) | ... Echoing publishes back to the publisher | Filter on receive (publisher_id !== self)",
+      "relevant_when": "Designing a publish/subscribe pattern where the publisher also subscribes",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Never log payload contents of chat messages; log shape only or hash sensitive fields (PII risk)",
+      "original_snippets": "Logging payload contents in chat | PII risk; log shape only or hash sensitive fields",
+      "relevant_when": "Logging messages that may contain user-generated chat content",
+      "why_given": "reminder"
+    }
+  ]
+}

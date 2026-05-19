@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent correctly disables the SDK's short-term replay, persists last-seen timetokens, triggers catch-up only on reconnect (not initial connect), bounds the catch-up window, paginates the fetch, and deduplicates live + caught-up messages.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "restore: false in PubNub init",
+      "description": "initWithRestore constructs new PubNub({...}) with restore set to false so the short-term cache replay does not run on reconnect",
+      "max_score": 10
+    },
+    {
+      "name": "Per-channel localStorage key",
+      "description": "saveLastSeen / loadLastSeen use a localStorage key that includes the channel name (e.g. `lastTT:${channel}`), not a single global key",
+      "max_score": 8
+    },
+    {
+      "name": "Early return when no last-seen",
+      "description": "catchUp returns an empty array (or equivalent) without making any fetchMessages calls when loadLastSeen returns null/undefined",
+      "max_score": 8
+    },
+    {
+      "name": "Bounded catch-up window",
+      "description": "catchUp caps the effective start of the lookback so it does not go further back than maxLookbackMs from now, using BigInt arithmetic on timetokens",
+      "max_score": 12
+    },
+    {
+      "name": "Paginates with fetchMessages",
+      "description": "catchUp uses pubnub.fetchMessages with count <= 100 and pages backward (or forward) using start and/or end until the bounded range is exhausted",
+      "max_score": 12
+    },
+    {
+      "name": "Catch-up only on PNReconnectedCategory",
+      "description": "setupCatchUpOnReconnect's status handler only invokes catchUp when statusEvent.category === 'PNReconnectedCategory' (not on PNConnectedCategory)",
+      "max_score": 12
+    },
+    {
+      "name": "Dedup by timetoken",
+      "description": "Uses a Set (or equivalent) of timetokens to prevent the same message from being forwarded twice when caught-up history overlaps the live stream",
+      "max_score": 12
+    },
+    {
+      "name": "Updates last-seen on each processed message",
+      "description": "Each forwarded message triggers a saveLastSeen call so that the next catch-up starts from the freshest known timetoken",
+      "max_score": 8
+    },
+    {
+      "name": "Ascending timetoken order",
+      "description": "catchUp returns or processes messages in ascending timetoken order (oldest first)",
+      "max_score": 8
+    },
+    {
+      "name": "Live subscription wired",
+      "description": "setupCatchUpOnReconnect calls pubnub.subscribe({ channels: [channel] }) and adds a message listener so the live stream is also delivered to onMessage",
+      "max_score": 10
+    }
+  ]
+}

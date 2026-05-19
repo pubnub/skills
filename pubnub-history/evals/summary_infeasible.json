@@ -1,0 +1,17 @@
+{
+  "total_infeasible": 3,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "Live short-term cache vs. Message Persistence behavior under real disconnect/reconnect",
+      "reasoning": "Distinguishing the ~2–20 minute short-term cache from the persistent History API in a real reconnect flow requires a live PubNub keyset and an actual network drop. The eval can verify code patterns (PNReconnectedCategory handling, restore: false) but cannot exercise the timing-dependent server-side behavior."
+    },
+    {
+      "scenarios": "End-to-end retention boundary verification (e.g., messages expiring after the configured period)",
+      "reasoning": "Verifying that a message is no longer retrievable after the retention window has elapsed requires waiting for real-world time to pass (hours to days) against a live keyset. This cannot be reproduced in a sandboxed file-based eval."
+    },
+    {
+      "scenarios": "deleteMessages permission/keyset enablement",
+      "reasoning": "Confirming that the Delete-from-History add-on is enabled and that the secret key is correctly scoped requires API access to a real PubNub Admin Portal account. The eval can verify that the agent calls pubnub.deleteMessages with the correct shape and notes server-only usage, but cannot prove the call would succeed against a real keyset."
+    }
+  ]
+}

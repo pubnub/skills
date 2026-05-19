@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent correctly uses pubnub.deleteMessages for server-side message deletion, initializes the SDK with the secret key, documents the server-only and add-on requirements, and verifies deletion by re-fetching.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "deleteMessages API",
+      "description": "Uses pubnub.deleteMessages({ channel, start, end }) to perform deletion",
+      "max_score": 14
+    },
+    {
+      "name": "secretKey passed to PubNub init",
+      "description": "initServerPubNub constructs new PubNub({...}) with a secretKey property",
+      "max_score": 12
+    },
+    {
+      "name": "Server-only comment",
+      "description": "Top-of-file comment explicitly states this module must run server-side only",
+      "max_score": 10
+    },
+    {
+      "name": "Secret-key warning",
+      "description": "Comment or docstring explicitly warns that the secret key must never appear in client-side code",
+      "max_score": 10
+    },
+    {
+      "name": "Delete-from-History add-on note",
+      "description": "Comment or docstring explicitly states that the PubNub keyset must have the 'Delete from History' feature enabled",
+      "max_score": 10
+    },
+    {
+      "name": "deleteUserMessages paginates fetch",
+      "description": "deleteUserMessages uses pubnub.fetchMessages with count <= 100, walking the window with start and end, rather than a single unbounded call",
+      "max_score": 10
+    },
+    {
+      "name": "Filters by uuid",
+      "description": "deleteUserMessages filters fetched messages by message.uuid === userId (or equivalent) before deciding what to delete",
+      "max_score": 8
+    },
+    {
+      "name": "confirmDeletion uses fetchMessages",
+      "description": "confirmDeletion calls pubnub.fetchMessages with start and end matching the requested range and inspects result.channels[channel]",
+      "max_score": 10
+    },
+    {
+      "name": "confirmDeletion returns boolean from emptiness",
+      "description": "confirmDeletion returns true when the fetched array is empty (or length 0) and false otherwise",
+      "max_score": 8
+    },
+    {
+      "name": "Awaits deleteMessages",
+      "description": "All deleteMessages calls are awaited (returned promises are not fire-and-forget)",
+      "max_score": 8
+    }
+  ]
+}

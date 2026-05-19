@@ -1,0 +1,130 @@
+{
+  "instructions": [
+    {
+      "instruction": "Use exponential backoff with full jitter for reconnect: delay = random in [0, min(maxMs, initialMs * multiplier^attempt))",
+      "original_snippets": "function nextRetryDelay(attemptNumber, opts = {}) { const initialMs = opts.initialMs ?? 200; const maxMs = opts.maxMs ?? 30_000; const multiplier = opts.multiplier ?? 2; const expDelay = Math.min(maxMs, initialMs * Math.pow(multiplier, attemptNumber)); const jittered = Math.random() * expDelay; return jittered; }",
+      "relevant_when": "Designing reconnect or per-call retry behavior for a PubNub client",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use 200ms initial, 30s cap, 2× multiplier, full jitter as the default backoff parameters",
+      "original_snippets": "| `initialMs` | 200 | Fast recovery from a true blip | | `maxMs` | 30000 | Cap so we don't wait forever | | `multiplier` | 2 | Standard exponential growth | | jitter | full | Better than equal jitter for synchronization-breaking |",
+      "relevant_when": "Picking concrete backoff numbers for a new client",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Backoff must always include random jitter — pure exponential backoff still synchronizes across clients",
+      "original_snippets": "**Backoff + jitter must always include random jitter.** A pure exponential backoff still synchronizes if every client computed the same delay from the same outage start time. ... Exponential backoff without jitter | Still synchronized — every client's 4th attempt fires at the same moment",
+      "relevant_when": "Implementing any retry policy",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Bound retries with a MAX_ATTEMPTS cap (~12 for ~5 min) and escalate to user / monitoring instead of looping forever",
+      "original_snippets": "const MAX_ATTEMPTS = 12;     // ~5 min cumulative with capped backoff ... Don't retry forever. After a sensible cap, escalate to the user (show a \"still trying to reconnect\" UI) or surface to monitoring. ... Unbounded retries | Burns battery, fills logs, never tells the user",
+      "relevant_when": "Building reconnect or retry logic",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Reset the attempt counter ONLY on PNConnectedCategory / PNReconnectedCategory — never on a transient blip",
+      "original_snippets": "Resetting `attempts = 0` on a network blip | Loses backoff state; resets the curve too eagerly. Reset only on `PNConnectedCategory` / `PNReconnectedCategory`.",
+      "relevant_when": "Wiring a reconnect controller to status events",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Drive reconnect from PubNub status events (PNNetworkDownCategory, PNNetworkIssuesCategory, PNTimeoutCategory schedule reconnect; PNConnected/PNReconnected reset)",
+      "original_snippets": "pubnub.addListener({ status: (s) => { switch (s.category) { case 'PNConnectedCategory': case 'PNReconnectedCategory': reconnectController.reset(); ... case 'PNNetworkDownCategory': case 'PNNetworkIssuesCategory': case 'PNTimeoutCategory': reconnectController.scheduleReconnect( ... ); break; } } });",
+      "relevant_when": "Listening for PubNub status events to drive reconnect",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Generate the message_id ONCE at message creation time, never inside the retry loop — same id flows through every retry",
+      "original_snippets": "Generate the ID **once** at the moment of message creation (not at the moment of send). The same ID flows through every retry attempt. ... Generating a new UUID inside `publishWithRetry` for each attempt | Generate once outside the retry loop",
+      "relevant_when": "Wrapping pubnub.publish in a retry loop",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use crypto.randomUUID() (UUID v4) as the message_id source for client-generated publish identity",
+      "original_snippets": "| `crypto.randomUUID()` v4 | Standard, collision-free, 16 bytes encoded as 36 chars | A bit long | ... For most use cases: **UUID v4 via `crypto.randomUUID()`**.",
+      "relevant_when": "Generating a stable message identifier",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Receivers dedup by message_id using a Set or bounded LRU; never assume PubNub dedups for you",
+      "original_snippets": "const seenIds = new LRU({ max: 10_000 }); ... if (id && seenIds.has(id)) return; // duplicate; drop ... Treating PubNub as if it dedupes | PubNub does not dedup; it's the consumer's job",
+      "relevant_when": "Subscribing to a channel where retries or live+history overlap can produce duplicates",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Prefer message_id over timetoken as the dedup key — message_id survives retries and history fetches",
+      "original_snippets": "Always prefer `message_id` when the producer is under your control. ... | `message_id` (client-generated) | Producer is idempotent | Best — survives retries, history fetches, anything | | `timetoken` | Producer is not idempotent but you only care about this connection | Unique per publish, but a retry creates a new timetoken |",
+      "relevant_when": "Choosing the dedup key for live+history merge",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "For live + history merge, process the catch-up history first, then subscribe live — order matters so the dedup set is pre-populated before live messages arrive",
+      "original_snippets": "Order matters: process caught-up messages first (they're older), then start consuming live. The dedup `Set` already contains everything from the catch-up, so any live message that overlaps is dropped. ... Dedup the message before the catch-up pass populates the set | Process catch-up first, live second",
+      "relevant_when": "Implementing offline catch-up + live subscribe",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use a bounded LRU (e.g., 10000 entries) for the dedup set in a long-running session, not an unbounded Set",
+      "original_snippets": "For longer sessions, cap memory with an LRU ... 10,000 entries covers most chat / consumer apps. ... Unbounded in-memory `Set` for a long-running process | Use LRU or TTL",
+      "relevant_when": "Building dedup state for a long-running client",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Default to per-channel dedup state (one LRU per channel), not a single global set across all channels",
+      "original_snippets": "Default to per-channel. ... One global set across all channels and users | Per-channel (or per-(channel, user)) instead",
+      "relevant_when": "Designing dedup state for an app that subscribes to multiple channels",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Offline queue must be PERSISTENT (localStorage / IndexedDB / SQLite) — never in-memory only",
+      "original_snippets": "**Offline queue must be persistent** (localStorage / SQLite / IndexedDB), not in-memory. ... In-memory queue | Lost on app crash; persist",
+      "relevant_when": "Building an offline publish queue for a mobile or web client",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Offline queue must be FIFO-ordered, idempotent (each item carries its message_id), and bounded by count and age",
+      "original_snippets": "| **Ordered** | FIFO drain in enqueue order | | **Idempotent** | Each queued item carries a stable `message_id` from creation time | | **Bounded** | Cap by count + age; surface to user when at the cap |",
+      "relevant_when": "Designing an offline publish queue",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "On reaching MAX_ATTEMPTS for a queued item, move it to a dead-letter store — never silently auto-discard",
+      "original_snippets": "if (item.attempts > MAX_ATTEMPTS) { await db.delete('outbox', item.id); await db.put('dead-letter', item); ... Auto-discarding dead letters | Move to a dead-letter store and surface",
+      "relevant_when": "Handling persistent retry failures in the offline queue",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Trigger queue drain on app start, on PNReconnectedCategory / PNConnectedCategory status events, on a 30s periodic backstop, and on each enqueue (if online)",
+      "original_snippets": "Drain on: - App start - Reconnect (`PNReconnectedCategory`) ... - A periodic interval (every 30s) as a backstop - Each `enqueue` (try to drain immediately if online)",
+      "relevant_when": "Wiring a queue worker into the lifecycle of a PubNub client",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Every message envelope MUST include schema_version (integer), message_id (UUID), sent_at (ms), type (discriminator), and payload",
+      "original_snippets": "| `schema_version` | Integer. Bumped on any change to the shape. | | `message_id` | UUID v4 for idempotent publish + dedup. | | `sent_at` | Producer timestamp in ms. Useful for stale-message detection. | | `type` | Discriminator if the payload shape varies by event type. | | `payload` | The application-specific body. |",
+      "relevant_when": "Building a message envelope for publish",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Schema version is an immutable monotonic integer; never reuse a previous version number for a different shape",
+      "original_snippets": "**Schema version is immutable per message.** Never reuse a version number for a different shape. ... When you bump, **never reuse the previous version number for a different shape**. v1 is forever v1. ... Reusing v1 with a different shape | v1 is forever v1; bump to v2",
+      "relevant_when": "Versioning message envelopes across releases",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Receivers are tolerant readers: log-and-drop messages below MIN_SUPPORTED, log-and-drop messages above MAX_SUPPORTED (and prompt update), never crash on unknown fields",
+      "original_snippets": "1. Read `schema_version` first. 2. If version is in a known list, parse with the corresponding handler. 3. If version is below the minimum supported, drop with a log line. 4. If version is above the maximum supported, drop with a log line and suggest an app update. 5. Never crash on unknown fields",
+      "relevant_when": "Implementing a receiver that consumes versioned envelopes",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Migration flow: at T1 receivers handle BOTH old and new versions; at T2 producer migrates to new version; at T3 drop old handler — never go T0 → T2 directly",
+      "original_snippets": "T0: Producer + receiver both at v1. T1: Receiver updated to handle BOTH v1 and v2 ... T2: Producer updated to write v2. T3: After confidence period, drop v1 handler in receivers. Never go T0 → T2 directly without T1.",
+      "relevant_when": "Planning a schema version bump rollout",
+      "why_given": "reminder"
+    }
+  ]
+}

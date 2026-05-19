@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent uses server-side filter expressions with LIKE and && operators, cursor-based pagination via page.next, totalCount include, and proper sort syntax.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Server-side filter expression",
+      "description": "searchUsersPage builds a filter string combining name LIKE \"<prefix>*\", custom.verified == true, and custom.reputation >= minReputation using && operators",
+      "max_score": 18
+    },
+    {
+      "name": "Uses LIKE for prefix",
+      "description": "Filter uses LIKE with a * wildcard (not a regex, not a == check, not client-side String.startsWith)",
+      "max_score": 12
+    },
+    {
+      "name": "Sort by name ascending",
+      "description": "searchUsersPage passes sort: { name: 'asc' } to getAllUUIDMetadata",
+      "max_score": 8
+    },
+    {
+      "name": "limit: 100",
+      "description": "searchUsersPage passes limit: 100 explicitly",
+      "max_score": 8
+    },
+    {
+      "name": "customFields on read",
+      "description": "include.customFields: true is passed so custom.verified / custom.reputation are visible in the response",
+      "max_score": 10
+    },
+    {
+      "name": "Cursor pagination with page.next",
+      "description": "searchUsersPage threads the cursor argument into the page: { next: cursor } parameter (only when cursor is truthy)",
+      "max_score": 14
+    },
+    {
+      "name": "Returns nextCursor",
+      "description": "searchUsersPage returns the result.next value as nextCursor so the caller can request the next page",
+      "max_score": 8
+    },
+    {
+      "name": "Async generator iterateMatchingUsers",
+      "description": "iterateMatchingUsers is implemented as an async function* that yields users page by page, using searchUsersPage internally",
+      "max_score": 8
+    },
+    {
+      "name": "totalCount for countMatching",
+      "description": "countMatching passes include.totalCount: true and returns result.totalCount (not by iterating all pages)",
+      "max_score": 10
+    },
+    {
+      "name": "ES module syntax",
+      "description": "Uses import/export rather than CommonJS",
+      "max_score": 4
+    }
+  ]
+}

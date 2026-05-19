@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent correctly uses setChannelMetadata for rooms, setMemberships with custom role per membership, getMemberships and getChannelMembers with the embedded-object include flags, and removeMemberships.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "setChannelMetadata for room",
+      "description": "createRoom calls pubnub.objects.setChannelMetadata with channel, data.name, data.description, and data.custom",
+      "max_score": 12
+    },
+    {
+      "name": "Bulk setMemberships",
+      "description": "addUserToRooms calls pubnub.objects.setMemberships ONCE with a channels array containing all rooms, rather than looping and calling once per room",
+      "max_score": 14
+    },
+    {
+      "name": "Role on membership not channel",
+      "description": "The role is placed in each membership's custom field (channels[i].custom.role), NOT in the channel object's custom",
+      "max_score": 14
+    },
+    {
+      "name": "getMemberships with channel hydration",
+      "description": "listUserRooms calls pubnub.objects.getMemberships and passes include with at least channelFields: true and customChannelFields: true so the channel name, description, and custom are hydrated inline",
+      "max_score": 14
+    },
+    {
+      "name": "getMemberships with customFields",
+      "description": "listUserRooms passes include.customFields: true so the membership's role is visible in the response",
+      "max_score": 10
+    },
+    {
+      "name": "getChannelMembers with user hydration",
+      "description": "listRoomMembers calls pubnub.objects.getChannelMembers and passes include with at least UUIDFields: true and customUUIDFields: true so the user's name and custom are hydrated inline",
+      "max_score": 12
+    },
+    {
+      "name": "removeMemberships for leave",
+      "description": "removeUserFromRoom calls pubnub.objects.removeMemberships with uuid and channels: [roomId]",
+      "max_score": 10
+    },
+    {
+      "name": "Explicit limit",
+      "description": "listUserRooms and listRoomMembers pass an explicit limit parameter to their respective calls",
+      "max_score": 6
+    },
+    {
+      "name": "Awaits async",
+      "description": "All pubnub.objects.* calls are awaited",
+      "max_score": 4
+    },
+    {
+      "name": "ES module syntax",
+      "description": "Uses import/export rather than CommonJS",
+      "max_score": 4
+    }
+  ]
+}

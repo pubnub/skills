@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent checks the METRIC Decision account limit before creating a new one, surfaces the conflict to the caller instead of auto-deleting, and gates DELETE on an explicit confirmation string.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "GETs /v2/illuminate/decisions",
+      "description": "listMetricDecisions issues an HTTP GET to https://admin-api.pubnub.com/v2/illuminate/decisions",
+      "max_score": 10
+    },
+    {
+      "name": "Filters METRIC sourceType",
+      "description": "listMetricDecisions filters the response to decisions whose sourceType === 'METRIC' (does NOT include BUSINESSOBJECT or QUERY decisions)",
+      "max_score": 12
+    },
+    {
+      "name": "atLimit when count >= 3",
+      "description": "checkMetricDecisionLimit returns atLimit: true precisely when the METRIC count is at least 3",
+      "max_score": 14
+    },
+    {
+      "name": "createSafely checks limit first",
+      "description": "createMetricDecisionSafely calls checkMetricDecisionLimit before any POST",
+      "max_score": 12
+    },
+    {
+      "name": "No auto-delete on limit",
+      "description": "When at limit, createMetricDecisionSafely returns a non-ok result that includes existingDecisions — it does NOT delete anything on the user's behalf",
+      "max_score": 16
+    },
+    {
+      "name": "Returns ok: true on success",
+      "description": "When not at limit, createMetricDecisionSafely POSTs the decisionBody and returns { ok: true, decision }",
+      "max_score": 8
+    },
+    {
+      "name": "Confirmation string check",
+      "description": "deleteMetricDecisionWithConsent only performs the DELETE call when confirmation === 'yes-i-am-sure-delete-decision-' + decisionId; otherwise returns { ok: false, reason: 'confirmation-required' }",
+      "max_score": 14
+    },
+    {
+      "name": "DELETE goes to /v2/illuminate/decisions/<id>",
+      "description": "When confirmed, the DELETE call uses method DELETE on /v2/illuminate/decisions/<decisionId>",
+      "max_score": 8
+    },
+    {
+      "name": "Top-of-file comment on limits and no-auto-delete",
+      "description": "Top-of-file comment explicitly states the 3-per-account METRIC Decision limit AND that the module never auto-deletes",
+      "max_score": 10
+    },
+    {
+      "name": "All HTTP uses required headers",
+      "description": "Every HTTP call (GET, POST, DELETE) sets Authorization and PubNub-Version: 2026-02-09",
+      "max_score": 10
+    }
+  ]
+}

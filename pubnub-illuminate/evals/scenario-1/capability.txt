@@ -1,0 +1,1 @@
+Define a COUNT Metric over a Business Object

@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent writes an idempotent webhook receiver that iterates req.body.data, dedups by event.id, switches on the schema field, and ACKs once per batch with 200.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Iterates req.body.data",
+      "description": "Receiver reads the events array from req.body.data (with empty-array fallback) — does NOT treat req.body as a single event",
+      "max_score": 14
+    },
+    {
+      "name": "Dedup by event.id",
+      "description": "Maintains a Set (or LRU/Map) keyed by event.id at module scope and skips events whose id has been seen",
+      "max_score": 16
+    },
+    {
+      "name": "Reads top-level schema",
+      "description": "Routes on the value of req.body.schema (or per-event schema) using the includes/contains check on the schema string",
+      "max_score": 12
+    },
+    {
+      "name": "Routes message sent",
+      "description": "Calls processMessageSent when schema contains 'messages.message.sent'",
+      "max_score": 8
+    },
+    {
+      "name": "Routes reaction created",
+      "description": "Calls processReactionCreated when schema contains 'messages.reaction.created'",
+      "max_score": 8
+    },
+    {
+      "name": "Routes reaction deleted",
+      "description": "Calls processReactionDeleted when schema contains 'messages.reaction.deleted'",
+      "max_score": 8
+    },
+    {
+      "name": "Default to processUnknown",
+      "description": "Falls through to processUnknown for unrecognized schema strings",
+      "max_score": 6
+    },
+    {
+      "name": "Single 200 ACK per batch",
+      "description": "Sends res.status(200) (or res.sendStatus(200)) exactly once after processing the entire batch, not per item, and not a non-2xx for partial failure",
+      "max_score": 12
+    },
+    {
+      "name": "Idempotency comment",
+      "description": "Top-of-file comment explicitly notes E&A may retry the same batch and that the receiver is therefore designed to be idempotent",
+      "max_score": 8
+    },
+    {
+      "name": "Exports processor stubs",
+      "description": "Exports processMessageSent, processReactionCreated, processReactionDeleted, processUnknown as named exports (or attaches them to module.exports for ESM compatibility)",
+      "max_score": 4
+    },
+    {
+      "name": "ES module syntax",
+      "description": "Uses import/export rather than CommonJS",
+      "max_score": 4
+    }
+  ]
+}

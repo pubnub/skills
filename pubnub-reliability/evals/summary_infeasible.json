@@ -1,0 +1,17 @@
+{
+  "total_infeasible": 3,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "Live reconnect timing against a real regional outage",
+      "reasoning": "Verifying that jittered backoff actually breaks synchronization across thousands of clients requires reproducing a regional outage and a large client fleet. The eval can verify the math of nextRetryDelay() and the controller's state transitions but cannot exercise the real thundering-herd avoidance."
+    },
+    {
+      "scenarios": "True persistence across app restart for the offline queue",
+      "reasoning": "Validating that an IndexedDB / SQLite / localStorage-backed queue survives a real app crash + cold start requires a browser or mobile runtime with state preserved. The eval can verify the agent's code uses persistent APIs (indexedDB / sqlite / etc.) and not in-memory only, but cannot simulate the runtime crash."
+    },
+    {
+      "scenarios": "End-to-end idempotency at PubNub server side",
+      "reasoning": "Confirming that a duplicate publish with the same message_id reaches PubNub and that a server-side Function dedup actually drops it requires a live keyset and Function deployment. The eval can verify the producer carries the same message_id across retries and the receiver dedups but cannot exercise the server-side check."
+    }
+  ]
+}

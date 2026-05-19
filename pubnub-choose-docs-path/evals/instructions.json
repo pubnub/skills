@@ -1,0 +1,166 @@
+{
+  "instructions": [
+    {
+      "instruction": "Produce a handoff, never implementation code",
+      "original_snippets": "**Never write implementation code in this skill.** Hand off to the specialist owner. ... This skill produces a handoff, not code.",
+      "relevant_when": "Routing a PubNub question for the first time",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use the exact 5-line handoff template with Intent, Skill, MCP tool, Docs source, and Next step fields",
+      "original_snippets": "When handing off, produce exactly one block in this shape: Intent      : <one sentence restating what the user is trying to do> Skill       : <specialist-skill-name> MCP tool    : <user-pubnub MCP tool> Docs source : <which PubNub docs surface to consult> Next step   : <one concrete action the user or agent should take next>",
+      "relevant_when": "Producing any routing output",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Always name both the specialist skill and the MCP tool in the handoff",
+      "original_snippets": "**Always name both the skill and the MCP tool.** A handoff without both is incomplete.",
+      "relevant_when": "Filling in the handoff template",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Stop after one handoff; do not chain multiple handoffs",
+      "original_snippets": "**Stop after one handoff.** If the user has multiple intents, ask which to address first.",
+      "relevant_when": "Responding to any routing query",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "If the user has multiple intents, ask which to address first instead of guessing",
+      "original_snippets": "**Stop after one handoff.** If the user has multiple intents, ask which to address first.",
+      "relevant_when": "User question combines multiple distinct PubNub concerns",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "If the user has already named a specific feature, defer to the matching specialist directly instead of running this router",
+      "original_snippets": "Do **not** invoke this skill when the user has already named a specific feature (chat, presence, illuminate, history, etc.) — load the matching specialist skill directly.",
+      "relevant_when": "User explicitly names a PubNub feature/SDK in their question",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Route chat/messaging/DM/typing/reactions/threads intents to pubnub-chat with get_chat_sdk_documentation",
+      "original_snippets": "Build 1:1 DM, group chat, channels, message reactions, typing indicators | `pubnub-chat` | `get_chat_sdk_documentation` | Chat SDK docs",
+      "relevant_when": "User describes a chat or messaging feature",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Route non-chat real-time core SDK intents (IoT, telemetry, state sync, push fan-out) to pubnub-app-developer with get_sdk_documentation",
+      "original_snippets": "IoT telemetry, device-to-cloud streaming | `pubnub-app-developer` | `get_sdk_documentation` | Core SDK docs ... Push notifications, fan-out broadcasts | `pubnub-app-developer` | `get_sdk_documentation` | Core SDK docs",
+      "relevant_when": "User describes IoT, generic real-time core SDK use, or push fan-out",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Route presence questions (online/offline, occupancy, multi-device sync) to pubnub-presence with get_pubnub_presence (runtime) or get_sdk_documentation (design)",
+      "original_snippets": "Show online/offline indicators, room occupancy | `pubnub-presence` | `get_pubnub_presence` (runtime) + `get_sdk_documentation` | Presence docs",
+      "relevant_when": "User asks about who is online, occupancy, or multi-device presence",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Route history/replay/catch-up/timetoken-pagination intents to pubnub-history with get_pubnub_messages",
+      "original_snippets": "Catch up an offline user, paginate by timetoken | `pubnub-history` | `get_pubnub_messages` + `get_sdk_documentation` | History/Storage docs",
+      "relevant_when": "User asks about retrieving past messages, catch-up, or pagination",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Route user/channel/membership metadata intents to pubnub-app-context with manage_app_context",
+      "original_snippets": "Store user profile, avatar, role | `pubnub-app-context` | `manage_app_context` | Objects/App Context docs",
+      "relevant_when": "User asks about user profiles, channel metadata, or membership metadata",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Route per-message edge logic (transform, validate, enrich, moderate) to pubnub-functions, not pubnub-events-and-actions",
+      "original_snippets": "**\"Transform / validate / enrich the message inline\"** → `pubnub-functions` (not `pubnub-events-and-actions`).",
+      "relevant_when": "User wants logic that runs on each PubNub message inline",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Route 'forward to external system' (webhook, Lambda, Kafka, SQS, EventBridge) to pubnub-events-and-actions, not pubnub-functions",
+      "original_snippets": "**\"Send a message every time X happens\" + external destination** → `pubnub-events-and-actions` (not `pubnub-functions`). ... Forward every message to webhook / Lambda / Kafka / SQS / EventBridge | `pubnub-events-and-actions`",
+      "relevant_when": "User wants to forward PubNub events to an external destination",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Route analytics/KPI/threshold-alerts/dashboards intents to pubnub-illuminate with manage_illuminate",
+      "original_snippets": "Track real-time KPIs (message counts, top users, session durations) | `pubnub-illuminate` | `manage_illuminate` | Illuminate docs ... Threshold-triggered actions (alert when X exceeds Y) | `pubnub-illuminate` | `manage_illuminate` | Illuminate docs",
+      "relevant_when": "User asks about real-time KPIs, thresholds, anomaly detection, or dashboards",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Route app/keyset/environment-separation intents to pubnub-keyset-management with manage_apps or manage_keysets",
+      "original_snippets": "Create/inspect/update an app | `pubnub-keyset-management` | `manage_apps` | Admin Portal docs ... Create/inspect/update a keyset, separate dev/staging/prod | `pubnub-keyset-management` | `manage_keysets` | Admin Portal docs",
+      "relevant_when": "User asks about creating apps, keysets, or separating environments",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Route Access Manager / auth / encryption / TLS intents to pubnub-security with get_sdk_documentation",
+      "original_snippets": "Authenticate clients, issue tokens, restrict channels | `pubnub-security` | `get_sdk_documentation` | Access Manager docs ... Encrypt messages or files | `pubnub-security` | `get_sdk_documentation` | Encryption docs",
+      "relevant_when": "User asks about authentication, authorization, encryption, or TLS",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Route channel-groups, wildcard subscribe, and scale-tuning intents to pubnub-scale with get_sdk_documentation",
+      "original_snippets": "Channel groups, wildcard subscribe | `pubnub-scale` | `get_sdk_documentation` | Stream Controller docs ... Plan for 10k+ concurrent users / live event | `pubnub-scale` | `write_pubnub_app` | Best-practices docs",
+      "relevant_when": "User asks about channel groups, wildcards, high throughput, or large live events",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Route backoff, idempotency, retry, and dedup intents to pubnub-reliability with write_pubnub_app",
+      "original_snippets": "Reliability patterns (backoff, idempotency, retry, dedup) | `pubnub-reliability` | `write_pubnub_app` | Best-practices docs",
+      "relevant_when": "User asks about reconnect strategy, retry, dedup, or idempotent publishes",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Route logging-correlation, test-pyramid, and runbook intents to pubnub-observability with write_pubnub_app",
+      "original_snippets": "Logging correlation, test pyramid, runbook | `pubnub-observability` | `write_pubnub_app` | Best-practices docs",
+      "relevant_when": "User asks about observability, logging, testing strategy, or runbooks",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Route 'send a test message' runtime intent to send_pubnub_message MCP tool",
+      "original_snippets": "Send a test message to validate publish | `pubnub-app-developer` | `send_pubnub_message` | n/a",
+      "relevant_when": "User wants to publish a one-off message for testing or validation",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Route 'subscribe and observe live messages' runtime intent to subscribe_and_receive_pubnub_messages MCP tool",
+      "original_snippets": "Subscribe and observe live messages | `pubnub-app-developer` | `subscribe_and_receive_pubnub_messages` | n/a",
+      "relevant_when": "User wants to live-subscribe to a channel from a test or runtime tool",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Route conceptual or step-by-step multi-product recipes to the how_to MCP tool first, then hand off to the specialist owner",
+      "original_snippets": "When the user asks \"how do I X\" with a step-by-step expectation and X spans multiple PubNub products, prefer the `how_to` MCP tool first to retrieve the relevant recipe, then hand off to the specialist skill that owns the implementation.",
+      "relevant_when": "User asks an open-ended 'how do I' question that spans multiple PubNub products",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Route architecture review / production-readiness intents to write_pubnub_app",
+      "original_snippets": "Architecture review / production-readiness | `pubnub-reliability` + `pubnub-observability` + `pubnub-security` | `write_pubnub_app` | Best-practices docs",
+      "relevant_when": "User asks for an architecture review or production-readiness check",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Apply disambiguation heuristics: online indicator = presence, reconnect = reliability, 'was user here 10 min ago' = history",
+      "original_snippets": "**\"Online / offline indicator\"** → `pubnub-presence`. **\"Reconnect after dropout\"** → `pubnub-reliability`. **\"Was this user in the channel 10 min ago\"** → `pubnub-history`.",
+      "relevant_when": "User asks about presence-adjacent topics that could plausibly be presence, reliability, or history",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "User profile / avatar / role questions go to pubnub-app-context, even in a chat app",
+      "original_snippets": "**\"User profile, avatar, role\"** → `pubnub-app-context` (not `pubnub-chat`, even in a chat app).",
+      "relevant_when": "User asks where user profile/avatar/role data should live",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Never paraphrase another skill's content; link to it via the canonical owner file",
+      "original_snippets": "**Never paraphrase another skill's content.** Link instead. The full mapping lives in [references/intent-to-tool.md](references/intent-to-tool.md).",
+      "relevant_when": "Producing a handoff that mentions an owned topic (Access Manager, pagination, App Context, etc.)",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Spam / chat-flooding / cross-posting anomaly detection routes to pubnub-illuminate, not pubnub-functions with custom logic",
+      "original_snippets": "**\"Track a KPI and alert when it crosses a threshold\"** → `pubnub-illuminate` (not `pubnub-functions` + custom logic). ... Anomaly detection (cross-posting spam, chat flooding) | `pubnub-illuminate`",
+      "relevant_when": "User asks how to detect spam, flooding, or other anomalies in PubNub traffic",
+      "why_given": "particular preference"
+    }
+  ]
+}

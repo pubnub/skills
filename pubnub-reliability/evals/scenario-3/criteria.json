@@ -1,0 +1,81 @@
+{
+  "context": "Tests whether the agent implements a persistent (db-backed) bounded FIFO queue with attempt counting, dead-letter on attempts overflow, drain triggers on PNReconnected/PNConnected and a 30s backstop, and never silently discards.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "MAX_QUEUE_DEPTH = 1000",
+      "description": "Module exports/uses MAX_QUEUE_DEPTH = 1000",
+      "max_score": 6
+    },
+    {
+      "name": "MAX_ATTEMPTS = 5",
+      "description": "Module exports/uses MAX_ATTEMPTS = 5",
+      "max_score": 6
+    },
+    {
+      "name": "enqueue rejects when full",
+      "description": "enqueue calls db.count('outbox') and returns { ok: false, reason: 'queue-full' } when count >= MAX_QUEUE_DEPTH, WITHOUT writing the item",
+      "max_score": 14
+    },
+    {
+      "name": "enqueue item shape",
+      "description": "Items written to 'outbox' include id (UUID), enqueued_at (ms), channel, message, and attempts: 0",
+      "max_score": 10
+    },
+    {
+      "name": "drainOnce respects isOnline",
+      "description": "drainOnce returns immediately (does not call publish) when isOnline() returns false",
+      "max_score": 10
+    },
+    {
+      "name": "drainOnce deletes on success",
+      "description": "On successful publish, drainOnce calls db.delete('outbox', item.id)",
+      "max_score": 10
+    },
+    {
+      "name": "drainOnce increments attempts on failure",
+      "description": "On publish failure, drainOnce increments item.attempts",
+      "max_score": 10
+    },
+    {
+      "name": "Dead-letter on attempts overflow",
+      "description": "When the incremented attempts exceeds MAX_ATTEMPTS, the item is deleted from 'outbox' AND put into 'dead-letter'",
+      "max_score": 14
+    },
+    {
+      "name": "Re-puts on retry",
+      "description": "When attempts has not exceeded MAX_ATTEMPTS, the item is re-put to 'outbox' with the incremented attempts so the next drain sees it",
+      "max_score": 10
+    },
+    {
+      "name": "drainOnce does not throw",
+      "description": "drainOnce continues iterating items even when individual publishes throw (the loop has a try/catch around the publish call)",
+      "max_score": 8
+    },
+    {
+      "name": "Status listener triggers drain",
+      "description": "attachDrainTriggers adds a pubnub.addListener({ status }) handler that calls drainOnce on PNReconnectedCategory or PNConnectedCategory",
+      "max_score": 12
+    },
+    {
+      "name": "30s setInterval backstop",
+      "description": "attachDrainTriggers sets up a setInterval that calls drainOnce every 30000ms",
+      "max_score": 8
+    },
+    {
+      "name": "inspectDeadLetter surfaces items",
+      "description": "inspectDeadLetter calls db.getAll('dead-letter') and maps each item to a shape including enqueued_at, age_minutes, attempts, channel, message_id — and does NOT delete anything",
+      "max_score": 10
+    },
+    {
+      "name": "Comment on persistence",
+      "description": "Top-of-file comment explicitly states the queue is persistent via the injected db adapter (not in-memory only)",
+      "max_score": 6
+    },
+    {
+      "name": "Comment on dead-letter surfacing",
+      "description": "Top-of-file comment explicitly states dead-letter items are surfaced and never auto-discarded",
+      "max_score": 6
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent computes per-category ratios, cost-per-DAU, and produces the right slack/page alerts per the documented thresholds, with comments on per-environment isolation.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Computes totals",
+      "description": "Both current.total and previous.total in the return are the sum of all category values for that week",
+      "max_score": 10
+    },
+    {
+      "name": "Cost-per-DAU per week",
+      "description": "Both current.costPerDau and previous.costPerDau equal total / dau for that week",
+      "max_score": 12
+    },
+    {
+      "name": "totalRatio computed",
+      "description": "totalRatio equals current.total / previous.total",
+      "max_score": 8
+    },
+    {
+      "name": "Per-category ratios",
+      "description": "categoryRatios contains an entry for every category in the input, each equal to current/previous for that category",
+      "max_score": 12
+    },
+    {
+      "name": "dominantCategoryCurrent is argmax",
+      "description": "dominantCategoryCurrent is the key in current.categories whose value is the maximum",
+      "max_score": 8
+    },
+    {
+      "name": "Page-level threshold for category",
+      "description": "A category whose ratio is strictly greater than categoryPageMultiplier produces an alert entry { level: 'page', category, ratio }",
+      "max_score": 14
+    },
+    {
+      "name": "Slack-level threshold for category",
+      "description": "A category whose ratio is strictly greater than categorySlackMultiplier but not greater than categoryPageMultiplier produces an alert entry { level: 'slack', category, ratio }",
+      "max_score": 12
+    },
+    {
+      "name": "No double-alert",
+      "description": "When a category exceeds the page multiplier, the result contains exactly one alert entry for that category (the 'page' entry), not both page and slack",
+      "max_score": 12
+    },
+    {
+      "name": "Total can also alert",
+      "description": "Same threshold logic applies to total with totalSlackMultiplier/totalPageMultiplier, pushed with category: 'total'",
+      "max_score": 10
+    },
+    {
+      "name": "Comment on per-keyset attribution",
+      "description": "Top-of-file comment explicitly states the review is per-keyset (per-environment) and that mixing environments distorts attribution",
+      "max_score": 8
+    },
+    {
+      "name": "Comment on cost-per-DAU normalization",
+      "description": "Top-of-file comment explicitly says cost-per-DAU normalization is what reveals per-user efficiency changes, and notes that flat cost-per-DAU with rising DAU is usually fine",
+      "max_score": 8
+    }
+  ]
+}

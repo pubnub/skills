@@ -1,0 +1,20 @@
+{
+  "name": "pubnub/pubnub-reliability",
+  "version": "0.1.0",
+  "private": false,
+  "summary": "Cross-cutting reliability patterns: backoff+jitter, idempotent publish, dedup-on-merge, queue+retry, schema versioning",
+  "skills": {
+    "pubnub-reliability": {
+      "path": "SKILL.md"
+    }
+  },
+  "dependencies": {
+    "pubnub-app-developer": ">=0.1.0",
+    "pubnub-presence": ">=0.1.0",
+    "pubnub-history": ">=0.1.0",
+    "pubnub-app-context": ">=0.1.0",
+    "pubnub-functions": ">=0.1.0",
+    "pubnub-illuminate": ">=0.1.0",
+    "pubnub-observability": ">=0.1.0"
+  }
+}

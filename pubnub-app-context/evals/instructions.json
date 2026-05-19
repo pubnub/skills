@@ -1,0 +1,142 @@
+{
+  "instructions": [
+    {
+      "instruction": "Use pubnub.objects.setUUIDMetadata to upsert user profile data",
+      "original_snippets": "await pubnub.objects.setUUIDMetadata({ uuid: 'user-123', data: { name: 'Alice Liddell', email: 'alice@example.com', ... custom: { role: 'admin', ... } } });",
+      "relevant_when": "Creating or updating a user object in App Context",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use pubnub.objects.setChannelMetadata to upsert channel metadata",
+      "original_snippets": "await pubnub.objects.setChannelMetadata({ channel: 'room-photo-challenge-123', data: { name: 'Photo Challenge', description: '...', custom: { ... } } });",
+      "relevant_when": "Creating or updating a channel object in App Context",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use pubnub.objects.setMemberships to add a user to channels with per-membership custom fields",
+      "original_snippets": "await pubnub.objects.setMemberships({ uuid: 'user-123', channels: [ { id: 'room-photo-challenge-123', custom: { joined_at: '...', role: 'member', ... } } ] });",
+      "relevant_when": "Adding a user to one or more channels with relationship metadata",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use pubnub.objects.getMemberships to list channels a user belongs to",
+      "original_snippets": "const result = await pubnub.objects.getMemberships({ uuid: 'user-123', include: { customFields: true, channelFields: true, customChannelFields: true, totalCount: true }, limit: 100 });",
+      "relevant_when": "Listing the channels a given user is a member of",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use pubnub.objects.getChannelMembers to list members of a channel",
+      "original_snippets": "const result = await pubnub.objects.getChannelMembers({ channel: 'room-photo-challenge-123', include: { customFields: true, UUIDFields: true, customUUIDFields: true, totalCount: true }, limit: 100 });",
+      "relevant_when": "Listing the users who are members of a given channel",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use pubnub.objects.removeMemberships to remove a user from channels",
+      "original_snippets": "await pubnub.objects.removeMemberships({ uuid: 'user-123', channels: ['room-photo-challenge-123'] });",
+      "relevant_when": "Removing a user from one or more channels",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Always pass include.customFields: true on reads if you intend to read custom data",
+      "original_snippets": "Always pass `include: { customFields: true }` if you intend to read `custom`. Without it, the response omits `custom`. ... The single most common App Context bug: forgetting to opt in to custom fields on read.",
+      "relevant_when": "Reading any App Context object whose custom fields matter",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use channelFields / customChannelFields / UUIDFields / customUUIDFields to hydrate the embedded object inline",
+      "original_snippets": "include: { customFields: true, channelFields: true, customChannelFields: true, totalCount: true } ... The `include` object lets you hydrate the embedded channel object inline so you don't need a second request per channel.",
+      "relevant_when": "Listing memberships or channel members and wanting the related object's metadata in the same response",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use the eTag from a read and pass it as ifMatchesEtag on the next set to opt into optimistic concurrency",
+      "original_snippets": "await pubnub.objects.setUUIDMetadata({ uuid: 'user-123', data: { name: 'Alice L.', custom: { ... } }, ifMatchesEtag: current.data.eTag });",
+      "relevant_when": "Updating a user-editable field where two clients could write concurrently",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Filter server-side with the filter expression syntax instead of fetching everything and filtering client-side",
+      "original_snippets": "App Context filters are evaluated server-side, returning only matching records. Always prefer a filter over fetching everything and filtering client-side. ... Listing all channels then filtering client-side | Use [filter expressions](metadata-and-filtering.md) server-side",
+      "relevant_when": "Producing a list-and-filter pattern against App Context",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use filter operators ==, !=, <, <=, >, >=, LIKE, &&, ||, ! to express predicates",
+      "original_snippets": "`==` | Equality | `name == \"Alice\"` ... `LIKE` | Wildcard match (`*` for any chars) | `name LIKE \"Al*\"` ... `&&` | Logical AND ... `\\|\\|` | Logical OR ... `!` | Logical NOT",
+      "relevant_when": "Constructing a filter expression for getAll* calls",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Address custom fields in filters as custom.<field_name> and embedded fields as channel.<field> or uuid.<field>",
+      "original_snippets": "Top-level fields: `name`, `email`, `description`, `updated` Custom fields: `custom.<field_name>` Embedded objects (in memberships): `channel.name`, `channel.custom.<field>`, `uuid.name`, `uuid.custom.<field>`",
+      "relevant_when": "Filtering memberships by channel attributes or user attributes",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Pass an explicit limit on every list call; the cap is 100",
+      "original_snippets": "`limit` defaults to 100 and is capped at 100 per request. Always pass an explicit limit so future SDK changes don't surprise you. ... Not setting `limit` explicitly | Always pass an explicit `limit` (max 100)",
+      "relevant_when": "Calling getAll* or getMemberships / getChannelMembers",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Paginate getAll* results with cursor-based pagination using result.next and page: { next: cursor }",
+      "original_snippets": "let cursor; do { const result = await pubnub.objects.getAllUUIDMetadata({ ... page: cursor ? { next: cursor } : undefined }); result.data.forEach(processUser); cursor = result.next; } while (cursor);",
+      "relevant_when": "Reading more than 100 App Context records",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Sort with { fieldName: 'asc' | 'desc' }, supporting multi-key sorts and custom.* fields",
+      "original_snippets": "sort: { name: 'asc' } sort: { updated: 'desc', name: 'asc' } sort: { 'custom.reputation': 'desc' }",
+      "relevant_when": "Ordering list results",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Subscribe to App Context change events using addListener with an objects: handler",
+      "original_snippets": "pubnub.addListener({ objects: (event) => { const { type, event: action, data } = event.message; ... } });",
+      "relevant_when": "Reacting to user/channel/membership metadata changes in real time",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Distinguish event types uuid / channel / membership and event actions set / delete inside the objects handler",
+      "original_snippets": "if (type === 'uuid' && action === 'set') { cacheUser(data); } else if (type === 'channel' && action === 'delete') { removeChannelFromUI(data.id); } else if (type === 'membership' && action === 'set') { updateRoomMembershipBadge(data); }",
+      "relevant_when": "Building UI reactions to App Context events",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Subscribe to the object's own channel (the userId or channelId) to receive its metadata events",
+      "original_snippets": "Events are published on the corresponding object's channel — to receive user-123's metadata events, subscribe to channel `user-123`. ... Subscribing to a \"metadata events\" channel that doesn't exist | Subscribe to the object's own channel (the userId or channelId)",
+      "relevant_when": "Wiring metadata event listeners",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Keep custom fields shallow — scalar values with optional shallow nested objects, not deep JSON or arrays of records",
+      "original_snippets": "Use scalar values (strings, numbers, booleans). Nested objects are supported but keep them shallow. ... Avoid Deep Nesting ... App Context is a directory, not a JSON document store.",
+      "relevant_when": "Designing the custom field schema for users, channels, or memberships",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Store user roles on the membership object (per-user, per-channel), not on the channel object",
+      "original_snippets": "Encode roles in the membership `custom`, not in the channel `custom`. A user's role is per-channel (admin in one room, member in another). ... Storing user roles on the channel object | Store on the membership (per-user, per-channel)",
+      "relevant_when": "Modeling user permissions or roles per channel",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Treat App Context as a lightweight directory, not your primary data store; keep domain data in your own DB and reference it via externalId",
+      "original_snippets": "App Context is a **lightweight directory**, not your primary data store. Domain records belong in your own database. ... Using App Context as the primary user store | App Context is a directory — your DB is the source of truth",
+      "relevant_when": "Designing where user / channel / membership data lives",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Read-merge-set for partial membership updates rather than calling setMemberships with only the changed field",
+      "original_snippets": "`setMemberships` is upsert — calling it again with the same (user, channel) pair overwrites the membership's custom data. To do a partial update, read first and merge",
+      "relevant_when": "Updating one field of a membership's custom data without losing the others",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use bulk memberships in setMemberships / removeMemberships to add or remove a user from many channels in one call",
+      "original_snippets": "Memberships support bulk add/remove in a single call: await pubnub.objects.setMemberships({ uuid: 'user-123', channels: [ ... ] });",
+      "relevant_when": "Adding or removing a user from multiple channels at once",
+      "why_given": "new knowledge"
+    }
+  ]
+}

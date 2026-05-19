@@ -1,0 +1,112 @@
+{
+  "instructions": [
+    {
+      "instruction": "Use one keyset per environment (dev / staging / prod) — never share a keyset across environments",
+      "original_snippets": "Use distinct keysets per environment: **dev**, **staging**, **production**. Never share a keyset across environments. ... Single keyset shared across dev + prod | Test traffic reaches real users; cost mixing | One keyset per env",
+      "relevant_when": "Setting up PubNub for any project that has more than one environment",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "The secret key (sec-c-...) lives only on servers — never appears in client code, mobile bundles, or browser bundles",
+      "original_snippets": "**Server-side only.** Never appears in any client code, mobile app bundle, browser bundle, or public repository. ... Secret key in mobile app bundle | Anyone can extract it from the binary | Server-only secret key",
+      "relevant_when": "Initializing the PubNub SDK or storing keys for an application",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Publish and subscribe keys are safe to ship in client code; the secret key is not",
+      "original_snippets": "Publish key (`pub-c-...`) | Client AND server | Sending messages ... Subscribe key (`sub-c-...`) | Client AND server | Receiving messages ... Secret key (`sec-c-...`) | **Server only — never client**",
+      "relevant_when": "Choosing which keys to inject at build time for a client",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Load PubNub keys from environment variables or a secrets manager — never inline literals, never source control",
+      "original_snippets": "Show env-var or secrets-manager retrieval, never inline literals. ... Hardcoded keys in source files | Leaks on first repo clone or CI log | Env vars + secrets manager",
+      "relevant_when": "Writing PubNub SDK initialization code",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Throw a clear error if a required key env var is missing, rather than silently initializing with undefined",
+      "original_snippets": "function getEnvOrThrow(name) { const value = process.env[name]; if (!value) { throw new Error(`Missing required env var: ${name}`); } return value; }",
+      "relevant_when": "Loading PubNub keys from env vars in a server runtime",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use a consistent prefix-per-environment naming convention for key env vars (e.g., ACME_CHAT_DEV_PUBLISH_KEY)",
+      "original_snippets": "Pick a convention and apply it everywhere — Admin Portal labels, env var names, secrets-manager paths, alerting tags: ACME_CHAT_DEV_PUBLISH_KEY ACME_CHAT_DEV_SUBSCRIBE_KEY ACME_CHAT_DEV_SECRET_KEY",
+      "relevant_when": "Designing the env var contract for a PubNub app's keys",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Demo keys are public — never use them for your own application, dev, staging, or production",
+      "original_snippets": "These keys are **publicly documented** — anyone can use them, and anyone subscribed to the same channel with demo keys will see your messages. ... Building any application of your own | **No** | No isolation, public traffic ... Anything in production | **No, ever** | No SLA, no security, throttled",
+      "relevant_when": "User mentions demo keys or pastes a sample with hardcoded demo keys",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Rotating a secret key is server-only and quick; rotating a subscribe key is effectively a keyset migration because channels and history are scoped to the subscribe key",
+      "original_snippets": "| Subscribe key | All subscribers must update; **also rotates the entire keyset namespace** — channels and history are isolated per subscribe key | This is a **disruptive rotation** — usually performed by spinning up a new keyset | ... > **Important**: rotating the **subscribe key** effectively migrates to a brand-new keyset.",
+      "relevant_when": "Planning a key rotation",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Secret key rotation procedure: generate new key, update server secret store, restart processes, re-grant outstanding Access Manager tokens, verify, audit",
+      "original_snippets": "1. **Generate a new secret key** in the Admin Portal ... 2. **Update server secret store** with the new key. Restart server processes that hold the secret in memory. 3. **Re-grant outstanding Access Manager tokens** ... 4. **Verify** by issuing a new token from the rotated server and confirming it works on a client. 5. **Audit** secrets manager access logs",
+      "relevant_when": "Rotating the secret key on a keyset",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use a pre-commit hook (or gitleaks/truffleHog/detect-secrets) to scan for PubNub key prefixes pub-c-, sub-c-, sec-c- before commit",
+      "original_snippets": "if git diff --cached | grep -qE '(pub-c-|sub-c-|sec-c-)[a-f0-9-]{36}'; then ... For real-world use prefer a tool like `gitleaks`, `truffleHog`, or `detect-secrets` with a custom rule for the PubNub key prefixes.",
+      "relevant_when": "Setting up source-control hygiene tooling for a PubNub project",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "If a key is found in repo history, rotate it immediately and strip from history (or treat the repo as compromised)",
+      "original_snippets": "If a key is found in history: rotate it immediately, then strip from history with `git filter-repo` or treat the repo as compromised.",
+      "relevant_when": "Discovering a leaked key in git history",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Rotation cadence: secret key annually, within 24 hours on personnel change, immediately on suspected leak",
+      "original_snippets": "| No known incident, production secret key | Annually | | Personnel change with secret-key access | Within 24 hours | | Suspected leak | Immediately |",
+      "relevant_when": "Documenting or scheduling key rotation policy",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Configure different add-ons per environment based on need (e.g., short Persistence retention in dev, prod retention in production)",
+      "original_snippets": "Enable different add-ons in different environments based on need. ... | [Message Persistence] | on (1 day retention) | on (matches prod) | on (per product retention) |",
+      "relevant_when": "Setting up add-on configuration per environment keyset",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Custom origin is paid-plan only and requires a PubNub Support ticket — it is not self-service",
+      "original_snippets": "**Custom origin requires PubNub Support coordination.** It is not self-service and is paid-plan only. ... Available only for paid PubNub plans. Coordinated through PubNub Support — not self-service.",
+      "relevant_when": "Requesting a custom origin / vanity domain",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "A custom origin support request must include the paid-keyset account email, three preferred subdomain choices, SDKs and versions in use, and whether you have customers in China",
+      "original_snippets": "2. **Include in the ticket**: - The PubNub account email associated with the **paid production keyset(s)** that will use the custom origin. - **Three subdomain choices** in order of preference. ... - **PubNub SDKs in use** — language and version for each ... - Whether you have **customers or devices in China**",
+      "relevant_when": "Drafting a support request for a custom origin",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "A custom origin does not improve latency or bypass browser per-host connection limits or IP allowlist requirements",
+      "original_snippets": "What a Custom Origin Does Not Do - **Does not increase per-host connection limits.** ... - **Does not improve latency.** ... - **Does not bypass IP allowlist requirements**",
+      "relevant_when": "User expects performance gains from a custom origin",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Never log or print the secret key, even in error messages or audit logs",
+      "original_snippets": "Plain text in source control (even private repos) ... Slack messages, ticket comments, design docs ... CI logs (mask via secret-handling features in your CI provider)",
+      "relevant_when": "Writing logging or error-handling around PubNub initialization",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "userId / UUID must be unique and persistent per user/server instance",
+      "original_snippets": "userId: 'server-instance-' + os.hostname() ... userId: getCurrentUserId(),",
+      "relevant_when": "Initializing the PubNub SDK on any client or server",
+      "why_given": "new knowledge"
+    }
+  ]
+}

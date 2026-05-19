@@ -1,0 +1,142 @@
+{
+  "instructions": [
+    {
+      "instruction": "Use Events & Actions to route messages to external systems; use Functions to modify them inline",
+      "original_snippets": "| Route messages to external systems | Modify messages in flight | | No code, configuration only | Custom logic per message | | Standard webhook / queue / blob target | Aggregation, transformation, enrichment |",
+      "relevant_when": "Choosing between E&A and Functions for a PubNub integration",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Webhook receivers must be idempotent and dedup by the event 'id' field — events can be delivered more than once",
+      "original_snippets": "Webhooks can be delivered more than once (transient failure → retry). Receivers must be idempotent. Use the `id` field in each event item as a dedup key ... const seenIds = new LRU(100_000); ... if (seenIds.has(event.id)) continue; seenIds.add(event.id);",
+      "relevant_when": "Implementing the HTTP endpoint that receives PubNub E&A webhook deliveries",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Webhook receivers iterate req.body.data because batching wraps events in a data array",
+      "original_snippets": "const events = req.body.data || [];     // batch is in `data` array for (const event of events) { ... }",
+      "relevant_when": "Parsing a batched webhook payload from E&A",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Webhook receivers return HTTP 2xx once per batch — partial-success ACKs are not supported and a non-2xx triggers a full-batch retry",
+      "original_snippets": "ACK once with `2xx` after processing all items in the batch — partial success isn't supported (PubNub will retry the whole batch). ... Treating webhook ACK as confirmation each item was processed | ACK is per batch; per-item ack isn't supported",
+      "relevant_when": "Implementing the response phase of a webhook receiver",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Switch on the payload's 'schema' field to handle each event type",
+      "original_snippets": "Every webhook payload includes a top-level `schema` field that uniquely identifies the event type and version ... Receivers should switch on `schema` to handle each event type",
+      "relevant_when": "Routing different E&A event types in a single webhook receiver",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "JSONPath filter expressions wrap predicates in $.[?(...)]",
+      "original_snippets": "**Exact channel match:** $.[?(@.channel == 'room-42')] ... Forgetting the `?(...)` filter syntax around predicates | Without `?(...)` it's not a filter expression",
+      "relevant_when": "Writing an Advanced JSONPath filter for an E&A listener",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use =~ /regex/flags for regex matching in JSONPath; add the /i flag for case-insensitive matching",
+      "original_snippets": "**Channel name regex:** $.[?(@.channel =~ /.*my_channel.*/i)] ... `=~` | Regex match (with `/regex/flags` literal) ... Case-sensitive regex when channels mix cases | Add `/i` flag",
+      "relevant_when": "Filtering by channel name with regex semantics",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Combine JSONPath predicates with &&, ||, !; use in [...] and nin [...] for membership tests",
+      "original_snippets": "**Combination (AND):** $.[?(@.channel =~ /.*some_suffix/i && @.meta.sensor_reading > 25 && @.message.status != 'error')] ... `in [...]` | Value is in the array literal | `nin [...]` | Value is NOT in the array literal",
+      "relevant_when": "Composing multi-clause JSONPath filters",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Test JSONPath against a captured payload sample before saving — a wrong filter silently drops every event",
+      "original_snippets": "**A wrong JSONPath silently drops events** — there is no error, the listener simply never triggers. ... Saving JSONPath without testing → silent drop | Test on a captured payload sample first",
+      "relevant_when": "Authoring or modifying a JSONPath filter for a production listener",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Prefer Basic Filters when a single channel or sender-ID match is sufficient; reach for JSONPath only when multi-criteria or payload-content filtering is needed",
+      "original_snippets": "Use Basic Filters when one criterion is sufficient. For multi-condition or payload-content filtering, use JSONPath. ... Prefer **Basic Filters** when they suffice — slightly faster.",
+      "relevant_when": "Deciding between Basic Filter and JSONPath for a listener",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Free tier has no retry and is webhook-only — production almost always requires a paid tier",
+      "original_snippets": "**Free tier is webhook-only with no retry** — production use almost always requires a paid tier. ... Free tier in production (no retry) | Upgrade to a paid tier",
+      "relevant_when": "Choosing a PubNub plan tier for E&A production use",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Configure batching on S3 action targets — without batching, every event is a separate PUT and costs explode",
+      "original_snippets": "S3 charges per PUT request. Without batching, every event is a separate PUT, which is expensive at scale. **Default batching: 100 items or 5 seconds, whichever first.** ... S3 target without batching | Configure batching (100 items / 5s default)",
+      "relevant_when": "Setting up an S3 action target",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Batch is sent when item-count or time-window limit is reached first — tune both for the target's latency/cost profile",
+      "original_snippets": "A batch is sent when **either** bound is reached first. ... For S3 archival: increase batch to 1000 items / 60 seconds. Fewer PUTs, more items per object. ... For latency-sensitive webhooks: decrease batch to 10 items / 1 second.",
+      "relevant_when": "Configuring batching parameters on a Webhook or S3 action",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "S3 batches over 5 MB are uploaded as multipart automatically with no extra configuration",
+      "original_snippets": "S3 batches over **5 MB** are uploaded as multipart automatically. No extra config needed. ... S3 batches > 5MB use multipart upload.",
+      "relevant_when": "Reasoning about S3 action behavior for large batches",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Envelope version 2.1 is the default and can be enveloped (with E&A metadata) or unenveloped (raw event)",
+      "original_snippets": "| 2.1 | **Yes (default)** | ... Each version supports **enveloped** and **unenveloped** formats. ... **Default: 2.1, no envelope.**",
+      "relevant_when": "Choosing the envelope version for a new action",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Pick Enveloped when one receiver handles many listeners and needs the metadata context; pick Unenveloped when the receiver knows what triggered it",
+      "original_snippets": "| Receiver knows what listener triggered (one listener per receiver) | Unenveloped | | Receiver handles many listeners and needs context | Enveloped |",
+      "relevant_when": "Configuring an action's envelope format",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "E&A retries use jittered exponential backoff with a 15-minute cap and a 10-second minimum interval; max 4 retries per action",
+      "original_snippets": "E&A uses a **jittered exponential backoff** between attempts. ... The cap (`maxRetryPeriod`) is 900 seconds = 15 minutes. The minimum interval is 10 seconds. ... | Number of retries | 2 | 1 | 4 |",
+      "relevant_when": "Tuning retry knobs on an action",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "There is no dead-letter queue — pair E&A with Message Persistence so missed events can be replayed from history",
+      "original_snippets": "If all retries fail, the event is permanently lost. There is no dead-letter queue inherent to E&A. Mitigations: ... Pair E&A with PubNub Message Persistence so you can replay missed events from history.",
+      "relevant_when": "Designing for guaranteed delivery semantics with E&A",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Internal presence channels (`-pnpres`) are excluded from Messages event sources — use the dedicated Presence event sources (Users / Channels) instead",
+      "original_snippets": "E&A does not process internal presence publishes (e.g., `-pnpres` channels). Use the dedicated **Presence event sources** instead. ... **Internal presence (`-pnpres`) is excluded** — use the Presence-source listeners instead.",
+      "relevant_when": "Wanting to act on presence events via E&A",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "There is no direct EventBridge target — route Webhook → API Gateway → (Lambda → EventBridge OR API Gateway's direct EventBridge integration)",
+      "original_snippets": "There is no direct EventBridge target. Use the webhook target pointed at an API Gateway endpoint that calls EventBridge: PubNub → Webhook → API Gateway → Lambda → EventBridge",
+      "relevant_when": "Integrating PubNub events with AWS EventBridge",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use Webhook for Lambda integration via API Gateway with an API-key custom header for shared-secret auth",
+      "original_snippets": "Standard pattern: API Gateway HTTP endpoint that triggers Lambda. Use API key auth via custom header. ... **Custom headers**: arbitrary key-value headers (paid tiers); useful for shared-secret auth",
+      "relevant_when": "Wiring PubNub events to AWS Lambda",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use one action target per environment, scoped to that env's keyset — never share an action across dev/staging/prod",
+      "original_snippets": "One action across multiple environments | One action per environment, bound to that env's keyset",
+      "relevant_when": "Configuring E&A across multiple environments",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use least-privilege IAM (e.g., sqs:SendMessage only, s3:PutObject only, kinesis:PutRecord only) for action credentials and rotate periodically",
+      "original_snippets": "**AWS credentials**: access key + secret (least-privilege IAM user with `sqs:SendMessage` only) ... Hardcoded AWS credentials in the action config | Use a least-privilege IAM user (e.g., `Sender-EventsActions-Prod`, distinct from your PubNub userId); rotate periodically",
+      "relevant_when": "Configuring AWS action target credentials",
+      "why_given": "particular preference"
+    }
+  ]
+}

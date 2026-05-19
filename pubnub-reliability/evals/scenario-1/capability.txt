@@ -1,0 +1,1 @@
+Idempotent publish with stable message_id across retries

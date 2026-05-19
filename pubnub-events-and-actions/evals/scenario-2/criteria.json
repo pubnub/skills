@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent produces a coherent E&A S3 archival configuration: scoped JSONPath filter for trades.* channels, aggressive batching settings, least-privilege IAM, and a rationale that mentions per-PUT cost and S3 multipart-at-5MB.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Valid JSON",
+      "description": "Output is a single valid JSON document parseable by a JSON parser, no surrounding code or markdown fence",
+      "max_score": 10
+    },
+    {
+      "name": "Listener eventSource is Messages",
+      "description": "listener.eventSource is 'Messages'",
+      "max_score": 6
+    },
+    {
+      "name": "Listener filter scopes to trades.*",
+      "description": "listener.filter contains a regex or pattern targeting channels named trades.* (e.g., JSONPath with @.channel =~ /^trades\\./, or a Basic Filter with Channel/Contains/trades.)",
+      "max_score": 14
+    },
+    {
+      "name": "Action target is S3",
+      "description": "action.targetType equals 'S3'",
+      "max_score": 6
+    },
+    {
+      "name": "Bucket, region, prefix present",
+      "description": "action.bucket, action.region, and action.objectKeyPrefix are all present and non-empty",
+      "max_score": 8
+    },
+    {
+      "name": "Aggressive batching",
+      "description": "action.batching.itemCount is >= 1000 AND action.batching.timeWindowSeconds is >= 30 (i.e., tuned for archival, not latency)",
+      "max_score": 14
+    },
+    {
+      "name": "Envelope version 2.1",
+      "description": "action.envelopeVersion is '2.1' (the documented default)",
+      "max_score": 6
+    },
+    {
+      "name": "IAM actions minimal",
+      "description": "iam.actions is an array containing exactly one action, 's3:PutObject' (no s3:* wildcards, no s3:GetObject, no s3:DeleteObject)",
+      "max_score": 14
+    },
+    {
+      "name": "IAM principle stated",
+      "description": "iam.principle is a non-empty string referencing least-privilege",
+      "max_score": 6
+    },
+    {
+      "name": "Rationale mentions per-PUT cost",
+      "description": "rationale.costNote explicitly states that S3 charges per PUT and that batching reduces cost",
+      "max_score": 8
+    },
+    {
+      "name": "Rationale mentions 5MB multipart",
+      "description": "rationale.multipartNote explicitly mentions that S3 batches over 5MB are uploaded as multipart automatically",
+      "max_score": 8
+    }
+  ]
+}

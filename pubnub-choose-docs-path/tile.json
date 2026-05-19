@@ -1,0 +1,34 @@
+{
+  "name": "pubnub/pubnub-choose-docs-path",
+  "version": "0.1.0",
+  "private": false,
+  "summary": "Routes PubNub questions to the correct documentation source, MCP tool, and specialist skill",
+  "skills": {
+    "pubnub-choose-docs-path": {
+      "path": "SKILL.md"
+    }
+  },
+  "dependencies": {
+    "pubnub-app-context": ">=0.1.0",
+    "pubnub-app-developer": ">=0.1.0",
+    "pubnub-chat": ">=0.1.0",
+    "pubnub-events-and-actions": ">=0.1.0",
+    "pubnub-functions": ">=0.1.0",
+    "pubnub-history": ">=0.1.0",
+    "pubnub-illuminate": ">=0.1.0",
+    "pubnub-keyset-management": ">=0.1.0",
+    "pubnub-live-auctions": ">=0.1.0",
+    "pubnub-live-betting-casino": ">=0.1.0",
+    "pubnub-live-sport-updates": ">=0.1.0",
+    "pubnub-live-stock-quote-updates": ">=0.1.0",
+    "pubnub-live-voting": ">=0.1.0",
+    "pubnub-multiplayer-gaming": ">=0.1.0",
+    "pubnub-observability": ">=0.1.0",
+    "pubnub-order-delivery-driver": ">=0.1.0",
+    "pubnub-presence": ">=0.1.0",
+    "pubnub-reliability": ">=0.1.0",
+    "pubnub-scale": ">=0.1.0",
+    "pubnub-security": ">=0.1.0",
+    "pubnub-telemedicine": ">=0.1.0"
+  }
+}

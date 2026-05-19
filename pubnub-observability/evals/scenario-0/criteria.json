@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent writes a wrapper that always logs the four correlation fields, distinguishes publish.start / publish.ok / publish.error events, adds a status listener for connection-state events, and never logs the message payload.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "publish.start logs channel + message_id + user_id",
+      "description": "publishWithLogging emits a structured log event 'pubnub.publish.start' whose context object includes channel, message_id, and user_id (read from envelope.message_id and pubnub.getUserId())",
+      "max_score": 12
+    },
+    {
+      "name": "publish.ok includes timetoken from response",
+      "description": "publishWithLogging logs 'pubnub.publish.ok' AFTER the publish resolves, including the timetoken from the response (not from the envelope or start context)",
+      "max_score": 14
+    },
+    {
+      "name": "publish.error log on failure",
+      "description": "publishWithLogging logs 'pubnub.publish.error' with err.message in the catch block and rethrows",
+      "max_score": 10
+    },
+    {
+      "name": "Receive log uses all four correlation fields",
+      "description": "attachReceiveLogging's message handler logs an event whose context object includes channel, message_id (from e.message?.message_id), user_id (the receiver via pubnub.getUserId()), publisher_id (e.publisher), and timetoken (e.timetoken)",
+      "max_score": 16
+    },
+    {
+      "name": "Receive process_error",
+      "description": "When the wrapper's processFn throws, attachReceiveLogging logs 'pubnub.receive.process_error' with the same correlation context plus error: err.message",
+      "max_score": 8
+    },
+    {
+      "name": "Status listener wired",
+      "description": "attachStatusLogging registers a status: handler via pubnub.addListener (separate from the message listener)",
+      "max_score": 10
+    },
+    {
+      "name": "Status log fields",
+      "description": "Status listener logs at least category, operation, affectedChannels, lastTimetoken, and currentTimetoken from the status event",
+      "max_score": 10
+    },
+    {
+      "name": "Structured logging only",
+      "description": "Every log call is in the form log.info(event, ctx) or log.error(event, ctx) with a separate event-name string and a context object — no template strings or string concatenation that bakes data into the event string",
+      "max_score": 12
+    },
+    {
+      "name": "No payload logging",
+      "description": "Neither publishWithLogging nor attachReceiveLogging logs the entire envelope/message object (must not include envelope/message as a top-level context field)",
+      "max_score": 10
+    },
+    {
+      "name": "ES module syntax",
+      "description": "Uses import/export rather than CommonJS; imports log from './log.js'",
+      "max_score": 4
+    }
+  ]
+}

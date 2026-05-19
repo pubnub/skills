@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent routes a chat-feature question to pubnub-chat with the chat SDK docs MCP tool, using the canonical 5-line handoff template and producing no implementation code.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses Intent line",
+      "description": "Output contains a line starting with 'Intent' (followed by a colon) that restates the user's goal in one sentence",
+      "max_score": 8
+    },
+    {
+      "name": "Uses Skill line",
+      "description": "Output contains a line starting with 'Skill' (followed by a colon)",
+      "max_score": 8
+    },
+    {
+      "name": "Skill is pubnub-chat",
+      "description": "The Skill line names pubnub-chat",
+      "max_score": 15
+    },
+    {
+      "name": "Uses MCP tool line",
+      "description": "Output contains a line starting with 'MCP tool' (followed by a colon)",
+      "max_score": 8
+    },
+    {
+      "name": "MCP tool is get_chat_sdk_documentation",
+      "description": "The MCP tool line names get_chat_sdk_documentation",
+      "max_score": 15
+    },
+    {
+      "name": "Uses Docs source line",
+      "description": "Output contains a line starting with 'Docs source' (followed by a colon) referencing the Chat SDK docs or equivalent",
+      "max_score": 10
+    },
+    {
+      "name": "Uses Next step line",
+      "description": "Output contains a line starting with 'Next step' (followed by a colon) with one concrete actionable suggestion",
+      "max_score": 8
+    },
+    {
+      "name": "No implementation code",
+      "description": "Output contains no code blocks (no triple-backtick blocks of JavaScript, Python, or other language implementations of the requested feature)",
+      "max_score": 12
+    },
+    {
+      "name": "Single handoff only",
+      "description": "Output contains exactly one handoff block, not multiple chained handoffs covering separate intents",
+      "max_score": 8
+    },
+    {
+      "name": "Does not paraphrase specialist content",
+      "description": "Output does not restate large portions of pubnub-chat's content; it routes to it rather than reproducing its instructions",
+      "max_score": 8
+    }
+  ]
+}

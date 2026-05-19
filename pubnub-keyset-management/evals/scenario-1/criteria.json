@@ -1,0 +1,51 @@
+{
+  "context": "Tests whether the agent implements the documented secret-key rotation procedure in order, gates on an explicit confirmation string, never logs the secret key, and short-circuits on the first failure.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Confirmation gate",
+      "description": "Function checks input.confirmRotation === 'yes-rotate-' + input.environment before any side-effectful step; short-circuits with ok: false on mismatch",
+      "max_score": 16
+    },
+    {
+      "name": "Steps run in documented order",
+      "description": "Audit entries are appended in the order: confirmed → server-secret-store-updated → re-grant-tokens → verify → audit-secrets-access",
+      "max_score": 14
+    },
+    {
+      "name": "Calls reissueTokens",
+      "description": "Function invokes input.reissueTokens() and records the returned count in the audit detail",
+      "max_score": 10
+    },
+    {
+      "name": "Calls verifyToken",
+      "description": "Function invokes input.verifyToken() and short-circuits with ok: false when it returns false",
+      "max_score": 12
+    },
+    {
+      "name": "Calls auditSecretManagerAccess",
+      "description": "Function invokes input.auditSecretManagerAccess() as the final step and includes the returned principals in the audit detail",
+      "max_score": 8
+    },
+    {
+      "name": "Secret key never logged",
+      "description": "Code never assigns input.newSecretKey (or any computed value derived from it) into any audit entry, console.log call, or return value",
+      "max_score": 16
+    },
+    {
+      "name": "Short-circuit on failure",
+      "description": "Each step that can fail short-circuits subsequent steps and returns { ok: false, audit } rather than continuing",
+      "max_score": 10
+    },
+    {
+      "name": "Top-of-file comment all three points",
+      "description": "Top-of-file comment explicitly states all three: (1) server-only, (2) new secret key value is never written to audit, (3) runbook short-circuits on first failure",
+      "max_score": 10
+    },
+    {
+      "name": "ES module syntax",
+      "description": "Uses import/export rather than CommonJS",
+      "max_score": 4
+    }
+  ]
+}

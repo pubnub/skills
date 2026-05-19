@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent writes a Lambda handler that validates a shared-secret header, parses the batched body, switches on the presence schema, dedups by id, and returns a single 200.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Reads shared secret header",
+      "description": "Handler reads event.headers['x-pubnub-secret'] (or equivalent case-insensitive lookup) to verify the request",
+      "max_score": 12
+    },
+    {
+      "name": "Loads expected secret from env",
+      "description": "Compares against process.env.PUBNUB_SHARED_SECRET (not a hardcoded literal)",
+      "max_score": 10
+    },
+    {
+      "name": "Returns 401 on mismatch",
+      "description": "Returns { statusCode: 401, ... } when the secret does not match, without proceeding to process the batch",
+      "max_score": 12
+    },
+    {
+      "name": "Parses event.body JSON",
+      "description": "Calls JSON.parse on event.body (since API Gateway proxy payloads arrive as JSON strings)",
+      "max_score": 10
+    },
+    {
+      "name": "Iterates body.data",
+      "description": "Reads the events array from the parsed body's data field",
+      "max_score": 8
+    },
+    {
+      "name": "Switches on schema",
+      "description": "Routes based on includes('presence.user.channel.joined' / 'presence.user.channel.left' / 'presence.user.timedout')",
+      "max_score": 12
+    },
+    {
+      "name": "Dedup by event.id",
+      "description": "Maintains a Set at module scope keyed by event.id and skips re-processing",
+      "max_score": 12
+    },
+    {
+      "name": "Returns 200 once per batch",
+      "description": "Returns { statusCode: 200, ... } after the entire batch, never per item, and never a non-2xx for partial failure",
+      "max_score": 10
+    },
+    {
+      "name": "Comment covers all three risks",
+      "description": "Top-of-file comment mentions all three of: shared-secret validation, retry-driven idempotency, and warm-container Set behavior",
+      "max_score": 8
+    },
+    {
+      "name": "Exports stubs",
+      "description": "Exports onJoin, onLeave, onTimeout, onUnknown, and the seen Set as named exports",
+      "max_score": 4
+    },
+    {
+      "name": "ES module syntax",
+      "description": "Uses import/export rather than CommonJS",
+      "max_score": 2
+    }
+  ]
+}
