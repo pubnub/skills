@@ -1,0 +1,81 @@
+{
+  "context": "Tests whether the agent implements a tolerant-reader receiver that reads schema_version first, drops below MIN/above MAX with documented log events, prompts update on too-new, routes to per-version handlers, and documents the migration flow.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "MIN_SUPPORTED and MAX_SUPPORTED constants",
+      "description": "Module exports/uses MIN_SUPPORTED = 1 and MAX_SUPPORTED = 2",
+      "max_score": 8
+    },
+    {
+      "name": "HANDLERS object",
+      "description": "HANDLERS object is exposed with keys 1 and 2 mapped to stub functions",
+      "max_score": 8
+    },
+    {
+      "name": "process handles missing version",
+      "description": "When envelope.schema_version is not a number, process calls logger.warn with event name 'schema.version.missing' and returns without throwing",
+      "max_score": 14
+    },
+    {
+      "name": "process handles too-old",
+      "description": "When schema_version < MIN_SUPPORTED, process calls logger.warn with event name 'schema.version.too_old' (NOT calls a handler) and returns",
+      "max_score": 12
+    },
+    {
+      "name": "process handles too-new",
+      "description": "When schema_version > MAX_SUPPORTED, process calls logger.warn with event name 'schema.version.too_new' AND calls promptUserToUpdate() and returns",
+      "max_score": 14
+    },
+    {
+      "name": "Routes via HANDLERS lookup",
+      "description": "For supported versions, process calls HANDLERS[envelope.schema_version](envelope.payload) — passing the payload, not the whole envelope",
+      "max_score": 12
+    },
+    {
+      "name": "Never throws on unknown fields",
+      "description": "The process function (and the documented HANDLERS contract) does not depend on knowing every field — it only reads schema_version and passes payload through; no destructuring that would throw on missing optional fields",
+      "max_score": 8
+    },
+    {
+      "name": "applyMigrationStep T0",
+      "description": "applyMigrationStep('T0') returns the documented string 'Producer + receiver both at v1.'",
+      "max_score": 6
+    },
+    {
+      "name": "applyMigrationStep T1",
+      "description": "applyMigrationStep('T1') returns 'Receiver updated to handle BOTH v1 and v2.'",
+      "max_score": 8
+    },
+    {
+      "name": "applyMigrationStep T2",
+      "description": "applyMigrationStep('T2') returns 'Producer updated to write v2.'",
+      "max_score": 8
+    },
+    {
+      "name": "applyMigrationStep T3",
+      "description": "applyMigrationStep('T3') returns 'After confidence period, drop v1 handler in receivers.'",
+      "max_score": 8
+    },
+    {
+      "name": "applyMigrationStep unknown",
+      "description": "applyMigrationStep('something-else') returns 'Unknown step. Valid steps: T0, T1, T2, T3.'",
+      "max_score": 6
+    },
+    {
+      "name": "Comment on immutable schema version",
+      "description": "Top-of-file comment explicitly states schema_version is a monotonic integer and that v1 is forever v1 (never reuse a number for a different shape)",
+      "max_score": 8
+    },
+    {
+      "name": "Comment on tolerant-reader contract",
+      "description": "Top-of-file comment explicitly states the receiver is a tolerant reader (unknown fields ignored, never crashed on)",
+      "max_score": 6
+    },
+    {
+      "name": "Comment on migration order",
+      "description": "Top-of-file comment explicitly states the migration order T0 → T1 → T2 → T3 and that T0 → T2 directly is wrong",
+      "max_score": 6
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent implements per-channel LRU dedup keyed by message_id (with timetoken fallback), processes the catch-up before subscribing live, and structures the merge in the documented order.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "LRU has and add",
+      "description": "LRU class exposes has(key) and add(key); has returns false for missing, true for present; add inserts and evicts the oldest when size > max",
+      "max_score": 14
+    },
+    {
+      "name": "LRU default max 10000",
+      "description": "LRU default max is 10000 when no argument is provided",
+      "max_score": 6
+    },
+    {
+      "name": "LRU updates recency",
+      "description": "Either has() or add() updates the key's recency so that re-touched keys are NOT the next ones evicted (e.g., delete-and-reset in the Map order)",
+      "max_score": 12
+    },
+    {
+      "name": "createDedupRegistry per-channel LRU",
+      "description": "createDedupRegistry maintains one LRU per channel (lazily created), and the same key on two different channels does NOT dedup across them",
+      "max_score": 14
+    },
+    {
+      "name": "fetchMessages used for catch-up",
+      "description": "mergeHistoryThenSubscribe calls pubnub.fetchMessages (not pubnub.history) with channels: [channel] and count <= 100",
+      "max_score": 10
+    },
+    {
+      "name": "Catch-up processed before live",
+      "description": "The fetchMessages call (awaited) completes BEFORE pubnub.subscribe is called in the function's control flow",
+      "max_score": 16
+    },
+    {
+      "name": "Dedup key prefers message_id",
+      "description": "Both the catch-up loop and the live listener compute the dedup key as message.message_id ?? message.timetoken (or equivalent — message_id first, timetoken fallback)",
+      "max_score": 14
+    },
+    {
+      "name": "Live listener dedups before calling onMessage",
+      "description": "The live message listener does the same has → add → onMessage flow as the catch-up loop, so messages already seen via catch-up are filtered",
+      "max_score": 12
+    },
+    {
+      "name": "Subscribe called after listener attached",
+      "description": "pubnub.subscribe is called AFTER addListener so the listener is in place when the first live message arrives",
+      "max_score": 8
+    },
+    {
+      "name": "Comment on order",
+      "description": "Top-of-file comment explicitly states catch-up runs FIRST then subscribe live, and notes order matters",
+      "max_score": 8
+    },
+    {
+      "name": "Comment on per-channel registry",
+      "description": "Top-of-file comment explicitly states the dedup registry is per-channel and that a single global set would conflate streams",
+      "max_score": 6
+    }
+  ]
+}

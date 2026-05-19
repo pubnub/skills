@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent generates the message_id once outside the retry loop, retries with jittered backoff, never mutates the envelope on retry, and documents the producer/receiver split.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "createMessage uses crypto.randomUUID()",
+      "description": "createMessage sets message_id to crypto.randomUUID() (or another standard UUID v4 source) — not Math.random, Date.now alone, or a sequential counter",
+      "max_score": 14
+    },
+    {
+      "name": "createMessage envelope shape",
+      "description": "createMessage returns an object with schema_version, message_id, sent_at, type, and payload",
+      "max_score": 10
+    },
+    {
+      "name": "sent_at uses Date.now()",
+      "description": "createMessage's sent_at is Date.now() (or equivalent ms timestamp) captured at creation",
+      "max_score": 6
+    },
+    {
+      "name": "publishWithRetry passes same envelope each attempt",
+      "description": "Inside the retry loop, each pubnub.publish call passes the original envelope object (does not reconstruct or merge); no message_id is regenerated mid-loop",
+      "max_score": 18
+    },
+    {
+      "name": "Loop bounded by maxAttempts",
+      "description": "Loop runs at most opts.maxAttempts times (default 5)",
+      "max_score": 8
+    },
+    {
+      "name": "Jittered backoff between attempts",
+      "description": "On failure, code computes a delay as random * min(maxMs, initialMs * multiplier^attempt) and awaits it before the next attempt (full jitter)",
+      "max_score": 14
+    },
+    {
+      "name": "No envelope mutation",
+      "description": "publishWithRetry does NOT assign to envelope.message_id, envelope.sent_at, or any other envelope field anywhere in its body",
+      "max_score": 14
+    },
+    {
+      "name": "Re-throws after final attempt",
+      "description": "After the final failed attempt, the function re-throws the last caught error rather than returning silently",
+      "max_score": 8
+    },
+    {
+      "name": "publishOnce composes correctly",
+      "description": "publishOnce calls createMessage then publishWithRetry with the returned envelope",
+      "max_score": 6
+    },
+    {
+      "name": "Comment on once-generated id",
+      "description": "Top-of-file comment explicitly states message_id is generated once at envelope creation and never inside the retry loop",
+      "max_score": 8
+    },
+    {
+      "name": "Comment on receiver dedup",
+      "description": "Top-of-file comment explicitly states this producer pattern depends on receivers deduping by message_id (receivers are responsible)",
+      "max_score": 8
+    }
+  ]
+}

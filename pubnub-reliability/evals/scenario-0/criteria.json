@@ -1,0 +1,71 @@
+{
+  "context": "Tests whether the agent implements full-jitter exponential backoff with the documented defaults (200ms / 30s / 2x), bounds retries at MAX_ATTEMPTS, resets only on PNConnected/PNReconnected categories, and schedules reconnect on the documented down categories.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Default backoff params",
+      "description": "nextRetryDelay defaults are initialMs=200, maxMs=30000, multiplier=2 when opts is empty",
+      "max_score": 10
+    },
+    {
+      "name": "Exponential growth with cap",
+      "description": "Exponential delay is computed as initialMs * multiplier^attemptNumber and then capped via Math.min(maxMs, ...) BEFORE jitter is applied",
+      "max_score": 14
+    },
+    {
+      "name": "Full jitter applied",
+      "description": "Final delay is Math.random() * cappedExpDelay (full jitter — [0, expDelay)) rather than (expDelay/2 + random*expDelay/2) or a constant",
+      "max_score": 14
+    },
+    {
+      "name": "MAX_ATTEMPTS = 12",
+      "description": "ReconnectController exposes MAX_ATTEMPTS = 12 (or a similar named constant) and uses it to gate scheduling",
+      "max_score": 8
+    },
+    {
+      "name": "scheduleReconnect gives up at limit",
+      "description": "When attempts >= MAX_ATTEMPTS, scheduleReconnect calls onGiveUp() and returns WITHOUT calling setTimeout",
+      "max_score": 12
+    },
+    {
+      "name": "scheduleReconnect increments attempts",
+      "description": "On every successful schedule, attempts is incremented before/after computing the next delay",
+      "max_score": 8
+    },
+    {
+      "name": "reset zeroes attempts and clears timer",
+      "description": "reset() sets attempts back to 0 AND calls clearTimeout on any active timer",
+      "max_score": 10
+    },
+    {
+      "name": "Reset on PNConnected and PNReconnected",
+      "description": "The status listener calls controller.reset() on both PNConnectedCategory and PNReconnectedCategory",
+      "max_score": 12
+    },
+    {
+      "name": "Schedule on all three down categories",
+      "description": "The status listener calls scheduleReconnect on all three of PNNetworkDownCategory, PNNetworkIssuesCategory, and PNTimeoutCategory",
+      "max_score": 12
+    },
+    {
+      "name": "Reconnect uses pubnub.reconnect()",
+      "description": "The reconnectFn passed to scheduleReconnect is () => pubnub.reconnect() (or equivalent invocation of the SDK reconnect method)",
+      "max_score": 8
+    },
+    {
+      "name": "Does NOT reset on transient categories",
+      "description": "The status listener does not call controller.reset() inside the PNNetworkIssuesCategory / PNTimeoutCategory branches (those schedule a reconnect, they do not reset)",
+      "max_score": 10
+    },
+    {
+      "name": "Comment on jitter mandatory",
+      "description": "Top-of-file comment explicitly states that random jitter is mandatory and that pure exponential backoff still synchronizes across clients",
+      "max_score": 6
+    },
+    {
+      "name": "Comment on reset rule",
+      "description": "Top-of-file comment explicitly states the counter is reset only on PNConnectedCategory or PNReconnectedCategory",
+      "max_score": 6
+    }
+  ]
+}
