@@ -1,3 +1,8 @@
+<!-- canonical-for: PUBLISH_SUBSCRIBE_BASICS -->
+<!-- used-by: pubnub-keyset-management, pubnub-app-context, pubnub-history, pubnub-reliability, pubnub-observability, pubnub-illuminate -->
+
+> **Cross-references:** For [withPresence and presence event](../../pubnub-presence/references/presence-events.md) details and [PNNetworkDownCategory dropped-connection](../../pubnub-presence/references/dropped-connections.md) handling see the canonical owners. For [Message Persistence and fetchMessages](../../pubnub-history/references/pagination-and-ordering.md) see the History canonical owner.
+
 # PubNub Publish/Subscribe Patterns
 
 ## Core Concepts

@@ -1,3 +1,9 @@
+<!-- canonical-for: SDK_INITIALIZATION -->
+<!-- canonical-for: USERID_UUID -->
+<!-- used-by: pubnub-keyset-management, pubnub-app-context, pubnub-history, pubnub-presence, pubnub-reliability, pubnub-observability, pubnub-events-and-actions, pubnub-illuminate, pubnub-chat -->
+
+> **Cross-references:** For [Secret Key, publish key, subscribe key](../../pubnub-keyset-management/references/keysets-and-environments.md) handling see the canonical owner. For [Access Manager](../../pubnub-security/references/access-manager.md) tokens, [AES-256 message encryption / cipherKey](../../pubnub-security/references/encryption.md), [Presence event semantics](../../pubnub-presence/references/presence-events.md), [PNNetworkDownCategory and dropped-connection categories](../../pubnub-presence/references/dropped-connections.md), [Message action and reaction APIs](../../pubnub-chat/references/message-actions.md), and [Event Listener (Events & Actions)](../../pubnub-events-and-actions/references/event-types.md) see the canonical owners.
+
 # PubNub SDK Initialization and Configuration
 
 ## SDK Initialization
