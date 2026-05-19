@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent implements a 'latest-wins' coalescing publisher with a single pending value, a single timer that doesn't get re-scheduled per send, and the documented eligibility rules in comments.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Class shape",
+      "description": "Exports class CoalescedPublisher with constructor accepting (pubnub, channel, options) and methods send, flushNow, dispose",
+      "max_score": 10
+    },
+    {
+      "name": "send overwrites pending",
+      "description": "Each send(state) call overwrites the previously-stored pending value (does not accumulate or queue multiple values)",
+      "max_score": 14
+    },
+    {
+      "name": "intervalMs default 100",
+      "description": "When options.intervalMs is undefined, the publisher uses 100ms as the flush interval",
+      "max_score": 6
+    },
+    {
+      "name": "Single timer per window",
+      "description": "Subsequent send calls during an open flush window must NOT call setTimeout again — code checks for an existing timer before scheduling",
+      "max_score": 16
+    },
+    {
+      "name": "Flush calls publish exactly once",
+      "description": "The flush callback calls pubnub.publish({ channel, message: pending }) once, with the latest pending value",
+      "max_score": 10
+    },
+    {
+      "name": "Flush clears state",
+      "description": "After publishing, the flush callback clears both the pending value and the timer reference (so the next send schedules a fresh timer)",
+      "max_score": 10
+    },
+    {
+      "name": "No publish on idle window",
+      "description": "If no send is called during a flush window, no publish happens (pending null is checked before publishing)",
+      "max_score": 8
+    },
+    {
+      "name": "flushNow immediate publish",
+      "description": "flushNow publishes immediately if there is a pending payload, then clears pending and timer; if nothing is pending it is a safe no-op",
+      "max_score": 10
+    },
+    {
+      "name": "dispose clears timer without flush",
+      "description": "dispose calls clearTimeout on the active timer (if any) without invoking publish",
+      "max_score": 6
+    },
+    {
+      "name": "Comment lists coalesce-yes items",
+      "description": "Top-of-file comment explicitly lists at least three of the documented coalesce-yes cases: cursor position, scroll position, game tick deltas, sensor reading",
+      "max_score": 8
+    },
+    {
+      "name": "Comment lists coalesce-no items",
+      "description": "Top-of-file comment explicitly lists at least two of the documented coalesce-no cases: chat messages, order placement / discrete events",
+      "max_score": 8
+    },
+    {
+      "name": "ES module syntax",
+      "description": "Uses import/export rather than CommonJS",
+      "max_score": 4
+    }
+  ]
+}

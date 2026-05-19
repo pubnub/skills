@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent reproduces the documented messages-dropped triage runbook with all eight required steps in order, names the right MCP tools, and includes the documented war-room communication template.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "All required headings present in order",
+      "description": "Document contains the headings, in this order: Runbook title, Step 0–7, Resolution, War-Room Communication Template",
+      "max_score": 12
+    },
+    {
+      "name": "Step 0 lists all four correlation fields",
+      "description": "Step 0 explicitly lists channel, message_id, user_id, and timetoken",
+      "max_score": 14
+    },
+    {
+      "name": "Step 1 references status.pubnub.com",
+      "description": "Step 1 includes the URL https://status.pubnub.com",
+      "max_score": 6
+    },
+    {
+      "name": "Step 2 names get_pubnub_usage_metrics",
+      "description": "Step 2 explicitly names the get_pubnub_usage_metrics MCP tool",
+      "max_score": 10
+    },
+    {
+      "name": "Step 3 distinguishes publish.start vs publish.ok",
+      "description": "Step 3 explicitly notes that pubnub.publish.ok includes a timetoken whereas a missing pubnub.publish.ok means the publisher never got an ack",
+      "max_score": 10
+    },
+    {
+      "name": "Step 4 names get_pubnub_messages",
+      "description": "Step 4 explicitly names the get_pubnub_messages MCP tool",
+      "max_score": 10
+    },
+    {
+      "name": "Step 4 two-way decision",
+      "description": "Step 4 explicitly states both branches: in-history → receive-side bug; not-in-history → publish-side bug OR storeInHistory: false",
+      "max_score": 12
+    },
+    {
+      "name": "Step 5 covers dedup-by-message_id",
+      "description": "Step 5 explicitly mentions message_id-based dedup (LRU/Set) on the receiver as the place to inspect",
+      "max_score": 8
+    },
+    {
+      "name": "Step 6 names PNAccessDeniedCategory",
+      "description": "Step 6 explicitly mentions PNAccessDeniedCategory as the status to look for in logs",
+      "max_score": 8
+    },
+    {
+      "name": "Step 7 covers offline window",
+      "description": "Step 7 explicitly mentions both PNNetworkDownCategory AND the short-term cache window for offline catch-up",
+      "max_score": 10
+    },
+    {
+      "name": "War-room template fields",
+      "description": "War-Room Communication Template contains a fenced code block with labels for INCIDENT, Started, Affected, Symptoms, Hypothesis, PubNub status, Active correlation fields, Runbook in progress, On-call lead",
+      "max_score": 12
+    },
+    {
+      "name": "No implementation code",
+      "description": "Document does not include implementation code blocks (this is a runbook, not a code module)",
+      "max_score": 6
+    }
+  ]
+}
