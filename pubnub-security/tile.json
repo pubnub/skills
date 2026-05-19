@@ -1,11 +1,24 @@
 {
   "name": "pubnub/pubnub-security",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": false,
   "summary": "Secure PubNub applications with Access Manager, encryption, and TLS",
   "skills": {
     "pubnub-security": {
       "path": "SKILL.md"
     }
+  },
+  "dependencies": {
+    "pubnub-choose-docs-path": ">=0.1.0",
+    "pubnub-app-context": ">=0.1.0",
+    "pubnub-app-developer": ">=0.1.0",
+    "pubnub-chat": ">=0.1.0",
+    "pubnub-events-and-actions": ">=0.1.0",
+    "pubnub-functions": ">=0.1.0",
+    "pubnub-history": ">=0.1.0",
+    "pubnub-keyset-management": ">=0.1.0",
+    "pubnub-observability": ">=0.1.0",
+    "pubnub-reliability": ">=0.1.0",
+    "pubnub-scale": ">=0.1.0"
   }
 }

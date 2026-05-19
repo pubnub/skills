@@ -1,4 +1,9 @@
+<!-- canonical-for: CHANNEL_NAMING -->
+<!-- used-by: pubnub-app-context, pubnub-scale, pubnub-chat -->
+
 # PubNub Channels Guide
+
+> **Cross-references:** Channel access control via [Access Manager](../../pubnub-security/references/access-manager.md). Channel storage via [Message Persistence](../../pubnub-history/references/pagination-and-ordering.md). For [Channel Groups, Stream Controller, channelGroups.addChannels](../../pubnub-scale/references/scaling-patterns.md) and [Wildcard Subscribe / Wildcard pattern](../../pubnub-scale/references/scaling-patterns.md) see the canonical owner.
 
 ## What is a Channel?
 

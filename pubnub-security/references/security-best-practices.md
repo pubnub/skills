@@ -1,3 +1,8 @@
+<!-- canonical-for: SECURITY_BEST_PRACTICES -->
+<!-- used-by: -->
+
+> **Cross-references:** Foundational [keyset structure, the publish/subscribe/secret keys, environment separation, and rotation](../../pubnub-keyset-management/references/keysets-and-environments.md) (and the [key-rotation owner](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md)) are owned by `pubnub-keyset-management`. This file focuses on application-layer security patterns. For runtime hardening see [IP allowlisting](ip-whitelisting.md) and [DoS mitigation](dos-mitigation.md). For [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md), [`pubnub.publish(`/`pubnub.subscribe(`](../../pubnub-app-developer/references/publish-subscribe.md), and [channel naming](../../pubnub-app-developer/references/channels.md) see those owners. For [Message Persistence](../../pubnub-history/references/pagination-and-ordering.md) retention rules see `pubnub-history`. Function-side patterns ([Before Publish, `request.ok()`/`request.abort()`](../../pubnub-functions/references/functions-basics.md) and [`require('crypto')`](../../pubnub-functions/references/functions-modules.md)) are owned by `pubnub-functions`.
+
 # PubNub Security Best Practices
 
 ## Key Security

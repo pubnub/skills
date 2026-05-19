@@ -1,3 +1,8 @@
+<!-- canonical-for: ACCESS_MANAGER -->
+<!-- used-by: -->
+
+> **Cross-references:** Requires the [Secret Key from your keyset](../../pubnub-keyset-management/references/keysets-and-environments.md) (server-side only). Pair with [end-to-end message encryption (AES-256)](encryption.md) and [IP allowlisting](ip-whitelisting.md) for layered defense. Token issuance integrates with [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md) and the [`pubnub.publish(`](../../pubnub-app-developer/references/publish-subscribe.md) call. Channel-group grants are owned by [pubnub-scale](../../pubnub-scale/references/scaling-patterns.md).
+
 # PubNub Access Manager (PAM)
 
 ## Overview

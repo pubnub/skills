@@ -1,3 +1,8 @@
+<!-- canonical-for: CHANNEL_GROUPS, WILDCARD_SUBSCRIBE -->
+<!-- used-by: -->
+
+> **Cross-references:** Built on [pub/sub basics](../../pubnub-app-developer/references/publish-subscribe.md), [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md), and [channel naming](../../pubnub-app-developer/references/channels.md). For [history/Message Persistence](../../pubnub-history/references/pagination-and-ordering.md) see the canonical owner. For [presence on grouped/wildcard subscribes (`withPresence`, presence event semantics)](../../pubnub-presence/references/presence-events.md) (and [setup](../../pubnub-presence/references/presence-setup.md)) see `pubnub-presence`. [Access Manager grants](../../pubnub-security/references/access-manager.md) for groups apply at the group level. [Custom origin / vanity domain](../../pubnub-keyset-management/references/custom-origin.md) is owned by `pubnub-keyset-management`. Watch fan-out impact on [usage metrics / transaction count](../../pubnub-observability/references/usage-metrics.md).
+
 # PubNub Scaling Patterns
 
 ## Overview

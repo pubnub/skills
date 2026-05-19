@@ -1,3 +1,8 @@
+<!-- canonical-for: CHAT_PATTERNS -->
+<!-- used-by: -->
+
+> **Cross-references:** User management is owned by [App Context users](../../pubnub-app-context/references/users.md) and [channels & memberships](../../pubnub-app-context/references/channels-and-memberships.md) — link there rather than duplicating CRUD. [Presence (online/offline)](../../pubnub-presence/references/presence-events.md) and [multi-device sync](../../pubnub-presence/references/multi-device-sync.md) are owned by `pubnub-presence`. For [Access Manager grants](../../pubnub-security/references/access-manager.md) on chat channels see `pubnub-security`. For [reliable scrollback (history fetch + dedup-on-merge)](../../pubnub-history/references/offline-catch-up.md) and [idempotent send](../../pubnub-reliability/references/idempotent-publish.md) see those owners. Built on [pub/sub basics (`pubnub.publish(`, `pubnub.subscribe(`)](../../pubnub-app-developer/references/publish-subscribe.md) and [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md).
+
 # PubNub Chat SDK Patterns
 
 ## User Management

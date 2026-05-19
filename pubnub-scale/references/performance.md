@@ -1,3 +1,8 @@
+<!-- canonical-for: PERFORMANCE_TUNING -->
+<!-- used-by: -->
+
+> **Cross-references:** Cost-side [payload sizing, fan-out hygiene, coalescing, and signal vs publish](../../pubnub-observability/references/cost-and-payload-hygiene.md) is owned by `pubnub-observability` — link there for cost-driven decisions. Built on [pub/sub basics (`pubnub.publish(`, `pubnub.subscribe(`)](../../pubnub-app-developer/references/publish-subscribe.md) and [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md). For [Message Persistence](../../pubnub-history/references/pagination-and-ordering.md) see `pubnub-history`. For [reconnect with backoff under load](../../pubnub-reliability/references/backoff-and-jitter.md) see `pubnub-reliability`. For Function-side optimizations see [Before Publish patterns](../../pubnub-functions/references/functions-basics.md).
+
 # PubNub Performance Optimization
 
 ## Message Optimization
