@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent uses the eTag from getUUIDMetadata and ifMatchesEtag on setUUIDMetadata for optimistic concurrency, with a read-merge-set retry loop that handles eTag mismatch.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Reads with customFields",
+      "description": "readForEdit passes include: { customFields: true } so the custom object is populated",
+      "max_score": 10
+    },
+    {
+      "name": "Returns eTag from read",
+      "description": "readForEdit's return value exposes the eTag (e.g., via result.data.eTag) so the caller can pass it back",
+      "max_score": 12
+    },
+    {
+      "name": "ifMatchesEtag on set",
+      "description": "saveWithETag passes ifMatchesEtag: eTag to pubnub.objects.setUUIDMetadata",
+      "max_score": 18
+    },
+    {
+      "name": "Detects eTag conflict",
+      "description": "saveWithETag catches the conflict (e.g., status === 412 or category indicating eTag mismatch) and returns { ok: false, reason: 'conflict' } rather than throwing",
+      "max_score": 14
+    },
+    {
+      "name": "saveWithRetry reads first",
+      "description": "saveWithRetry begins by calling readForEdit to get current data and eTag",
+      "max_score": 8
+    },
+    {
+      "name": "Calls updateFn for merge",
+      "description": "saveWithRetry invokes updateFn(currentData) to compute the new payload (i.e., trusts the caller's merge rather than overwriting custom blindly)",
+      "max_score": 8
+    },
+    {
+      "name": "Retries on conflict",
+      "description": "saveWithRetry re-reads and retries when saveWithETag returns ok: false with reason: 'conflict'",
+      "max_score": 12
+    },
+    {
+      "name": "Bounded retries",
+      "description": "saveWithRetry stops after maxAttempts iterations and returns a non-ok result rather than looping forever",
+      "max_score": 8
+    },
+    {
+      "name": "Awaits async",
+      "description": "All pubnub.objects.* calls are awaited",
+      "max_score": 6
+    },
+    {
+      "name": "ES module syntax",
+      "description": "Uses import/export rather than CommonJS",
+      "max_score": 4
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent correctly uses setUUIDMetadata / getUUIDMetadata / getAllUUIDMetadata / removeUUIDMetadata, remembers to pass include.customFields: true on reads, applies a server-side filter, and notes the Admin Portal prerequisite.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "setUUIDMetadata for upsert",
+      "description": "createOrUpdateProfile calls pubnub.objects.setUUIDMetadata with the uuid and a data object containing name, email, externalId, profileUrl, and custom",
+      "max_score": 14
+    },
+    {
+      "name": "getUUIDMetadata with customFields",
+      "description": "getProfile calls pubnub.objects.getUUIDMetadata with include: { customFields: true }",
+      "max_score": 16
+    },
+    {
+      "name": "getAllUUIDMetadata for list",
+      "description": "listAdmins calls pubnub.objects.getAllUUIDMetadata (not iterates getUUIDMetadata one by one)",
+      "max_score": 10
+    },
+    {
+      "name": "Server-side admin filter",
+      "description": "listAdmins passes filter: 'custom.role == \"admin\"' (or equivalent matching expression) instead of filtering client-side",
+      "max_score": 12
+    },
+    {
+      "name": "Limit on list call",
+      "description": "listAdmins passes an explicit limit parameter to getAllUUIDMetadata (defaulting from the limit argument)",
+      "max_score": 8
+    },
+    {
+      "name": "customFields on list read",
+      "description": "listAdmins passes include: { customFields: true } so the returned admins have their custom data populated",
+      "max_score": 10
+    },
+    {
+      "name": "removeUUIDMetadata for delete",
+      "description": "deleteProfile calls pubnub.objects.removeUUIDMetadata with the uuid",
+      "max_score": 10
+    },
+    {
+      "name": "Admin Portal prerequisite comment",
+      "description": "Top-of-file comment explicitly states that the App Context add-on must be enabled on the keyset",
+      "max_score": 8
+    },
+    {
+      "name": "Awaits async calls",
+      "description": "All pubnub.objects.* calls are awaited (or their returned promises are returned to the caller)",
+      "max_score": 6
+    },
+    {
+      "name": "ES module syntax",
+      "description": "Uses import/export rather than CommonJS",
+      "max_score": 6
+    }
+  ]
+}

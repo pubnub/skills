@@ -1,0 +1,1 @@
+Live metadata-change listeners for UI updates

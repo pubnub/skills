@@ -1,0 +1,13 @@
+{
+  "total_infeasible": 2,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "End-to-end Referential Integrity cascade verification",
+      "reasoning": "Verifying that deleting a user object automatically cascades and removes all memberships when Referential Integrity is enabled requires a live PubNub keyset with the add-on configured. The eval can verify that the agent's code respects the constraint (e.g., creates user + channel before membership) but cannot prove the cascade behavior."
+    },
+    {
+      "scenarios": "Admin Portal add-on enablement",
+      "reasoning": "Confirming that the App Context add-on, Bucket Region, and Metadata Events are enabled on the keyset requires Admin Portal API access. The eval can verify that the agent notes the prerequisite in comments but cannot prove the configuration."
+    }
+  ]
+}
