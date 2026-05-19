@@ -1,0 +1,13 @@
+{
+  "total_infeasible": 2,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "End-to-end MCP tool invocation against a live user-pubnub server",
+      "reasoning": "Verifying that the agent's chosen MCP tool actually returns useful documentation or admin data requires a live user-pubnub MCP server with valid credentials. The eval can verify the agent names the correct tool in the handoff but cannot prove the call would succeed."
+    },
+    {
+      "scenarios": "Defer-to-specialist behavior when the user explicitly names a feature",
+      "reasoning": "The instruction is to NOT invoke this skill when the user has already named a feature. Testing that the agent suppresses this skill in favor of a specialist is a meta-skill-selection behavior owned by the agent's orchestration layer, not by content this skill produces."
+    }
+  ]
+}

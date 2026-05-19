@@ -1,0 +1,1 @@
+Route chat-feature intent to pubnub-chat

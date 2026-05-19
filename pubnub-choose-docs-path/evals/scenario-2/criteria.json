@@ -1,0 +1,46 @@
+{
+  "context": "Tests whether the agent recognizes a multi-intent question and asks the user which intent to address first, rather than guessing a single handoff or chaining multiple handoffs.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Acknowledges multiple intents",
+      "description": "Output explicitly identifies that the user has described more than one distinct intent (e.g., 'three things', 'multiple goals', 'these are separate concerns')",
+      "max_score": 15
+    },
+    {
+      "name": "Lists at least two intents distinctly",
+      "description": "Output enumerates at least two distinct intents from the user's question (e.g., environment setup, order tracking, presence/offline detection)",
+      "max_score": 12
+    },
+    {
+      "name": "Asks which to address first",
+      "description": "Output includes a clarifying question asking the user which intent to address first",
+      "max_score": 18
+    },
+    {
+      "name": "No single handoff produced",
+      "description": "Output does NOT contain a completed Intent/Skill/MCP tool/Docs source/Next step handoff block as if the multi-intent question were a single-intent question",
+      "max_score": 15
+    },
+    {
+      "name": "No chained handoffs",
+      "description": "Output does NOT contain three sequential handoff blocks one after another to cover all three intents",
+      "max_score": 12
+    },
+    {
+      "name": "No implementation code",
+      "description": "Output contains no code blocks implementing any of the three concerns",
+      "max_score": 10
+    },
+    {
+      "name": "Concise",
+      "description": "The clarifying response is concise (not a long lecture) — it identifies the multi-intent issue, lists the intents briefly, and asks the question",
+      "max_score": 8
+    },
+    {
+      "name": "Does not paraphrase specialist content",
+      "description": "Output does not reproduce instructions from pubnub-keyset-management, pubnub-order-delivery-driver, or pubnub-presence in detail",
+      "max_score": 10
+    }
+  ]
+}
