@@ -1,11 +1,23 @@
 {
   "name": "pubnub/pubnub-scale",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": false,
   "summary": "Scale PubNub applications for high-volume real-time events",
   "skills": {
     "pubnub-scale": {
       "path": "SKILL.md"
     }
+  },
+  "dependencies": {
+    "pubnub-choose-docs-path": ">=0.1.0",
+    "pubnub-app-context": ">=0.1.0",
+    "pubnub-app-developer": ">=0.1.0",
+    "pubnub-functions": ">=0.1.0",
+    "pubnub-history": ">=0.1.0",
+    "pubnub-keyset-management": ">=0.1.0",
+    "pubnub-observability": ">=0.1.0",
+    "pubnub-presence": ">=0.1.0",
+    "pubnub-reliability": ">=0.1.0",
+    "pubnub-security": ">=0.1.0"
   }
 }
