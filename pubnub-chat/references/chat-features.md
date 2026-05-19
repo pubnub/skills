@@ -1,3 +1,8 @@
+<!-- canonical-for: CHAT_FEATURES -->
+<!-- used-by: -->
+
+> **Cross-references:** [App Context user/channel/membership metadata](../../pubnub-app-context/references/users.md) is the canonical owner for users and channels. [Presence (online/offline, here-now)](../../pubnub-presence/references/presence-events.md) is owned by `pubnub-presence`. For [reactions, edits, deletes, read receipts](message-actions.md), [file sharing / `sendFile`](file-sharing.md), and [threading](threading.md) see the canonical owners in this skill. Built on [pub/sub basics](../../pubnub-app-developer/references/publish-subscribe.md) and [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md).
+
 # PubNub Chat SDK Features
 
 ## Channel Types

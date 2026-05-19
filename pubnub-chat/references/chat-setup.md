@@ -1,3 +1,8 @@
+<!-- canonical-for: CHAT_SDK -->
+<!-- used-by: -->
+
+> **Cross-references:** Built on [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md), [pub/sub basics](../../pubnub-app-developer/references/publish-subscribe.md), and [keyset/secret-key handling](../../pubnub-keyset-management/references/keysets-and-environments.md). For [Access Manager / `grantToken`](../../pubnub-security/references/access-manager.md) integration with `authKey` and [end-to-end message encryption](../../pubnub-security/references/encryption.md) see `pubnub-security`. User and channel records flow through [App Context](../../pubnub-app-context/references/users.md).
+
 # PubNub Chat SDK Setup
 
 ## Installation
