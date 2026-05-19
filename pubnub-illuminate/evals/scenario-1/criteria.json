@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent posts a Metric to the Illuminate Admin API with required headers, references the Business Object correctly, configures a COUNT aggregation with a user-ID dimension, and picks a documented evaluation window value.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Posts to /v2/illuminate/metrics",
+      "description": "Request URL is https://admin-api.pubnub.com/v2/illuminate/metrics",
+      "max_score": 12
+    },
+    {
+      "name": "Authorization from env",
+      "description": "Authorization header value is process.env.ILLUMINATE_API_KEY",
+      "max_score": 10
+    },
+    {
+      "name": "PubNub-Version header",
+      "description": "PubNub-Version header is set to '2026-02-09'",
+      "max_score": 10
+    },
+    {
+      "name": "businessObjectId in body",
+      "description": "Request body includes businessObjectId set to the function's argument",
+      "max_score": 14
+    },
+    {
+      "name": "COUNT aggregation",
+      "description": "Request body defines a COUNT (or COUNT_DISTINCT) aggregation function",
+      "max_score": 14
+    },
+    {
+      "name": "Dimension on userIdFieldId",
+      "description": "Request body defines a dimension/grouping referencing the userIdFieldId argument",
+      "max_score": 12
+    },
+    {
+      "name": "evaluationWindow is 60",
+      "description": "Request body sets the evaluation window to 60 seconds (or one of the documented allowed values: 60, 300, 600, 900, 1800, 3600, 86400)",
+      "max_score": 12
+    },
+    {
+      "name": "Allowed-window comment",
+      "description": "Top-of-file comment lists the allowed evaluation window values (60, 300, 600, 900, 1800, 3600, 86400)",
+      "max_score": 8
+    },
+    {
+      "name": "Parses JSON response",
+      "description": "Awaits response.json() and returns it",
+      "max_score": 4
+    },
+    {
+      "name": "POST method",
+      "description": "Request method is POST",
+      "max_score": 4
+    }
+  ]
+}

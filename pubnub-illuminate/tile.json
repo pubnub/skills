@@ -1,0 +1,18 @@
+{
+  "name": "pubnub/pubnub-illuminate",
+  "version": "0.1.0",
+  "private": false,
+  "summary": "Real-time analytics and automation: Business Objects, Metrics, Decisions, Queries, Dashboards",
+  "skills": {
+    "pubnub-illuminate": {
+      "path": "SKILL.md"
+    }
+  },
+  "dependencies": {
+    "pubnub-keyset-management": ">=0.1.0",
+    "pubnub-app-context": ">=0.1.0",
+    "pubnub-app-developer": ">=0.1.0",
+    "pubnub-events-and-actions": ">=0.1.0",
+    "pubnub-reliability": ">=0.1.0"
+  }
+}

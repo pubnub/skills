@@ -1,0 +1,17 @@
+{
+  "total_infeasible": 3,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "Live API key issuance and Service Integration enablement",
+      "reasoning": "Creating a Service Integration API key with Illuminate Read & Write permission requires a real PubNub Admin Portal account with Illuminate add-on access. The eval can verify that the agent reads ILLUMINATE_API_KEY from env vars and sets the correct headers but cannot exercise the live key issuance flow."
+    },
+    {
+      "scenarios": "End-to-end Decision execution against real published messages",
+      "reasoning": "Verifying that a Decision actually fires its actions when its threshold is crossed requires a live keyset, published messages flowing through a Business Object pipeline, and observable action side effects (PubNub publish, App Context updates, webhook receipts). This cannot be reproduced in a sandboxed file-based eval."
+    },
+    {
+      "scenarios": "Account-limit error replay (3 METRIC decisions per account)",
+      "reasoning": "Reproducing the 400 'A business object cannot have more than 3 associated decisions' error requires either reaching the limit on a live account or mocking the entire Admin API. The eval can verify that the agent's code lists existing decisions before creating a new one, but cannot prove the limit-handling path runs."
+    }
+  ]
+}

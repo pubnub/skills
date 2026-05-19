@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent applies the BUSINESSOBJECT-decision-specific rules: both sourceId and businessObjectId at top level, FIELD sourceType on inputFields, executionFrequency omitted entirely.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "sourceType is BUSINESSOBJECT",
+      "description": "Top-level sourceType in the POST and PUT bodies is 'BUSINESSOBJECT'",
+      "max_score": 8
+    },
+    {
+      "name": "Both sourceId and businessObjectId",
+      "description": "POST and PUT bodies include BOTH top-level sourceId and businessObjectId, set to the same businessObjectId argument value",
+      "max_score": 18
+    },
+    {
+      "name": "executionFrequency omitted",
+      "description": "The POST and PUT bodies do NOT include executionFrequency at all (no `executionFrequency: null`, no `executionFrequency: 60`, no executionFrequency key whatsoever)",
+      "max_score": 18
+    },
+    {
+      "name": "All four required Decision fields",
+      "description": "POST body includes activeFrom, activeUntil, hitType: 'SINGLE', and executeOnce: false",
+      "max_score": 12
+    },
+    {
+      "name": "inputFields use FIELD sourceType",
+      "description": "Every inputField in the BUSINESSOBJECT decision uses sourceType 'FIELD' (NOT 'DIMENSION')",
+      "max_score": 16
+    },
+    {
+      "name": "actionType WEBHOOK_EXECUTION",
+      "description": "Action object uses actionType: 'WEBHOOK_EXECUTION' (note: actionType, not type)",
+      "max_score": 8
+    },
+    {
+      "name": "Webhook url in actionValues",
+      "description": "actionValues.url is set to the webhookUrl argument",
+      "max_score": 8
+    },
+    {
+      "name": "All four workflow steps",
+      "description": "Code performs four sequential calls: POST → response read → PUT with rules → PUT with enabled: true",
+      "max_score": 12
+    },
+    {
+      "name": "inputValues covers all three inputs",
+      "description": "Step 3 rule.inputValues contains entries for score, user id, AND channel (with user id and channel using operation 'ANY')",
+      "max_score": 12
+    },
+    {
+      "name": "Score condition uses NUMERIC_GREATER_THAN 0.9",
+      "description": "Rule's primary condition is { operation: 'NUMERIC_GREATER_THAN', value: '0.9' } targeting the score input field's id",
+      "max_score": 8
+    },
+    {
+      "name": "Final PUT enables",
+      "description": "Step 4 PUT sets enabled: true",
+      "max_score": 4
+    }
+  ]
+}

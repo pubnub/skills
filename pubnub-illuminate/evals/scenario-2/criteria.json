@@ -1,0 +1,66 @@
+{
+  "context": "Tests whether the agent implements the full 4-step Decision workflow with all required fields, the correct sourceType pattern for COUNT METRIC, the correct executionLimitType, and includes every inputField in every rule's inputValues.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "All four required Decision fields",
+      "description": "Step 1 POST body includes activeFrom, activeUntil, hitType: 'SINGLE', and executeOnce: false",
+      "max_score": 16
+    },
+    {
+      "name": "Step 1 POST enabled false, rules empty",
+      "description": "Step 1 POST body sets enabled: false and rules: []",
+      "max_score": 12
+    },
+    {
+      "name": "COUNT input is BUSINESSOBJECT sourceType",
+      "description": "The count input field uses sourceType 'BUSINESSOBJECT' with sourceId set to the businessObjectId argument (correct for COUNT metrics)",
+      "max_score": 14
+    },
+    {
+      "name": "Dimension input is DIMENSION sourceType",
+      "description": "The user-id input field uses sourceType 'DIMENSION' with dataType 'TEXT'",
+      "max_score": 8
+    },
+    {
+      "name": "actionType (not type)",
+      "description": "The action object uses the property name 'actionType' (not 'type') with value 'APPCONTEXT_SET_USER_METADATA'",
+      "max_score": 12
+    },
+    {
+      "name": "outputFields uses variable + name",
+      "description": "outputFields entry uses the property names 'variable' and 'name' (not 'type')",
+      "max_score": 8
+    },
+    {
+      "name": "Correct executionLimitType",
+      "description": "actionValues.executionLimitType is 'ONCE_PER_INTERVAL_PER_CONDITION_GROUP' (NOT the invalid 'ONCE_PER_INTERVAL_PER_CONDITION')",
+      "max_score": 14
+    },
+    {
+      "name": "All four steps executed",
+      "description": "Code performs four sequential calls: POST → response read → PUT with rules → PUT with enabled: true (in that order)",
+      "max_score": 14
+    },
+    {
+      "name": "Reads auto-generated IDs from POST response",
+      "description": "Between Step 1 and Step 3, code parses the POST response and extracts IDs from inputFields, outputFields, and actions",
+      "max_score": 10
+    },
+    {
+      "name": "Rule references count input ID",
+      "description": "Step 3 rule.conditionGroups[0].conditions[0].inputFieldId references the count input field's auto-generated id from the POST response",
+      "max_score": 10
+    },
+    {
+      "name": "inputValues covers every input field",
+      "description": "Step 3 rule.inputValues has an entry for BOTH the count input field AND the user id input field (the user id entry uses operation 'ANY')",
+      "max_score": 14
+    },
+    {
+      "name": "Final PUT enables",
+      "description": "Step 4 PUT body sets enabled: true and returns the final response",
+      "max_score": 8
+    }
+  ]
+}
