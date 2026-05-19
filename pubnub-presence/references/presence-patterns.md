@@ -1,3 +1,8 @@
+<!-- canonical-for: PRESENCE_PATTERNS -->
+<!-- used-by: -->
+
+> **Cross-references:** [`new PubNub()` initialization, userId/UUID, `addListener` and pubnub.subscribe basics](../../pubnub-app-developer/references/sdk-patterns.md) (and [pub/sub patterns](../../pubnub-app-developer/references/publish-subscribe.md)). [Reconnect with backoff](../../pubnub-reliability/references/backoff-and-jitter.md), [dedup-on-merge](../../pubnub-reliability/references/dedup-on-merge.md), [multi-device sync](multi-device-sync.md), [App Context user metadata](../../pubnub-app-context/references/users.md).
+
 # PubNub Presence Best Practices
 
 ## Best Practices Overview

@@ -1,3 +1,8 @@
+<!-- canonical-for: PRESENCE_SETUP -->
+<!-- used-by: -->
+
+> **Cross-references:** Presence add-on enablement is part of [keyset configuration](../../pubnub-keyset-management/references/keysets-and-environments.md). For [SDK initialization](../../pubnub-app-developer/references/sdk-patterns.md) options including heartbeat and the [`pubnub.subscribe`](../../pubnub-app-developer/references/publish-subscribe.md) call shape see the canonical owners. Presence on restricted channels needs [Access Manager grants](../../pubnub-security/references/access-manager.md).
+
 # PubNub Presence Setup Guide
 
 ## Enabling Presence

@@ -1,3 +1,8 @@
+<!-- canonical-for: PRESENCE -->
+<!-- used-by: pubnub-keyset-management, pubnub-reliability, pubnub-observability, pubnub-events-and-actions, pubnub-app-context -->
+
+> **Cross-references:** Built on [pub/sub basics](../../pubnub-app-developer/references/publish-subscribe.md). Per-user identification via [userId/UUID](../../pubnub-app-developer/references/sdk-patterns.md). [Access Manager grants](../../pubnub-security/references/access-manager.md) protect presence data on restricted channels. Presence events also flow into [Events & Actions Channels source](../../pubnub-events-and-actions/references/event-types.md).
+
 # PubNub Presence Events
 
 ## Event Types
