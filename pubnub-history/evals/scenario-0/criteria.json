@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent uses the modern fetchMessages API, respects the 100-per-call cap, paginates correctly with start, uses BigInt for timetoken math, and handles missing channel keys in the response.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses fetchMessages",
+      "description": "Calls pubnub.fetchMessages (not the legacy pubnub.history) for retrieving stored messages",
+      "max_score": 12
+    },
+    {
+      "name": "count <= 100",
+      "description": "Every fetchMessages call passes count <= 100 (no single unbounded fetch with a larger count)",
+      "max_score": 10
+    },
+    {
+      "name": "Paginates with start",
+      "description": "iterateHistory and loadAllInRange use the start parameter, set to the oldest timetoken of the previous page, to walk backward through history",
+      "max_score": 12
+    },
+    {
+      "name": "Stops on short page",
+      "description": "Pagination terminates when a returned page has fewer items than the requested count (in addition to terminating on an empty page)",
+      "max_score": 8
+    },
+    {
+      "name": "Reads result.channels[channel] safely",
+      "description": "Accesses result.channels[channel] and falls back to an empty array when the key is missing or messages is undefined",
+      "max_score": 8
+    },
+    {
+      "name": "Timetoken multiplier",
+      "description": "timetoken/date conversion uses the correct multiplier: x10000000 for unix seconds or x10000 for milliseconds (i.e., handles PubNub's 100-nanosecond resolution)",
+      "max_score": 10
+    },
+    {
+      "name": "BigInt for timetoken math",
+      "description": "Uses BigInt for timetoken arithmetic or comparison (not raw Number) to avoid precision loss on 17-digit values",
+      "max_score": 10
+    },
+    {
+      "name": "Timetokens as strings",
+      "description": "Returns / passes timetokens as strings, not as Numbers, when calling fetchMessages or returning from the converter",
+      "max_score": 8
+    },
+    {
+      "name": "Async generator yields messages",
+      "description": "iterateHistory is implemented as an async generator (async function*) that yields one message at a time rather than returning an array",
+      "max_score": 8
+    },
+    {
+      "name": "Bounded range fetch uses start and end",
+      "description": "loadAllInRange passes both start and end to fetchMessages to bound the time range",
+      "max_score": 8
+    },
+    {
+      "name": "ES module syntax",
+      "description": "Uses import/export syntax (not CommonJS require/module.exports)",
+      "max_score": 6
+    }
+  ]
+}

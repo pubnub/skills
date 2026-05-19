@@ -1,0 +1,1 @@
+Selective storage and history verification

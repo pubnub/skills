@@ -1,0 +1,166 @@
+{
+  "instructions": [
+    {
+      "instruction": "Use fetchMessages (not the legacy history() call) as the modern History API",
+      "original_snippets": "Retrievable via `fetchMessages` (preferred) or the legacy `history` call. ... const result = await pubnub.fetchMessages({ channels: ['chat-room'], count: 100 });",
+      "relevant_when": "Retrieving stored messages from PubNub Message Persistence",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Cap count at 100 per fetchMessages call for single-channel fetches",
+      "original_snippets": "Pagination is **timetoken-based** with a maximum of 100 messages per request. ... `count` defaults to 100 and is capped at 100 per request. Always specify it explicitly.",
+      "relevant_when": "Calling fetchMessages with the count parameter",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Always paginate explicitly; never issue a single unbounded fetch",
+      "original_snippets": "Always show pagination explicitly — never a single unbounded fetch. ... Single unbounded fetch with `count: 1000` | Cap is 100 — paginate",
+      "relevant_when": "Reading more than 100 messages from history",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use start to page backward (older than) and end to bound forward (newer than)",
+      "original_snippets": "`start` | Fetch messages **older than** this timetoken (excludes the timetoken itself) ... `end`   | Fetch messages **newer than** this timetoken (includes by default) ... (both) | Bounded time range fetch",
+      "relevant_when": "Paginating history or fetching a bounded time range",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Iterate pages by setting start to the oldest timetoken of the previous page and stopping when page.length < count",
+      "original_snippets": "async function* iterateHistory(channel, opts = {}) { let start = opts.start; while (true) { const result = await pubnub.fetchMessages({ channels: [channel], count: 100, start }); const page = result.channels[channel] || []; if (page.length === 0) return; for (const msg of page) yield msg; if (page.length < 100) return; start = page[0].timetoken; } }",
+      "relevant_when": "Walking backward through a channel's full history",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Respect per-channel ordering only — there is no cross-channel ordering guarantee from PubNub",
+      "original_snippets": "PubNub guarantees per-channel ordering by timetoken. **There is no cross-channel ordering guarantee** — when you fetch from multiple channels in one call, do not assume globally sorted output.",
+      "relevant_when": "Fetching history from multiple channels in one call",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Sort multi-channel results by timetoken client-side using BigInt comparison",
+      "original_snippets": "merged.sort((x, y) => BigInt(x.timetoken) < BigInt(y.timetoken) ? -1 : 1);",
+      "relevant_when": "Producing a globally ordered stream from multi-channel fetch results",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Multi-channel fetchMessages caps at 25 messages per channel (not 100)",
+      "original_snippets": "| Single channel (`channels.length === 1`) | 100 | | Multiple channels | **25 per channel** | ... Multi-channel fetch expecting 100 per channel | Multi-channel mode caps at 25 per channel",
+      "relevant_when": "Calling fetchMessages with more than one channel",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "fetchMessages accepts up to 500 channels per call — batch larger channel lists",
+      "original_snippets": "`fetchMessages` accepts up to **500 channels per call**, but with a much lower per-channel message limit when fetching multiple channels",
+      "relevant_when": "Fetching history across more than 500 channels",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Treat timetokens as 17-digit strings; use BigInt for arithmetic and comparison to avoid JS Number precision loss",
+      "original_snippets": "A timetoken is a 17-digit integer (string in JSON to avoid precision loss in JavaScript) ... const timetokenToDate = tt => new Date(Number(BigInt(tt) / 10000000n) * 1000); const dateToTimetoken = d  => (BigInt(d.getTime()) * 10000n).toString();",
+      "relevant_when": "Comparing, computing offsets on, or converting timetokens",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Convert between timetoken and Unix time via multiply/divide by 10000000 (seconds) or 10000 (milliseconds)",
+      "original_snippets": "timetoken = unix_seconds * 10_000_000 ... const dateToTimetoken = d  => (BigInt(d.getTime()) * 10000n).toString();",
+      "relevant_when": "Converting JavaScript Date objects to PubNub timetokens or vice versa",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Persist last-seen timetoken per channel (e.g., in localStorage) when processing live messages",
+      "original_snippets": "function processMessage(msg) { renderMessage(msg); localStorage.setItem(`lastTT:${channel}`, msg.timetoken); }",
+      "relevant_when": "Building an offline catch-up flow",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Trigger catch-up only on PNReconnectedCategory, not on PNConnectedCategory (initial connect)",
+      "original_snippets": "pubnub.addListener({ status: async (s) => { if (s.category === 'PNReconnectedCategory') { const missed = await catchUp(channel); missed.forEach(process); } } }); ... Running catch-up on `PNConnectedCategory` (initial connect) | Only on `PNReconnectedCategory`",
+      "relevant_when": "Wiring catch-up to a connection-state listener",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Dedup live + caught-up messages using a Set keyed by timetoken before rendering",
+      "original_snippets": "const seenTTs = new Set(); function process(msg) { if (seenTTs.has(msg.timetoken)) return; seenTTs.add(msg.timetoken); renderMessage(msg); ... }",
+      "relevant_when": "Merging fetched history with a live subscription on the same channel",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Bound the catch-up window to a sensible maximum (e.g., 1 day) to avoid replaying long offline gaps",
+      "original_snippets": "const ONE_DAY_TT = 24n * 60n * 60n * 10000000n; ... if (lastTT && BigInt(nowTT) - BigInt(lastTT) > ONE_DAY_TT) { lastTT = (BigInt(nowTT) - ONE_DAY_TT).toString(); }",
+      "relevant_when": "Computing the start of a catch-up fetch from a persisted last-seen timetoken",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use restore: false to disable the SDK's short-term cache replay when doing explicit fetch-based catch-up",
+      "original_snippets": "const pubnub = new PubNub({ subscribeKey: process.env.PN_SUBSCRIBE_KEY, userId: 'user-123', restore: false }); ... your explicit `fetchMessages` is the source of truth, not the short-term cache.",
+      "relevant_when": "Building a catch-up flow where you control message replay explicitly",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "restore: false does not disable the History API — fetchMessages still works",
+      "original_snippets": "`restore: false` does **not** disable the History API. You can still fetch missed messages explicitly via `fetchMessages` if Message Persistence is enabled.",
+      "relevant_when": "Reasoning about what restore: false changes versus what it leaves intact",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Use storeInHistory: false for ephemeral messages like typing indicators, cursor positions, or game state deltas",
+      "original_snippets": "Common candidates for `storeInHistory: false`: Typing indicators, Presence-like ephemeral signals, Cursor position updates, Game state ticks (deltas) where only the latest matters",
+      "relevant_when": "Publishing transient signals that should not be replayed on reconnect",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Messages published with storeInHistory: false are not retrievable — there is no fallback fetch",
+      "original_snippets": "`storeInHistory: false` messages are **not retrievable**. There is no fallback fetch; the data is delivered live and then gone. ... Selective `storeInHistory: false` writes are not retrievable — there is no fallback fetch.",
+      "relevant_when": "Choosing whether a message should be ephemeral or persisted",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "For fully ephemeral signals, prefer pubnub.signal() over publish() with storeInHistory: false",
+      "original_snippets": "For ephemeral, non-stored messages, also consider `signal()` instead of `publish()`",
+      "relevant_when": "Sending tiny, ephemeral, signal-style payloads (typing, cursors)",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "Use includeMessageActions: true to return reactions and edits alongside messages (single-channel only)",
+      "original_snippets": "const result = await pubnub.fetchMessages({ channels: ['chat-room'], count: 100, includeMessageActions: true, includeMeta: true }); ... `includeMessageActions: true` is required to return reactions and edits along with each message. Note: this restricts you to single-channel fetch",
+      "relevant_when": "Retrieving messages that have reactions, edits, or other actions attached",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Use pubnub.messageCounts() to get counts since a timetoken without paying to read payloads",
+      "original_snippets": "Use `messageCounts` (returns counts only, no payloads): const counts = await pubnub.messageCounts({ channels: ['chat-room', 'announcements'], channelTimetokens: ['17000000000000000'] });",
+      "relevant_when": "Showing unread badges or counting messages in a window without loading them",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "pubnub.deleteMessages requires Delete-from-History enabled and a server-side instance initialized with the secret key",
+      "original_snippets": "`deleteMessages` requires: The keyset to have **Delete from History** enabled in the Admin Portal ... The PubNub instance initialized with the [secret key] (server-only operation) ... For production deletion at scale, do it from a server, not a client.",
+      "relevant_when": "Deleting messages from history for GDPR or moderation",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Treat Message Persistence as a catch-up tool, not a data lake — forward to your own store for analytics or long-term archival",
+      "original_snippets": "Treat History as a catch-up tool, not a data lake — forward to your own analytics store if needed. ... It is **not** optimized for: Long-term BI / analytics, Full-text search, Compliance archival of years of history",
+      "relevant_when": "Discussing analytics, search, or long-term archival use cases",
+      "why_given": "reminder"
+    },
+    {
+      "instruction": "Retention is configured per-keyset, not per-channel — choose the shortest period that satisfies your catch-up window",
+      "original_snippets": "Retention is per-keyset, not per-channel — plan accordingly when designing channel hierarchies. ... Choose the shortest period that satisfies your catch-up window. Longer retention costs more.",
+      "relevant_when": "Configuring retention or designing channel hierarchies",
+      "why_given": "new knowledge"
+    },
+    {
+      "instruction": "Verify storage in dev with a publish-then-fetch round-trip and a brief delay to let storage flush",
+      "original_snippets": "const result = await pubnub.publish({ channel: 'test', message: { hello: 'world' } }); console.log('Published timetoken:', result.timetoken); await new Promise(r => setTimeout(r, 1000));   // give storage time to flush ... const fetched = await pubnub.fetchMessages({ channels: ['test'], count: 10 });",
+      "relevant_when": "Verifying Message Persistence is actually storing messages in a lower environment",
+      "why_given": "particular preference"
+    },
+    {
+      "instruction": "The short-term in-memory cache (~100 messages, ~2–20 minutes) is separate from the History API and is not retrievable via fetchMessages",
+      "original_snippets": "Even without the add-on enabled, PubNub keeps a short-term in-memory cache: ~100 messages per channel ~2–20 minutes ... This buffer is not the History API. ... Short-term buffer (~100 messages, ~20 min) is separate from History",
+      "relevant_when": "Reasoning about what is available to read when Message Persistence is or is not enabled",
+      "why_given": "reminder"
+    }
+  ]
+}

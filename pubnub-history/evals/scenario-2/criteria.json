@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent uses the correct per-channel message limits for single vs multi-channel fetch, batches channel lists at 500 per call, sorts merged results by timetoken using BigInt, and documents the per-channel ordering guarantee.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "100 per channel when single",
+      "description": "When channels.length === 1, fetchMultiChannel passes count: 100",
+      "max_score": 12
+    },
+    {
+      "name": "25 per channel when multi",
+      "description": "When channels.length > 1, fetchMultiChannel passes count: 25 (not 100)",
+      "max_score": 14
+    },
+    {
+      "name": "Channel batch size 500",
+      "description": "splitChannelBatches defaults to or uses 500 as the per-call maximum number of channels",
+      "max_score": 10
+    },
+    {
+      "name": "Splits oversized channel lists",
+      "description": "fetchAndMerge actually invokes splitChannelBatches and runs one fetchMessages call per batch when the channel list exceeds the batch size",
+      "max_score": 10
+    },
+    {
+      "name": "Tags messages with source channel",
+      "description": "mergeAndSort adds a 'channel' (or equivalent) property to each message indicating which channel it came from",
+      "max_score": 10
+    },
+    {
+      "name": "Sort by timetoken with BigInt",
+      "description": "Sort comparison uses BigInt(a.timetoken) and BigInt(b.timetoken), not Number() or string compare, to preserve 17-digit precision",
+      "max_score": 12
+    },
+    {
+      "name": "Ascending timetoken order",
+      "description": "Merged array is sorted ascending by timetoken (oldest first)",
+      "max_score": 8
+    },
+    {
+      "name": "Handles missing channel keys",
+      "description": "mergeAndSort tolerates channels with no messages in the response (treats undefined/missing as an empty array)",
+      "max_score": 8
+    },
+    {
+      "name": "Per-channel ordering comment",
+      "description": "Includes a comment or docstring near mergeAndSort that states PubNub guarantees per-channel ordering only and that cross-channel ordering must be reassembled client-side",
+      "max_score": 8
+    },
+    {
+      "name": "Uses start (or end) for sinceTimetoken",
+      "description": "fetchMultiChannel passes sinceTimetoken to fetchMessages as start or end, not as an unrelated parameter",
+      "max_score": 8
+    }
+  ]
+}
