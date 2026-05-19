@@ -1,3 +1,8 @@
+<!-- canonical-for: ENCRYPTION, TLS -->
+<!-- used-by: -->
+
+> **Cross-references:** Cipher key handling pairs with [keyset / secret key hygiene and rotation](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md) (and [the keyset model](../../pubnub-keyset-management/references/keysets-and-environments.md)). Encryption is configured at [SDK initialization](../../pubnub-app-developer/references/sdk-patterns.md) and applies to [`pubnub.publish(`](../../pubnub-app-developer/references/publish-subscribe.md) and to [Message Persistence / fetchMessages playback](../../pubnub-history/references/pagination-and-ordering.md). [File Sharing / sendFile](../../pubnub-chat/references/file-sharing.md) uses the same cipher key. For [Functions-side crypto module](../../pubnub-functions/references/functions-modules.md) the same algorithm and cipher-key story applies.
+
 # PubNub Encryption Guide
 
 ## AES-256 Message Encryption
