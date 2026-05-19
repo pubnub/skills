@@ -143,13 +143,15 @@ Scale PubNub applications for high-volume events.
 **Use for:**
 - Performance optimization
 - Channel groups and wildcard subscriptions
-- Message persistence and history
 - Large-scale event handling (10K+ users)
+- Throughput tuning and concurrency
 
 **References:**
 - `scaling-patterns.md` - Channel groups, wildcards
 - `performance.md` - Message optimization, batching
-- `persistence.md` - History API, catch-up patterns
+- `large-events.md` - 10K+ concurrent live-event playbook + PubNub engagement
+
+> Message persistence, history, and offline catch-up have moved to the dedicated `pubnub-history` skill.
 
 ---
 
@@ -539,7 +541,12 @@ All skills are published to the `pubnub` workspace on tessl.io.
 
 ## Version
 
-The 6 foundational skills and 8 vertical skills are at version `0.1.2`. The 8 newly added skills (`pubnub-choose-docs-path`, `pubnub-keyset-management`, `pubnub-app-context`, `pubnub-illuminate`, `pubnub-history`, `pubnub-reliability`, `pubnub-observability`, `pubnub-events-and-actions`) are at version `0.1.0` (initial release).
+Catalog versions:
+
+- **5 foundational skills at `0.2.0`** (refreshed in this release): `pubnub-app-developer`, `pubnub-presence`, `pubnub-security`, `pubnub-chat`, `pubnub-scale`.
+- **`pubnub-functions` at `0.2.2`** (pending separate update).
+- **8 vertical skills at `0.1.2`** (pending separate update): `pubnub-live-auctions`, `pubnub-live-betting-casino`, `pubnub-live-sport-updates`, `pubnub-live-stock-quote-updates`, `pubnub-live-voting`, `pubnub-multiplayer-gaming`, `pubnub-order-delivery-driver`, `pubnub-telemedicine`.
+- **8 cross-cutting skills at `0.1.0`** (initial release): `pubnub-choose-docs-path`, `pubnub-keyset-management`, `pubnub-app-context`, `pubnub-illuminate`, `pubnub-history`, `pubnub-reliability`, `pubnub-observability`, `pubnub-events-and-actions`.
 
 ## License
 
