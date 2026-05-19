@@ -27,6 +27,14 @@ npx skills add pubnub/skills
 | [pubnub-security](./pubnub-security) | Access Manager, AES-256 encryption, TLS |
 | [pubnub-chat](./pubnub-chat) | Chat SDK, messaging, typing indicators, reactions |
 | [pubnub-scale](./pubnub-scale) | High-volume optimization, channel groups, persistence |
+| [pubnub-choose-docs-path](./pubnub-choose-docs-path) | Router skill: chat-vs-non-chat, MCP tool selection |
+| [pubnub-keyset-management](./pubnub-keyset-management) | Apps, keysets, env separation, key hygiene, demo keys |
+| [pubnub-app-context](./pubnub-app-context) | Objects API: users, channels, memberships, metadata |
+| [pubnub-illuminate](./pubnub-illuminate) | Business Objects, Metrics, Decisions, Queries, Dashboards |
+| [pubnub-history](./pubnub-history) | Storage & Playback, timetoken pagination, offline catch-up, dedup-on-merge |
+| [pubnub-reliability](./pubnub-reliability) | Backoff+jitter, idempotent publish, queue+retry, dedup, schema versioning |
+| [pubnub-observability](./pubnub-observability) | Logging correlation, test pyramid, runbooks, payload hygiene, usage metrics |
+| [pubnub-events-and-actions](./pubnub-events-and-actions) | Webhook / Lambda / Kafka / SQS / EventBridge integrations |
 | [pubnub-live-auctions](./pubnub-live-auctions) | Real-time auction platforms with bidding and countdowns |
 | [pubnub-live-betting-casino](./pubnub-live-betting-casino) | Real-time betting and casino game platforms |
 | [pubnub-live-sport-updates](./pubnub-live-sport-updates) | Real-time sports scores, play-by-play, scoreboards |
@@ -142,6 +150,152 @@ Scale PubNub applications for high-volume events.
 - `scaling-patterns.md` - Channel groups, wildcards
 - `performance.md` - Message optimization, batching
 - `persistence.md` - History API, catch-up patterns
+
+---
+
+### pubnub-choose-docs-path
+
+Route PubNub questions to the correct documentation source, MCP tool, and specialist skill.
+
+**Use for:**
+- First-touch triage when a user mentions PubNub without naming a feature
+- Choosing between chat SDK vs core SDK
+- Picking between Functions, Events & Actions, and Illuminate
+- Mapping intent to the right `user-pubnub` MCP tool
+
+**References:**
+- `intent-to-tool.md` - Decision tree from user intent to (skill, MCP tool, docs link)
+
+---
+
+### pubnub-keyset-management
+
+Manage PubNub apps, keysets, and environment separation.
+
+**Use for:**
+- Setting up dev / staging / prod keysets
+- Publish, subscribe, and secret key handling
+- Key rotation and hygiene
+- Demo-key boundaries and custom origin configuration
+
+**References:**
+- `keysets-and-environments.md` - App/keyset model, env separation
+- `key-rotation-and-hygiene.md` - Rotation procedure, secret-key handling
+- `demo-keys.md` - Demo-key limits and migration
+- `custom-origin.md` - Custom origin configuration
+
+---
+
+### pubnub-app-context
+
+Manage users, channels, and memberships with the PubNub App Context (Objects) API.
+
+**Use for:**
+- User profile CRUD with custom metadata
+- Channel metadata for descriptions, settings, and tags
+- Membership management between users and channels
+- Server-side filtering and live metadata-change events
+
+**References:**
+- `users.md` - User CRUD, profile metadata, filtering
+- `channels-and-memberships.md` - Channel metadata, memberships, members
+- `metadata-and-filtering.md` - Filter expressions, eTag concurrency, change events
+
+---
+
+### pubnub-illuminate
+
+Build real-time analytics, decisions, and dashboards with PubNub Illuminate.
+
+**Use for:**
+- Defining Business Objects from in-flight messages
+- Authoring Metrics (COUNT, SUM, AVG) over dimensions
+- The 4-step Decision workflow (POST → READ → PUT rules → PUT enable)
+- Saved Queries and Dashboards
+- Service Integration auth for the admin API
+
+**References:**
+- `business-objects.md` - Schema, JSONPath fields, activation
+- `metrics.md` - Aggregations, dimensions, windows
+- `decisions-4-step-workflow.md` - METRIC and BUSINESSOBJECT decision flows
+- `queries-adhoc-vs-saved.md` - Query types and reuse
+- `dashboards.md` - Dashboard composition and sharing
+- `service-integration-auth.md` - Admin API authentication
+
+---
+
+### pubnub-history
+
+Replay PubNub messages with Storage & Playback, timetoken pagination, and offline catch-up.
+
+**Use for:**
+- Paginated history loaders for chat, tickets, and timelines
+- Offline app catch-up when a client reconnects
+- Multi-channel history retrieval with `fetchMessages`
+- Dedup-on-merge between live and historical streams
+
+**References:**
+- `pagination-and-ordering.md` - Timetoken pagination, ordering, edge cases
+- `offline-catch-up.md` - Reconnect-and-catch-up flow with bounded windows
+- `retention-and-storage.md` - Storage tiers, retention, `storeInHistory`
+
+---
+
+### pubnub-reliability
+
+Cross-cutting reliability patterns for PubNub apps.
+
+**Use for:**
+- Reconnect with exponential backoff and jitter
+- Idempotent publish with client-generated `message_id`
+- Dedup-on-merge between live and history streams
+- Persistent offline publish queues with dead-letter
+- Schema versioning and tolerant readers
+
+**References:**
+- `backoff-and-jitter.md` - Reconnect controller, jitter formula
+- `idempotent-publish.md` - Stable IDs across retries
+- `dedup-on-merge.md` - LRU and Set-based dedup
+- `queue-and-retry.md` - Persistent, FIFO, bounded queues
+- `schema-versioning.md` - Version routing and migration flow
+
+---
+
+### pubnub-observability
+
+Logging, testing, cost hygiene, incident triage, and usage metrics for PubNub apps.
+
+**Use for:**
+- Correlation logging for every publish/subscribe (four-field standard)
+- Test pyramid for real-time apps
+- Pre-launch cost projection (transactions, not bytes)
+- Incident-triage runbook for messages-dropped and connection issues
+- Weekly usage-metrics review and billing reconciliation
+
+**References:**
+- `logging-correlation.md` - Four-field correlation, structured logs
+- `test-pyramid.md` - Unit, integration, load test layers
+- `cost-and-payload-hygiene.md` - Fan-out math, payload sizing, coalescing
+- `incident-runbook.md` - Triage flows for common incidents
+- `usage-metrics.md` - `get_pubnub_usage_metrics`, anomaly detection
+
+---
+
+### pubnub-events-and-actions
+
+Route PubNub events to external systems with no code via Events & Actions (E&A).
+
+**Use for:**
+- Webhook receivers (Lambda, Cloud Functions, custom HTTP)
+- Fan-out to SQS, Kinesis, Kafka, S3, EventBridge, IFTTT, AMQP
+- JSONPath filters on Messages, Users, Channels, Push, Memberships events
+- Idempotent batched receivers, retries, and envelope handling
+
+**References:**
+- `event-types.md` - Listener categories and event shapes
+- `action-targets.md` - Webhook, queue, stream, storage, and IFTTT targets
+- `filters-and-jsonpath.md` - Basic vs JSONPath filters, operators
+- `retries-and-batching.md` - Retry policy, batching, envelope versions
 
 ---
 
@@ -303,6 +457,14 @@ tessl skill publish --workspace pubnub --public ./skills/pubnub-functions
 tessl skill publish --workspace pubnub --public ./skills/pubnub-security
 tessl skill publish --workspace pubnub --public ./skills/pubnub-chat
 tessl skill publish --workspace pubnub --public ./skills/pubnub-scale
+tessl skill publish --workspace pubnub --public ./skills/pubnub-choose-docs-path
+tessl skill publish --workspace pubnub --public ./skills/pubnub-keyset-management
+tessl skill publish --workspace pubnub --public ./skills/pubnub-app-context
+tessl skill publish --workspace pubnub --public ./skills/pubnub-illuminate
+tessl skill publish --workspace pubnub --public ./skills/pubnub-history
+tessl skill publish --workspace pubnub --public ./skills/pubnub-reliability
+tessl skill publish --workspace pubnub --public ./skills/pubnub-observability
+tessl skill publish --workspace pubnub --public ./skills/pubnub-events-and-actions
 tessl skill publish --workspace pubnub --public ./skills/pubnub-live-auctions
 tessl skill publish --workspace pubnub --public ./skills/pubnub-live-betting-casino
 tessl skill publish --workspace pubnub --public ./skills/pubnub-live-sport-updates
@@ -377,7 +539,7 @@ All skills are published to the `pubnub` workspace on tessl.io.
 
 ## Version
 
-All skills are currently at version `0.1.2`.
+The 6 foundational skills and 8 vertical skills are at version `0.1.2`. The 8 newly added skills (`pubnub-choose-docs-path`, `pubnub-keyset-management`, `pubnub-app-context`, `pubnub-illuminate`, `pubnub-history`, `pubnub-reliability`, `pubnub-observability`, `pubnub-events-and-actions`) are at version `0.1.0` (initial release).
 
 ## License
 
