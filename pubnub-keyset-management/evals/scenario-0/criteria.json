@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent loads PubNub keys exclusively from env vars with a per-environment prefix, throws on missing vars, omits the secret key on the client variant, and adds the documented security comment.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "getEnvOrThrow throws on missing",
+      "description": "getEnvOrThrow throws an Error with a message that includes the env var name when process.env[name] is undefined or empty",
+      "max_score": 12
+    },
+    {
+      "name": "Env var prefix scheme",
+      "description": "initServerPubNub and initClientPubNub build the env var prefix from appName + environment (uppercased, hyphens-to-underscores), so e.g. ('acme-chat', 'prod') produces 'ACME_CHAT_PROD'",
+      "max_score": 14
+    },
+    {
+      "name": "Server loads all three keys",
+      "description": "initServerPubNub reads PUBLISH_KEY, SUBSCRIBE_KEY, and SECRET_KEY from env vars (using getEnvOrThrow for each) and passes all three to new PubNub({...})",
+      "max_score": 14
+    },
+    {
+      "name": "Client does NOT load secret key",
+      "description": "initClientPubNub does NOT read SECRET_KEY (no reference to a SECRET_KEY env var or secretKey property in the client init)",
+      "max_score": 16
+    },
+    {
+      "name": "Client userId from argument",
+      "description": "initClientPubNub uses the userId argument as the userId on the PubNub init (not os.hostname() or a literal)",
+      "max_score": 8
+    },
+    {
+      "name": "Server userId from hostname",
+      "description": "initServerPubNub sets userId to 'server-' + os.hostname() (or equivalent unique-per-host pattern)",
+      "max_score": 8
+    },
+    {
+      "name": "No literal keys",
+      "description": "No literal string starting with pub-c-, sub-c-, or sec-c- appears anywhere in the file",
+      "max_score": 12
+    },
+    {
+      "name": "Comment on secret-key client risk",
+      "description": "Top-of-file comment explicitly states the secret key must never appear in client-side code",
+      "max_score": 8
+    },
+    {
+      "name": "Comment on env-vars-only",
+      "description": "Top-of-file comment explicitly states keys are loaded only from environment variables and that no literals appear in the module",
+      "max_score": 6
+    },
+    {
+      "name": "ES module syntax",
+      "description": "Uses import/export rather than CommonJS",
+      "max_score": 2
+    }
+  ]
+}

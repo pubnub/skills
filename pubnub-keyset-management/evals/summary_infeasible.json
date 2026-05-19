@@ -1,0 +1,13 @@
+{
+  "total_infeasible": 2,
+  "infeasible_scenarios": [
+    {
+      "scenarios": "Live Admin Portal keyset provisioning and add-on toggling",
+      "reasoning": "Creating or modifying apps and keysets via the Admin Portal requires a real PubNub account. The eval can verify that the agent's code references the manage_apps / manage_keysets MCP tools and the correct configuration shape but cannot exercise the live provisioning flow."
+    },
+    {
+      "scenarios": "End-to-end key rotation against a live keyset",
+      "reasoning": "Verifying that a rotated secret key actually invalidates old tokens, that new tokens validate, and that audit logs reflect the rotation requires a live PubNub keyset and active Access Manager grants. This cannot be reproduced in a sandboxed eval; the eval can only verify the documented procedure shape and code structure."
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+Explain demo-key risks and migration to own keyset

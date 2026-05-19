@@ -1,0 +1,61 @@
+{
+  "context": "Tests whether the agent drafts a complete custom-origin support ticket containing every documented field (account, three subdomain preferences, SDKs and versions, China routing, DNS plan) AND notes the documented non-benefits, plus a small SDK initialization snippet with the custom origin parameter.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Subject heading exact",
+      "description": "support-ticket.md begins with the heading exactly '# Subject: Request Custom Origin'",
+      "max_score": 8
+    },
+    {
+      "name": "Account section includes the email and paid-keyset note",
+      "description": "Account section includes 'platform-eng@acme.com' AND explicitly says it is the account on the paid production keyset(s)",
+      "max_score": 12
+    },
+    {
+      "name": "Three subdomain choices in order",
+      "description": "Subdomain Preferences section lists three choices in order of preference, with realtime.acme.com first and acmecorp.pubnubapi.com listed as one of the alternatives",
+      "max_score": 14
+    },
+    {
+      "name": "SDKs and versions listed",
+      "description": "SDKs in Use section lists both JavaScript v8.x and Java v9.x by name",
+      "max_score": 10
+    },
+    {
+      "name": "China routing acknowledged",
+      "description": "China Routing section explicitly states that the team has customers in China",
+      "max_score": 10
+    },
+    {
+      "name": "DNS plan mentions CNAME",
+      "description": "DNS Plan section says the team will add a CNAME record once PubNub provides the target endpoint, for realtime.acme.com",
+      "max_score": 8
+    },
+    {
+      "name": "Operational notes cover all three non-benefits",
+      "description": "Operational Notes section explicitly states all three of: does NOT improve latency, does NOT bypass IP allowlist requirements, does NOT increase per-host connection limits",
+      "max_score": 14
+    },
+    {
+      "name": "initWithCustomOrigin uses origin param",
+      "description": "custom-origin-init.js initializes PubNub with origin: customOrigin (the function argument)",
+      "max_score": 8
+    },
+    {
+      "name": "ssl: true",
+      "description": "PubNub init in custom-origin-init.js sets ssl: true",
+      "max_score": 6
+    },
+    {
+      "name": "Keys loaded from env vars",
+      "description": "publishKey and subscribeKey are read from process.env.PN_PUBLISH_KEY and process.env.PN_SUBSCRIBE_KEY (no literals)",
+      "max_score": 6
+    },
+    {
+      "name": "JS comment notes paid-plan only",
+      "description": "custom-origin-init.js top-of-file comment explicitly states this is paid-plan only and that the custom origin must be obtained via PubNub Support before the snippet works",
+      "max_score": 4
+    }
+  ]
+}

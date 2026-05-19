@@ -1,0 +1,1 @@
+Secret-key rotation runbook with audit and short-circuit

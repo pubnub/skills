@@ -1,0 +1,56 @@
+{
+  "context": "Tests whether the agent produces a clear write-up of the demo-keys risks and a concrete migration path, using only the documented arguments and no literal demo keys.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "All required headings present in order",
+      "description": "Document contains, in order: # Why Demo Keys Are Not Safe Here, ## What Demo Keys Are, ## Why This Is a Problem for Our Prototype, ## What to Use Instead, ## Migration Steps",
+      "max_score": 12
+    },
+    {
+      "name": "Public-documentation point",
+      "description": "What Demo Keys Are section explicitly states that the demo keys are publicly documented and that anyone using the same keys on the same channel can see the messages",
+      "max_score": 12
+    },
+    {
+      "name": "At least three risks listed",
+      "description": "Why This Is a Problem section lists at least three of: no isolation, throttled / rate-limited, no add-on guarantees, no security, no SLA, no support",
+      "max_score": 14
+    },
+    {
+      "name": "Names 'no isolation' risk",
+      "description": "One of the listed risks is no isolation between developers using the same demo keys",
+      "max_score": 8
+    },
+    {
+      "name": "Names 'throttled / rate-limited' risk",
+      "description": "One of the listed risks is that demo keys are aggressively rate-limited",
+      "max_score": 8
+    },
+    {
+      "name": "Recommends free PubNub account",
+      "description": "What to Use Instead section explicitly says to create a free PubNub account and use the team's own keyset, and notes the free tier is appropriate for development",
+      "max_score": 12
+    },
+    {
+      "name": "Migration steps numbered ≥4 items",
+      "description": "Migration Steps is a numbered list with at least four steps",
+      "max_score": 8
+    },
+    {
+      "name": "Mentions env vars / secrets manager",
+      "description": "One of the migration steps says to store the new keys in environment variables (or a secrets manager) — never in source control",
+      "max_score": 10
+    },
+    {
+      "name": "Mentions add-on configuration",
+      "description": "One of the migration steps says to configure add-ons per environment",
+      "max_score": 8
+    },
+    {
+      "name": "No literal demo keys",
+      "description": "Document contains no literal substring matching pub-c- or sub-c- (it is a warning document, not a source of demo-key values)",
+      "max_score": 8
+    }
+  ]
+}
