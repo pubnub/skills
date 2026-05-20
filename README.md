@@ -113,7 +113,7 @@ Secure PubNub applications with Access Manager and encryption.
 - TLS configuration
 
 **References:**
-- `access-manager.md` - PAM setup and grants
+- `access-manager.md` - Access Manager setup and grants
 - `encryption.md` - Message and file encryption
 - `security-best-practices.md` - Key security, compliance
 

@@ -178,7 +178,7 @@ Every owned topic referenced in the tables above maps to a canonical file. When 
 - Custom origin / custom domain → [pubnub-keyset-management/references/custom-origin.md](../../pubnub-keyset-management/references/custom-origin.md)
 
 ### Security
-- Access Manager and PAM tokens → [pubnub-security/references/access-manager.md](../../pubnub-security/references/access-manager.md)
+- Access Manager tokens → [pubnub-security/references/access-manager.md](../../pubnub-security/references/access-manager.md)
 - IP whitelist / IP allowlist → [pubnub-security/references/ip-whitelisting.md](../../pubnub-security/references/ip-whitelisting.md)
 - DoS / DDoS mitigation → [pubnub-security/references/dos-mitigation.md](../../pubnub-security/references/dos-mitigation.md)
 - Compliance reports (SOC 2, HIPAA) → [pubnub-security/references/compliance-reports.md](../../pubnub-security/references/compliance-reports.md)

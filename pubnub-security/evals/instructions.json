@@ -15,7 +15,7 @@
     {
       "instruction": "Issue tokens server-side using grantToken() with Secret Key",
       "original_snippets": "**Implement Server Auth**: Issue tokens server-side using `grantToken()` with Secret Key ... Server-side only (requires Secret Key)",
-      "relevant_when": "When setting up the authentication flow for PubNub PAM",
+      "relevant_when": "When setting up the authentication flow for PubNub Access Manager",
       "why_given": "new knowledge"
     },
     {

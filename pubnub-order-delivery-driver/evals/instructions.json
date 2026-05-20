@@ -145,8 +145,8 @@
       "why_given": "new knowledge"
     },
     {
-      "instruction": "Use PubNub Access Manager (PAM) with time-limited tokens scoped to exact channels needed for one delivery -- customers get read-only access, drivers get read+write",
-      "original_snippets": "Use PubNub Access Manager (PAM) to control who can publish and subscribe to which channels. ... Never let customers publish to driver channels or other customers' order channels. Issue time-limited tokens scoped to the exact channels needed for one delivery.",
+      "instruction": "Use PubNub Access Manager with time-limited tokens scoped to exact channels needed for one delivery -- customers get read-only access, drivers get read+write",
+      "original_snippets": "Use PubNub Access Manager to control who can publish and subscribe to which channels. ... Never let customers publish to driver channels or other customers' order channels. Issue time-limited tokens scoped to the exact channels needed for one delivery.",
       "relevant_when": "When setting up channel security for delivery tracking",
       "why_given": "particular preference"
     },

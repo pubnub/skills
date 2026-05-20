@@ -50,7 +50,7 @@ const pubnub = new PubNub({
 
   // Security
   cipherKey: 'aes-256-encryption-key',   // Encrypt all messages
-  authKey: 'pam-auth-token',             // Access Manager token
+  authKey: 'access-manager-auth-token',  // Access Manager token
 
   // Connection
   ssl: true,                              // Always use TLS

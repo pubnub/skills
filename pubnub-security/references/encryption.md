@@ -165,7 +165,7 @@ curl https://pubsub-tls12-test.pubnub.com
 | Key Type | Purpose | Location | PubNub Access |
 |----------|---------|----------|---------------|
 | **Cipher Key** | Encrypt message payloads | Client | Never sees it |
-| **Secret Key** | Sign PAM admin requests | Server only | Has it |
+| **Secret Key** | Sign Access Manager admin requests | Server only | Has it |
 | **TLS** | Encrypt transport layer | Both | Terminates at edge |
 
 ### Defense in Depth
@@ -176,7 +176,7 @@ const pubnub = new PubNub({
   subscribeKey: 'sub-c-...',
   publishKey: 'pub-c-...',
   userId: 'user-123',
-  authKey: 'pam-auth-token',           // Access Manager
+  authKey: 'access-manager-auth-token', // Access Manager (legacy authKey)
   cipherKey: 'my-strong-cipher-key',   // AES-256 encryption
   ssl: true                             // TLS (default)
 });

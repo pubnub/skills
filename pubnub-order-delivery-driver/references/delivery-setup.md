@@ -94,7 +94,7 @@ const pubnub = new PubNub({
 
 ### Access Manager Configuration
 
-Use PubNub Access Manager (PAM) to control who can publish and subscribe to which channels.
+Use PubNub Access Manager to control who can publish and subscribe to which channels.
 
 ```javascript
 // Server-side: Grant a customer read access to their order and driver channels

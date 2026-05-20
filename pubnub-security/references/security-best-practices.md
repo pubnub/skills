@@ -90,7 +90,7 @@ await pubnub.grant({
 ```javascript
 // Design channels with security boundaries
 
-// Public - no auth required (if PAM disabled)
+// Public - no auth required (if Access Manager disabled)
 'public-announcements'
 
 // Private user channel

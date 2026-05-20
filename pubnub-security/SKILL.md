@@ -1,12 +1,12 @@
 ---
 name: pubnub-security
-description: Secure PubNub applications with Access Manager (PAM v3), end-to-end AES-256 encryption, TLS 1.2+, IP allowlisting, DoS mitigation, and compliance posture (SOC 2, HIPAA, GDPR). Use when designing access control, issuing/revoking tokens, encrypting message and file payloads, hardening network access, or producing compliance evidence. Foundational keyset and rotation concerns are owned by pubnub-keyset-management.
+description: Secure PubNub applications with Access Manager v3, end-to-end AES-256 encryption, TLS 1.2+, IP allowlisting, DoS mitigation, and compliance posture (SOC 2, HIPAA, GDPR). Use when designing access control, issuing/revoking tokens, encrypting message and file payloads, hardening network access, or producing compliance evidence. Foundational keyset and rotation concerns are owned by pubnub-keyset-management.
 license: PubNub
 metadata:
   author: pubnub
   version: "0.2.0"
   domain: real-time
-  triggers: pubnub, security, access manager, pam, encryption, aes, tls, auth, ip allowlist, ip whitelist, dos, ddos, soc 2, hipaa, gdpr, compliance
+  triggers: pubnub, security, access manager, encryption, aes, tls, auth, ip allowlist, ip whitelist, dos, ddos, soc 2, hipaa, gdpr, compliance
   role: specialist
   scope: implementation
   output-format: code
@@ -19,7 +19,7 @@ You are the PubNub security specialist. Your role is to help developers secure r
 ## When to Use This Skill
 
 Invoke this skill when:
-- Implementing access control with PubNub Access Manager (PAM v3)
+- Implementing access control with PubNub Access Manager v3
 - Issuing and rotating authentication tokens (server-side `grantToken`)
 - Configuring AES-256 message and file encryption
 - Verifying TLS configuration
@@ -43,7 +43,7 @@ Invoke this skill when:
 
 | Reference | Purpose |
 |-----------|---------|
-| [access-manager.md](references/access-manager.md) | PAM v3 setup, token grants, permissions, revocation |
+| [access-manager.md](references/access-manager.md) | Access Manager v3 setup, token grants, permissions, revocation |
 | [encryption.md](references/encryption.md) | AES-256 message/file encryption, TLS configuration |
 | [security-best-practices.md](references/security-best-practices.md) | Auth patterns, key handling, channel architecture |
 | [ip-whitelisting.md](references/ip-whitelisting.md) | Restrict sub-key access by source IP / CIDR |
@@ -104,7 +104,7 @@ const pubnub = new PubNub({
 ## MCP Tools
 
 - **`grant_token`** — model token issuance from a real grant payload
-- **`get_sdk_documentation`** — pull SDK-specific PAM and CryptoModule APIs (see [intent-to-tool routing](../pubnub-choose-docs-path/references/intent-to-tool.md))
+- **`get_sdk_documentation`** — pull SDK-specific Access Manager and CryptoModule APIs (see [intent-to-tool routing](../pubnub-choose-docs-path/references/intent-to-tool.md))
 
 ## See Also
 

@@ -15,7 +15,7 @@ PubNub supports restricting traffic on a sub-key by source IP address. This is a
 | Functions / Lambdas with stable egress IPs | Yes |
 | Mobile / web clients on the public Internet | **No** — unworkable |
 | Limit Admin API access to your office / VPN | Yes |
-| As the only access control | **No** — must combine with PAM |
+| As the only access control | **No** — must combine with Access Manager |
 
 ## How It Works
 

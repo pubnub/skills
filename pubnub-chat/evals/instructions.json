@@ -15,7 +15,7 @@
     {
       "instruction": "Use authKey (not token) for Access Manager authentication",
       "original_snippets": "Use `authKey` (not `token`) for Access Manager authentication ... authKey: 'auth-token-from-server'  // CORRECT ... token: 'auth-token-from-server'    // WRONG - will not work",
-      "relevant_when": "Configuring Access Manager / PAM authentication in Chat SDK init",
+      "relevant_when": "Configuring Access Manager authentication in Chat SDK init",
       "why_given": "new knowledge"
     },
     {

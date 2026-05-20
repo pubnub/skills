@@ -203,7 +203,7 @@ pubnub.subscribe().channels(['chat-room']).with_presence().execute()
 
 ## Presence with Access Manager
 
-When using Access Manager (PAM), grant presence permissions:
+When using Access Manager, grant presence permissions:
 
 ```javascript
 // Server-side grant
