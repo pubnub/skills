@@ -4,13 +4,18 @@ description: Deliver real-time sports scores, play-by-play, and scoreboards with
 license: PubNub
 metadata:
   author: pubnub
-  version: "0.1.2"
+  version: "0.2.0"
   domain: real-time
   triggers: pubnub, live sports, play-by-play, scores, scoreboard, fan engagement, standings, game events, multi-sport
   role: specialist
   scope: implementation
   output-format: code
 ---
+
+<!-- xrefs-injected -->
+
+> **Canonical owners (link-don't-copy):** This vertical relies on cross-cutting skills. Always link to the canonical owner instead of duplicating. Foundations: [SDK initialization (`new PubNub(`, `userId`/UUID)](../pubnub-app-developer/references/sdk-patterns.md), [pub/sub basics (`pubnub.publish(`, `pubnub.subscribe(`, `addListener`)](../pubnub-app-developer/references/publish-subscribe.md), [channel naming](../pubnub-app-developer/references/channels.md), [message filters](../pubnub-app-developer/references/message-filters.md), [SDK upgrades](../pubnub-app-developer/references/sdk-upgrades.md), [REST API](../pubnub-app-developer/references/rest-api.md). Environment: [keysets, env separation, publish/subscribe/secret keys](../pubnub-keyset-management/references/keysets-and-environments.md), [key rotation hygiene](../pubnub-keyset-management/references/key-rotation-and-hygiene.md), [demo keys](../pubnub-keyset-management/references/demo-keys.md), [custom origin](../pubnub-keyset-management/references/custom-origin.md). Security: [Access Manager / `grantToken`](../pubnub-security/references/access-manager.md), [AES-256 / message encryption](../pubnub-security/references/encryption.md), [IP allowlisting](../pubnub-security/references/ip-whitelisting.md), [DoS mitigation](../pubnub-security/references/dos-mitigation.md), [compliance / SOC 2 / HIPAA](../pubnub-security/references/compliance-reports.md). Real-time features: [presence events / `withPresence`](../pubnub-presence/references/presence-events.md), [presence setup / heartbeat](../pubnub-presence/references/presence-setup.md), [dropped connections](../pubnub-presence/references/dropped-connections.md), [multi-device sync](../pubnub-presence/references/multi-device-sync.md). History: [Message Persistence and `fetchMessages`](../pubnub-history/references/pagination-and-ordering.md), [offline catch-up](../pubnub-history/references/offline-catch-up.md), [retention](../pubnub-history/references/retention-and-storage.md). App Context: [users / user metadata](../pubnub-app-context/references/users.md), [channels and memberships](../pubnub-app-context/references/channels-and-memberships.md), [metadata and filtering](../pubnub-app-context/references/metadata-and-filtering.md). Functions: [Before/After Publish, `request.ok()`/`request.abort()`](../pubnub-functions/references/functions-basics.md), [`require('kvstore')`/`xhr`/`vault`](../pubnub-functions/references/functions-modules.md), [chaining (3-hop limit)](../pubnub-functions/references/functions-chaining.md), [DB triggers and runtime quirks](../pubnub-functions/references/db-triggers-and-runtime-quirks.md), [common patterns](../pubnub-functions/references/functions-patterns.md). Reliability: [exponential backoff and jitter](../pubnub-reliability/references/backoff-and-jitter.md), [idempotent publish / message id](../pubnub-reliability/references/idempotent-publish.md), [dedup on merge](../pubnub-reliability/references/dedup-on-merge.md), [queue and retry](../pubnub-reliability/references/queue-and-retry.md), [schema version](../pubnub-reliability/references/schema-versioning.md). Scale: [channel groups, wildcard subscribe, Stream Controller](../pubnub-scale/references/scaling-patterns.md), [performance tuning](../pubnub-scale/references/performance.md), [10K+ live events](../pubnub-scale/references/large-events.md). Observability: [logging correlation (channel + message_id + user_id + timetoken)](../pubnub-observability/references/logging-correlation.md), [test pyramid](../pubnub-observability/references/test-pyramid.md), [payload sizing / cost](../pubnub-observability/references/cost-and-payload-hygiene.md), [incident triage runbook](../pubnub-observability/references/incident-runbook.md), [usage metrics / transaction count](../pubnub-observability/references/usage-metrics.md). Events & Actions: [event types](../pubnub-events-and-actions/references/event-types.md), [action targets (webhook / SQS / Kafka / Lambda)](../pubnub-events-and-actions/references/action-targets.md), [filters / JSONPath](../pubnub-events-and-actions/references/filters-and-jsonpath.md). Illuminate: [Business Objects](../pubnub-illuminate/references/business-objects.md), [Metrics](../pubnub-illuminate/references/metrics.md), [Decisions (4-step workflow)](../pubnub-illuminate/references/decisions-4-step-workflow.md), [Queries](../pubnub-illuminate/references/queries-adhoc-vs-saved.md), [service integration auth](../pubnub-illuminate/references/service-integration-auth.md). Chat: [Chat SDK setup](../pubnub-chat/references/chat-setup.md), [message actions / reactions](../pubnub-chat/references/message-actions.md), [file sharing / `sendFile`](../pubnub-chat/references/file-sharing.md), [threading](../pubnub-chat/references/threading.md). Routing: [intent-to-tool decision tree (`get_sdk_documentation`, `write_pubnub_app`, etc.)](../pubnub-choose-docs-path/references/intent-to-tool.md).
+
 
 # PubNub Live Sport Updates Specialist
 
@@ -150,11 +155,23 @@ await pubnub.publish({
 - Publish game status transitions (pre-game, in-progress, halftime, final) as distinct event types so clients can adjust their UI state machines accordingly
 - Never rely solely on client-side clocks for event ordering; always use server-side timestamps and sequence identifiers
 
-## Related Skills
+## MCP Tools
 
-- **pubnub-scale** - Wildcard subscriptions, channel groups, and optimization for peak traffic events
-- **pubnub-functions** - PubNub Functions for message transformation and push notification triggers
-- **pubnub-presence** - Tracking fan counts and active viewers per game channel
+- **`get_sdk_documentation`** — pull SDK-specific publish/subscribe APIs (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
+- **`create_pubnub_function`** — scaffold the After-Publish push trigger / message transformer
+- **`manage_apps`** — verify Stream Controller add-on for wildcard subscribes
+
+## See Also
+
+- **[pubnub-scale](../pubnub-scale/SKILL.md)** — [wildcard subscriptions and channel groups](../pubnub-scale/references/scaling-patterns.md), [performance tuning](../pubnub-scale/references/performance.md), and the [10K+ live-event playbook](../pubnub-scale/references/large-events.md) for peak traffic
+- **[pubnub-functions](../pubnub-functions/SKILL.md)** — [After Publish for push notification fan-out](../pubnub-functions/references/functions-basics.md), [chaining](../pubnub-functions/references/functions-chaining.md) for enrich → notify
+- **[pubnub-events-and-actions](../pubnub-events-and-actions/SKILL.md)** — route score events to push providers, analytics warehouses via [action targets](../pubnub-events-and-actions/references/action-targets.md) and [filters/JSONPath](../pubnub-events-and-actions/references/filters-and-jsonpath.md)
+- **[pubnub-reliability](../pubnub-reliability/SKILL.md)** — [exponential backoff and jitter](../pubnub-reliability/references/backoff-and-jitter.md) on reconnect after a goal storm; [schema versioning](../pubnub-reliability/references/schema-versioning.md) for evolving score payloads
+- **[pubnub-history](../pubnub-history/SKILL.md)** — [Message Persistence and offline catch-up](../pubnub-history/references/offline-catch-up.md) so late joiners see recent plays
+- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [fan counts per game channel](../pubnub-presence/references/presence-events.md) (consider tuned [heartbeat for cost](../pubnub-presence/references/presence-setup.md))
+- **[pubnub-observability](../pubnub-observability/SKILL.md)** — [usage metrics during peak match](../pubnub-observability/references/usage-metrics.md), [payload sizing](../pubnub-observability/references/cost-and-payload-hygiene.md) for tick-rate updates
+- **[pubnub-illuminate](../pubnub-illuminate/SKILL.md)** — [real-time stat aggregation via Metrics and Decisions](../pubnub-illuminate/SKILL.md)
+- **[pubnub-choose-docs-path](../pubnub-choose-docs-path/SKILL.md)** — for routing other PubNub questions
 
 ## Output Format
 
