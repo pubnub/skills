@@ -385,7 +385,7 @@ function validateQuote(quote) {
 - **Show market session status** prominently in the UI. Users should always know whether they are viewing pre-market, regular, after-hours, or closed-market data.
 - **Implement color flash on price change**: briefly highlight the price cell green on uptick and red on downtick, then fade back to neutral for instant visual feedback.
 - **Cache last known quotes locally** (e.g., in localStorage) so the app can show recent data instantly on reload, even before PubNub connects.
-- **Enforce data tier access** with PubNub Access Manager. Never rely on client-side checks alone to restrict premium data.
+- **Enforce data tier access** with Access Manager. Never rely on client-side checks alone to restrict premium data.
 - **Display required disclaimers** based on the data tier and exchange. Free-tier users must see the delayed-data notice with data source attribution.
 - **Handle market holidays and half-days** in your market hours logic. Maintain an updated holiday calendar to avoid false stale-data warnings.
 - **Use separate channels for extended-hours data** rather than mixing pre/after-hours quotes into the regular channel. This lets users opt in or out.

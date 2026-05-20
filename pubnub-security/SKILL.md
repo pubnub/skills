@@ -19,7 +19,7 @@ You are the PubNub security specialist. Your role is to help developers secure r
 ## When to Use This Skill
 
 Invoke this skill when:
-- Implementing access control with PubNub Access Manager v3
+- Implementing access control with Access Manager v3
 - Issuing and rotating authentication tokens (server-side `grantToken`)
 - Configuring AES-256 message and file encryption
 - Verifying TLS configuration

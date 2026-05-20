@@ -165,7 +165,7 @@ export default (request) => {
 - Implement stale-data detection on clients: flag quotes older than a configurable threshold so users see fresh data status
 - Comply with market data vendor agreements by enforcing delayed-quote tiers and attribution/disclaimer requirements
 - Clean up channel group memberships when users remove symbols from watchlists to avoid unnecessary subscription overhead
-- Never store or redistribute raw exchange data without proper entitlements; use PubNub Access Manager to enforce data tier access
+- Never store or redistribute raw exchange data without proper entitlements; use Access Manager to enforce data tier access
 
 ## MCP Tools
 
