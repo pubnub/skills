@@ -1,11 +1,23 @@
 {
   "name": "pubnub/pubnub-functions",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "private": false,
-  "summary": "Create, configure, and deploy PubNub Functions 2.0 event handlers, triggers, and serverless endpoints. Use when building real-time message transformations, PubNub modules, webhook integrations, or edge data processing.",
+  "summary": "Create, configure, and deploy PubNub Functions 2.0 event handlers, triggers, and serverless endpoints. Use when building real-time message transformations, PubNub modules, webhook integrations, edge data processing, function chaining, or bundled/transpiled TypeScript Functions.",
   "skills": {
     "pubnub-functions": {
       "path": "SKILL.md"
     }
+  },
+  "dependencies": {
+    "pubnub-choose-docs-path": ">=0.1.0",
+    "pubnub-app-context": ">=0.1.0",
+    "pubnub-app-developer": ">=0.1.0",
+    "pubnub-events-and-actions": ">=0.1.0",
+    "pubnub-illuminate": ">=0.1.0",
+    "pubnub-keyset-management": ">=0.1.0",
+    "pubnub-observability": ">=0.1.0",
+    "pubnub-reliability": ">=0.1.0",
+    "pubnub-scale": ">=0.1.0",
+    "pubnub-security": ">=0.1.0"
   }
 }
