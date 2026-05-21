@@ -94,11 +94,16 @@ Develop serverless edge functions with PubNub Functions 2.0.
 - Webhook integrations with external APIs
 - HTTP endpoints for REST APIs
 - Scheduled tasks and aggregation
+- Function chaining (3-hop, 5-consecutive) and shared-state designs
+- Bundling/transpiling TypeScript Functions
 
 **References:**
-- `functions-basics.md` - Function structure and event types
-- `functions-modules.md` - KVStore, XHR, Vault, Crypto modules
+- `functions-basics.md` - Function structure, event types, On Request URI routing, execution limits
+- `functions-modules.md` - KVStore, XHR, Vault, PubNub, Crypto/JWT/UUID, codec/*, jsonpath, advanced_math, ugc modules
 - `functions-patterns.md` - Counters, rate limiting, workflows
+- `functions-chaining.md` - 3-chain rule, Chaining vs Forking, kvstore state sharing, channel hygiene
+- `db-triggers-and-runtime-quirks.md` - DB-trigger patterns and runtime quirks (3-call cap, vault availability, request.path, sendFile, etc.)
+- `bundling-and-typescript.md` - esbuild externals, 64 KB guard, default-export shape, require-placement
 
 ---
 
@@ -543,10 +548,11 @@ All skills are published to the `pubnub` workspace on tessl.io.
 
 Catalog versions:
 
-- **8 vertical skills at `0.2.0`** (refreshed in this release): `pubnub-live-auctions`, `pubnub-live-betting-casino`, `pubnub-live-sport-updates`, `pubnub-live-stock-quote-updates`, `pubnub-live-voting`, `pubnub-multiplayer-gaming`, `pubnub-order-delivery-driver`, `pubnub-telemedicine`.
+- **8 vertical skills at `0.2.0`**: `pubnub-live-auctions`, `pubnub-live-betting-casino`, `pubnub-live-sport-updates`, `pubnub-live-stock-quote-updates`, `pubnub-live-voting`, `pubnub-multiplayer-gaming`, `pubnub-order-delivery-driver`, `pubnub-telemedicine`.
 - **5 foundational skills at `0.2.0`**: `pubnub-app-developer`, `pubnub-presence`, `pubnub-security`, `pubnub-chat`, `pubnub-scale`.
-- **`pubnub-functions` at `0.2.2`** (pending separate update).
-- **8 cross-cutting skills at `0.1.0`** (initial release): `pubnub-choose-docs-path`, `pubnub-keyset-management`, `pubnub-app-context`, `pubnub-illuminate`, `pubnub-history`, `pubnub-reliability`, `pubnub-observability`, `pubnub-events-and-actions`.
+- **9 cross-cutting skills**:
+  - `pubnub-functions` at `0.3.0`.
+  - `pubnub-choose-docs-path`, `pubnub-keyset-management`, `pubnub-app-context`, `pubnub-illuminate`, `pubnub-history`, `pubnub-reliability`, `pubnub-observability`, `pubnub-events-and-actions` at `0.1.0`.
 
 ## License
 
