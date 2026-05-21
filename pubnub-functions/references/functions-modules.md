@@ -1,3 +1,8 @@
+<!-- canonical-for: FUNCTION_MODULES -->
+<!-- used-by: -->
+
+> **Cross-references:** [Vault for secrets / secret-key handling](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md). [Crypto module is a Function-side option for the same end-to-end message encryption](../../pubnub-security/references/encryption.md). The PubNub module's [`pubnub.publish(`](../../pubnub-app-developer/references/publish-subscribe.md) call from inside a Function uses the same [SDK userId/UUID semantics](../../pubnub-app-developer/references/sdk-patterns.md) and is subject to the [3-chain rule](functions-chaining.md).
+
 # PubNub Functions 2.0 Modules
 
 ## Available Modules
@@ -12,10 +17,12 @@
 | `utils` | Utility functions |
 | `uuid` | UUID generation |
 | `jwt` | JWT creation and verification |
+| `codec/auth` | PubNub Access Manager auth helpers |
 | `codec/base64` | Base64 encoding/decoding |
 | `codec/query_string` | URL query string parsing |
-| `advanced_math` | Geospatial and math functions |
-| `jsonpath` | JSON querying |
+| `advanced_math` | Geospatial and math helpers |
+| `jsonpath` | JSONPath querying for nested JSON |
+| `ugc` | User-generated content moderation helpers |
 
 ## KVStore Module
 
@@ -150,6 +157,8 @@ export default async (request) => {
 ## Vault Module
 
 Secure storage for API keys and secrets.
+
+> **Execution limit:** A single Function execution can perform up to **10 vault lookups** (`vault.get('KEY')`) before failing. Load only the keys you need per invocation, and use a single consistent key casing (e.g., uppercase) to avoid accidental duplicate lookups. Vault reads do **not** count toward the 3-call external-operation cap (vault is local to the runtime).
 
 ```javascript
 const vault = require('vault');
@@ -295,6 +304,15 @@ const queryString = qs.stringify({ name: 'Bob', age: 25 });
 // 'name=Bob&age=25'
 ```
 
+### Auth
+
+The `codec/auth` codec exposes PubNub Access Manager auth helpers (signature building, token formats). It is rarely used directly from user code — most authorization is handled via the `pubnub` and `vault` modules. Consult the PubNub Functions documentation for the specific helpers exposed by your runtime version.
+
+```javascript
+const auth = require('codec/auth');
+// Use auth.<helper>(...) — refer to the runtime's documented API.
+```
+
 ## Utils Module
 
 ```javascript
@@ -308,6 +326,55 @@ if (utils.isNumeric('123')) {
   console.log('Is a number');
 }
 ```
+
+## Advanced Math Module
+
+PubNub Functions ship an `advanced_math` module for math and geospatial helpers (typical operations: rounding, distance, normalization). The exact surface depends on the Functions runtime version; consult the PubNub Functions documentation for the current `advanced_math` API.
+
+```javascript
+const math = require('advanced_math');
+
+// Use math.<helper>(...) — refer to the runtime's documented API.
+// Use this module instead of native `Math.*` when you need server-side
+// behavior consistent with other PubNub computations.
+```
+
+## JSONPath Module
+
+Query nested JSON with [JSONPath](https://goessner.net/articles/JsonPath/) expressions. Useful for extracting fields from deeply nested message payloads or webhook bodies without writing brittle optional-chaining ladders.
+
+```javascript
+const jp = require('jsonpath');
+
+const message = {
+  user: { id: 'u-123', tier: 'pro' },
+  items: [
+    { sku: 'A', qty: 2 },
+    { sku: 'B', qty: 5 }
+  ]
+};
+
+// Pull a single field
+const tier = jp.query(message, '$.user.tier')[0];     // 'pro'
+
+// Pull every sku from items
+const skus = jp.query(message, '$.items[*].sku');     // ['A', 'B']
+```
+
+JSONPath is convenient when message shapes vary slightly across producers — you can query optional fields without throwing on `undefined`.
+
+## UGC Module
+
+User-Generated Content moderation helpers. Typical use is calling a lightweight moderation check from a Before Publish Function on chat or comment channels, and aborting on toxic content.
+
+```javascript
+const ugc = require('ugc');
+
+// The specific surface depends on the Functions runtime version.
+// Consult the PubNub Functions documentation for the current `ugc` API.
+```
+
+For full-featured moderation (toxicity scoring, multi-category classification, threshold tuning), call an external moderation API via `xhr` (see [Pattern 3: Content Moderation](functions-patterns.md)). Use the built-in `ugc` module for lightweight checks that don't require an external API call — they don't consume an entry from the 3-call external-operation cap.
 
 ## Module Usage Summary
 
