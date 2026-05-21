@@ -1,3 +1,8 @@
+<!-- canonical-for: FUNCTION_BASICS -->
+<!-- used-by: -->
+
+> **Cross-references:** Built on [pub/sub semantics](../../pubnub-app-developer/references/publish-subscribe.md) and [SDK initialization including userId/UUID](../../pubnub-app-developer/references/sdk-patterns.md). For [chained Functions](functions-chaining.md) and [DB-trigger patterns + runtime quirks](db-triggers-and-runtime-quirks.md). For non-transform routing prefer [Events & Actions](../../pubnub-events-and-actions/SKILL.md).
+
 # PubNub Functions 2.0 Basics
 
 ## Overview
@@ -140,6 +145,70 @@ alerts.*.critical  → wildcard not at end
 a.b.c.d.*          → too many segments
 ```
 
+## On Request URI Routing
+
+Channel patterns (above) gate which messages trigger Before/After Publish Functions. **On Request Functions use a separate routing mechanism: URI path matching against the configured pattern.** The rules are different from channel-pattern wildcards.
+
+### Rules
+
+- Routes are matched by a **character-by-character comparison** of the incoming URI path against the configured pattern.
+- `*` matches **0..N** characters. **Multiple `*`** are allowed within a single pattern.
+- Slashes are not special. **Trailing slashes must match exactly** — `/users` and `/users/` are different routes.
+- Wildcard matches **do not populate `request.params`**. Parse IDs from `request.path` yourself.
+- In the **Portal UI**, enter the route pattern **without a leading `/`**. The incoming request still arrives with a leading `/`.
+- **Overlapping patterns are rejected** at configuration time.
+
+### Single-Router Pattern (recommended for many endpoints)
+
+For multiple endpoints under one base path, configure **one** On Request Function with a prefix pattern (e.g., `v1/tasks*`) and dispatch by `request.method` + `request.path` inside the handler:
+
+```javascript
+// Portal route: v1/tasks*    (no leading slash in the Portal)
+// Incoming request.path:     /v1/tasks/123/comments  (leading slash present)
+
+export default async (request, response) => {
+  const path = String(request.path || '').split('?')[0];        // defensive normalization
+  const segments = path.replace(/^\//, '').split('/');          // ['v1','tasks','123','comments']
+
+  try {
+    if (segments[1] !== 'tasks') {
+      return response.send({ error: 'Not Found' }, 404);
+    }
+
+    // /v1/tasks
+    if (segments.length === 2 && request.method === 'GET') {
+      return response.send({ items: [/* ... */] }, 200);
+    }
+
+    // /v1/tasks/{id}
+    if (segments.length === 3) {
+      const taskId = segments[2];
+      if (request.method === 'GET')    return response.send({ id: taskId }, 200);
+      if (request.method === 'PUT')    return response.send({ id: taskId, updated: true }, 200);
+      if (request.method === 'DELETE') return response.send({ id: taskId, deleted: true }, 200);
+    }
+
+    // /v1/tasks/{id}/comments
+    if (segments.length === 4 && segments[3] === 'comments') {
+      const taskId = segments[2];
+      if (request.method === 'GET')  return response.send({ taskId, comments: [] }, 200);
+      if (request.method === 'POST') return response.send({ taskId, posted: true }, 201);
+    }
+
+    return response.send({ error: 'Not Found' }, 404);
+  } catch (err) {
+    console.error('Routing error:', err);
+    return response.send({ error: 'Server error' }, 500);
+  }
+};
+```
+
+This avoids the "overlapping patterns rejected" problem when you have several endpoints under the same prefix.
+
+### Why `request.params` is often empty
+
+For On Request routes that use `*` wildcards, the runtime does not auto-extract named parameters. There is no `:userId` syntax. Anything you want to read out of the path must be parsed from `request.path` (which is the **raw** path, with leading `/`).
+
 ## Async/Await Best Practices
 
 ### Always Use async/await
@@ -165,12 +234,32 @@ export default async (request) => {
 ```
 
 ```javascript
-// INCORRECT: .then()/.catch() chains (avoid)
-export default async (request) => {
-  db.get('myKey')
-    .then(data => { /* ... */ })
-    .catch(err => { /* ... */ });
-  // This won't work properly
+// BROKEN: missing `return` — handler resolves before the promise chain runs
+export default (request) => {
+  const db = require('kvstore');
+  db.get('myKey')                              // promise dangles
+    .then((data) => request.ok());
+  // handler returns undefined here; runtime never sees ok()
+};
+```
+
+### Promise Chains Are Acceptable If You Return Them
+
+`async/await` is the recommended style. Promise chains remain valid for legacy or generated code, **provided you return the chain** so the runtime can await it:
+
+```javascript
+// Acceptable: chain is returned from the handler
+export default (request) => {
+  const db = require('kvstore');
+  return db.get('myKey')
+    .then((data) => {
+      request.message.data = data;
+      return request.ok();
+    })
+    .catch((err) => {
+      console.error('Error:', err);
+      return request.abort();
+    });
 };
 ```
 
@@ -208,33 +297,46 @@ export default async (request) => {
 
 | Limit | Value |
 |-------|-------|
-| Function chain depth | 3 executions |
-| Operations per execution | 3 (KV + XHR + publish) |
+| Function chain depth | 3 executions (5 consecutive Functions total) |
+| External calls per execution | 3 (XHR + PubNub API invocations) |
+| Vault reads per execution | 10 (`vault.get(...)` calls) |
 | Execution timeout | Few seconds |
 | Response payload | Reasonable size |
+
+> The 3-call XHR/PubNub cap and the 10-call vault cap are **configurable on request via PubNub Support** for Functions that legitimately need more. The chain depth and execution timeout are platform limits and not user-tunable.
+>
+> **`kvstore`, `crypto`, `jwt`, `uuid`, `utils`, `advanced_math`, `jsonpath`, and `codec/*` calls do NOT count** toward the 3-call cap — they are local-runtime helpers. See [Quirk 2: 3-Call Cap on XHR + PubNub API Calls](db-triggers-and-runtime-quirks.md) for the canonical accounting.
 
 ### Handling Limits
 
 ```javascript
 export default async (request) => {
-  const db = require('kvstore');
+  const db     = require('kvstore');
   const pubnub = require('pubnub');
+  const xhr    = require('xhr');
 
   try {
-    // 1 operation: KV read
-    const data = await db.get('myKey');
+    // FREE — KVStore ops do NOT count toward the 3-call external cap
+    const cached = await db.get('cachedConfig');
+    await db.set('lastSeen', Date.now(), 60);
 
-    // 2 operation: KV write
-    await db.set('lastAccess', Date.now(), 60);
+    // External call 1: HTTP fetch
+    const resp = await xhr.fetch('https://example.com/enrich');
 
-    // 3 operation: publish
+    // External call 2: publish
+    await pubnub.publish({
+      channel: 'enriched',
+      message: { ...request.message, enriched: true }
+    });
+
+    // External call 3: fire analytics event (same 1-call cost as publish)
     await pubnub.fire({
       channel: 'analytics',
       message: { event: 'processed' }
     });
 
-    // LIMIT REACHED - no more operations allowed
-    // Any additional KV/XHR/publish will fail
+    // LIMIT REACHED — a 4th xhr.fetch / pubnub.* call would raise
+    // "execution calls exceeds" and abort the handler.
 
     return request.ok();
   } catch (error) {
@@ -243,6 +345,8 @@ export default async (request) => {
   }
 };
 ```
+
+KV reads/writes inside the same handler are free of this cap; only `xhr.fetch(...)` and `pubnub.*(...)` count. See [Quirk 2](db-triggers-and-runtime-quirks.md) for the canonical accounting.
 
 ## Logging and Debugging
 
