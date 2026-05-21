@@ -1,3 +1,8 @@
+<!-- canonical-for: FUNCTION_PATTERNS -->
+<!-- used-by: -->
+
+> **Cross-references:** Patterns here lean on [pub/sub basics](../../pubnub-app-developer/references/publish-subscribe.md), [SDK userId/UUID handling](../../pubnub-app-developer/references/sdk-patterns.md), [the REST API surface](../../pubnub-app-developer/references/rest-api.md) for direct calls, [idempotent publish](../../pubnub-reliability/references/idempotent-publish.md), and [logging correlation](../../pubnub-observability/references/logging-correlation.md). For mirror-to-DB see [DB triggers](db-triggers-and-runtime-quirks.md). For decision-style automation use [Illuminate Decisions](../../pubnub-illuminate/references/decisions-4-step-workflow.md) instead of polling KVStore on an On Interval.
+
 # PubNub Functions 2.0 Common Patterns
 
 ## Pattern 1: Distributed Counter
