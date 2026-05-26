@@ -123,7 +123,7 @@ Then stop. Let the specialist skill take over.
 
 Every owned topic mentioned above defers to its canonical reference file. Use these links when handing off:
 
-- Access Manager and PAM tokens → [pubnub-security/references/access-manager.md](../pubnub-security/references/access-manager.md)
+- Access Manager tokens → [pubnub-security/references/access-manager.md](../pubnub-security/references/access-manager.md)
 - History timetoken pagination → [pubnub-history/references/pagination-and-ordering.md](../pubnub-history/references/pagination-and-ordering.md)
 - Offline catch-up flow → [pubnub-history/references/offline-catch-up.md](../pubnub-history/references/offline-catch-up.md)
 - App Context (users, channel metadata, membership metadata) → [pubnub-app-context/references/users.md](../pubnub-app-context/references/users.md)

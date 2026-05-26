@@ -42,7 +42,7 @@ const chat = await Chat.init({
   userId: 'unique-user-id',           // REQUIRED - persistent per user
 
   // Optional configurations
-  authKey: 'pam-auth-token',          // For Access Manager (NOT 'token')
+  authKey: 'access-manager-auth-token', // For Access Manager (NOT 'token')
   cipherKey: 'encryption-key',        // For message encryption
 
   // Typing indicator settings

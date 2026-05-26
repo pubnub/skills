@@ -119,7 +119,7 @@ async function sendSecureMessage(channelId, message, senderRole) {
 
 ### Access Manager for Healthcare Roles
 
-Use PubNub Access Manager to enforce role-based access. Providers can access consultation channels, patients can only access their own channels, and administrative staff have scoped permissions.
+Use Access Manager to enforce role-based access. Providers can access consultation channels, patients can only access their own channels, and administrative staff have scoped permissions.
 
 ```javascript
 async function grantProviderAccess(providerId, consultationChannelId, ttlMinutes = 60) {

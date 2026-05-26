@@ -81,7 +81,7 @@
     {
       "instruction": "When using Access Manager, grant read access to both the channel and its -pnpres companion channel",
       "original_snippets": "Grant for presence channel specifically ... await pubnub.grant({ channels: ['chat-room-pnpres'], authKeys: ['user-auth-token'], read: true, ttl: 60 });",
-      "relevant_when": "Using PubNub Access Manager (PAM) with presence",
+      "relevant_when": "Using Access Manager with presence",
       "why_given": "new knowledge"
     },
     {

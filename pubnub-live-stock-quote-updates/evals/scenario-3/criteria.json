@@ -4,7 +4,7 @@
   "checklist": [
     {
       "name": "GrantToken usage",
-      "description": "Uses pubnub.grantToken() (PubNub Access Manager) to issue tokens with channel-level read permissions, not a custom auth mechanism",
+      "description": "Uses pubnub.grantToken() (Access Manager) to issue tokens with channel-level read permissions, not a custom auth mechanism",
       "max_score": 10
     },
     {

@@ -3,11 +3,11 @@
 
 > **Cross-references:** Requires the [Secret Key from your keyset](../../pubnub-keyset-management/references/keysets-and-environments.md) (server-side only). Pair with [end-to-end message encryption (AES-256)](encryption.md) and [IP allowlisting](ip-whitelisting.md) for layered defense. Token issuance integrates with [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md) and the [`pubnub.publish(`](../../pubnub-app-developer/references/publish-subscribe.md) call. Channel-group grants are owned by [pubnub-scale](../../pubnub-scale/references/scaling-patterns.md).
 
-# PubNub Access Manager (PAM)
+# Access Manager
 
 ## Overview
 
-PubNub Access Manager provides fine-grained control over who can access channels and what actions they can perform.
+Access Manager provides fine-grained control over who can access channels and what actions they can perform.
 
 ### Key Concepts
 
@@ -163,7 +163,7 @@ import jwt from 'jsonwebtoken';
 
 const app = express();
 
-// Server PubNub instance with Secret Key
+// Server-side instance with Secret Key
 const pubnub = new PubNub({
   publishKey: 'pub-c-...',
   subscribeKey: 'sub-c-...',
@@ -181,7 +181,7 @@ app.post('/api/pubnub/auth', async (req, res) => {
     // 2. Determine channels based on user permissions
     const channels = getUserChannels(user);
 
-    // 3. Issue PubNub token
+    // 3. Issue token
     const channelPermissions = {};
     for (const ch of channels) {
       channelPermissions[ch] = { read: true, write: user.canWrite };
@@ -222,7 +222,7 @@ async function initializePubNub() {
 
   const credentials = await response.json();
 
-  // 2. Initialize PubNub and set token
+  // 2. Initialize client and set token
   const pubnub = new PubNub({
     subscribeKey: credentials.subscribeKey,
     publishKey: credentials.publishKey,

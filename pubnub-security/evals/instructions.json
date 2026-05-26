@@ -3,7 +3,7 @@
     {
       "instruction": "Use grantToken() and setToken() for new implementations; grant() and authKey is legacy",
       "original_snippets": "Use `grantToken()` and `setToken()` for new implementations; `authKey` with `grant()` is legacy ... New implementations should use `grantToken()` and `setToken()` instead.",
-      "relevant_when": "When implementing PubNub Access Manager for access control in a new application",
+      "relevant_when": "When implementing Access Manager for access control in a new application",
       "why_given": "new knowledge"
     },
     {
@@ -15,7 +15,7 @@
     {
       "instruction": "Issue tokens server-side using grantToken() with Secret Key",
       "original_snippets": "**Implement Server Auth**: Issue tokens server-side using `grantToken()` with Secret Key ... Server-side only (requires Secret Key)",
-      "relevant_when": "When setting up the authentication flow for PubNub PAM",
+      "relevant_when": "When setting up the authentication flow for Access Manager",
       "why_given": "new knowledge"
     },
     {

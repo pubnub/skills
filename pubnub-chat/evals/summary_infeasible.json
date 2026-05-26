@@ -7,7 +7,7 @@
     },
     {
       "scenarios": "Live Access Manager token refresh flow",
-      "reasoning": "Testing the full PAM error handling flow (PNAccessDeniedCategory detection and auth token refresh) requires a live PubNub keyset with Access Manager enabled and an actual expired/invalid token. This cannot be done without API keys or a running PubNub service."
+      "reasoning": "Testing the full Access Manager error handling flow (PNAccessDeniedCategory detection and auth token refresh) requires a live PubNub keyset with Access Manager enabled and an actual expired/invalid token. This cannot be done without API keys or a running PubNub service."
     }
   ]
 }

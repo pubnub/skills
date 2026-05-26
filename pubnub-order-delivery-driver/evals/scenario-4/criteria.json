@@ -44,7 +44,7 @@
     },
     {
       "name": "Access token management",
-      "description": "Uses PubNub Access Manager (grantToken or similar) with time-limited tokens scoped to the specific channels needed for the delivery",
+      "description": "Uses Access Manager (grantToken or similar) with time-limited tokens scoped to the specific channels needed for the delivery",
       "max_score": 10
     },
     {

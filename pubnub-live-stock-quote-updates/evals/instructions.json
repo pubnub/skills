@@ -49,8 +49,8 @@
       "why_given": "new knowledge"
     },
     {
-      "instruction": "Use PubNub Access Manager (grantToken) to enforce data tier access (free/delayed, standard, premium, professional) with appropriate channel patterns",
-      "original_snippets": "Never store or redistribute raw exchange data without proper entitlements; use PubNub Access Manager to enforce data tier access ... Enforce data tier access with PubNub Access Manager. Never rely on client-side checks alone to restrict premium data ... const token = await pubnub.grantToken({ ttl: 60, authorizedUuid: userId, resources: { channels: ... } })",
+      "instruction": "Use Access Manager (grantToken) to enforce data tier access (free/delayed, standard, premium, professional) with appropriate channel patterns",
+      "original_snippets": "Never store or redistribute raw exchange data without proper entitlements; use Access Manager to enforce data tier access ... Enforce data tier access with Access Manager. Never rely on client-side checks alone to restrict premium data ... const token = await pubnub.grantToken({ ttl: 60, authorizedUuid: userId, resources: { channels: ... } })",
       "relevant_when": "When implementing data entitlement or access control for market data tiers",
       "why_given": "new knowledge"
     },
