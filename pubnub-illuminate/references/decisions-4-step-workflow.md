@@ -85,6 +85,16 @@ STRING_CONTAINS
 
 Use `ANY` for "don't-care" input fields in a rule that still must include them in `inputValues`.
 
+## Avoiding False Positives (a Decision That Fires Every Window)
+
+A Decision can be structurally valid yet fire on **every** evaluation window regardless of real activity. This is one of the most common "it's wired but wrong" problems, and it has two usual causes:
+
+1. **An unfiltered measure Metric.** If the source Metric (`AVG`/`SUM`/`MIN`/`MAX`) is not scoped to one event/message type, it aggregates across **every** record on the channel. Records that don't carry the measured field contribute nothing, the aggregate is meaningless, and on a quiet window it collapses toward `0`. Scope the Metric with a filter so it sees only the relevant records — see [metrics.md](metrics.md), "Filters Scope the Metric."
+
+2. **A `NUMERIC_LESS_THAN` threshold on a sparse window.** When few or no matching records arrive in a window, the aggregate drops to/near `0`, so a `... LESS_THAN X` rule is satisfied (`0 < X`) and the action fires — even though nothing really happened. Prefer **`NUMERIC_GREATER_THAN`** with the threshold set **above the metric's normal baseline**: an empty window reads as `0`, which a `> X` rule does *not* satisfy, so the Decision fires only on a genuine spike. If "the value fell below X" is truly the intent, make sure the window stays populated (steady traffic, or a longer `evaluationWindow`) so an idle window isn't misread as a breach.
+
+**Rule of thumb: filter the source Metric to one event type, and prefer "greater-than-baseline" thresholds.** Together these eliminate the large majority of constantly-firing Decisions.
+
 ## Execution Limit Types
 
 Valid values for `executionLimitType` in `actionValues`:
@@ -220,7 +230,7 @@ These are the per-source-type rules that, if violated, return errors:
 - Action objects use `"actionType"` (not `"type"`). E.g., `"actionType": "WEBHOOK_EXECUTION"`.
 - `outputFields` require a `"variable"` (camelCase identifier used in `${variable}` template references) and a `"name"` field. **No `"type"` field.**
 - Template variables support `${outputVariable}` and `${inputFieldName}` syntax. When using the `manage_illuminate` MCP tool's `create` operation, `${...}` references in action template bodies are automatically resolved from human-readable names to auto-generated UUIDs — use `${User ID}`, `${points}`, etc., instead of raw UUIDs.
-- `PUBNUB_PUBLISH` actions require a valid publish key and subscribe key in the template — see [pubnub-keyset-management/references/keysets-and-environments.md](../../pubnub-keyset-management/references/keysets-and-environments.md).
+- `PUBNUB_PUBLISH` actions require a valid publish key and subscribe key in the template — see [pubnub-keyset-management/references/keysets-and-environments.md](../../pubnub-keyset-management/references/keysets-and-environments.md). The target **channel** must also be a valid PubNub channel name: an invalid channel makes the action log as *unsuccessful* and the message is never delivered, even though the rule matched. In particular, keep the channel to **≤ 3 dot-delimited levels** (`a.b.c`) — a deeper channel like `a.b.c.d` has been observed to fail delivery — and avoid reserved characters.
 
 ## Updating an Active Decision
 
@@ -254,6 +264,8 @@ PUT is always **full replacement** — include the complete body every time.
 | Output field rejected | Used `"type"` instead of `"variable"` | Use `variable` and `name` only |
 | `executionLimitType` rejected | Used `ONCE_PER_INTERVAL_PER_CONDITION` | Use `ONCE_PER_INTERVAL_PER_CONDITION_GROUP` |
 | `400: "A business object cannot have more than 3 associated decisions."` | Hit METRIC decision limit | Delete one (with user confirmation) and retry |
+| Decision fires every evaluation window regardless of real data | Source Metric not filtered to one event type (aggregates across all messages → collapses toward `0`), and/or a `NUMERIC_LESS_THAN` threshold an idle window satisfies | Filter the source Metric ([metrics.md](metrics.md)); prefer `NUMERIC_GREATER_THAN` above baseline — see "Avoiding False Positives" |
+| Action shows in the log but the message never arrives | `PUBNUB_PUBLISH` target channel is not a valid PubNub channel name | Use a simple channel name (≤ 3 dot-delimited levels, no reserved characters) |
 
 ## Related Reading
 

@@ -138,6 +138,8 @@ These will save days of debugging. They are documented in detail in [references/
 - Decisions are **immutable for structural fields** (`inputFields`, `outputFields`, `actions`) while enabled — set `enabled: false` first
 - Active resource updates use **full-replacement PUT** — always send the complete body
 - All cascade deletes are permanent; require explicit user confirmation before any `DELETE`
+- **Ingestion + aggregation lag (~20–30s):** published data does not appear in Metrics, Queries, or Decision evaluations immediately. Wait ~20–30 seconds before checking that Business Object fields populate, that a Metric has a value, or that a Decision fired — otherwise a correct config looks broken.
+- A Decision can fire on **every** evaluation window if its source Metric isn't filtered to one event type, or if it uses a `<` threshold that an idle window (aggregate ≈ 0) satisfies. Filter the Metric and prefer "greater-than-baseline" thresholds — see [references/decisions-4-step-workflow.md](references/decisions-4-step-workflow.md) ("Avoiding False Positives").
 
 ## MCP Tools
 
@@ -168,3 +170,5 @@ When providing implementations:
 4. Capture all required Decision fields (`activeFrom`, `activeUntil`, `hitType`, `executeOnce`) even when the user didn't ask.
 5. Note cascade-delete consequences before any DELETE example.
 6. Include account limits if the operation could hit them.
+7. For Metrics/Decisions, filter the source Metric to one event type and prefer "greater-than-baseline" thresholds so the Decision doesn't fire on empty windows (see the decisions reference, "Avoiding False Positives").
+8. Verify before declaring success: publish or observe real traffic, wait ~20–30s for ingestion, then confirm Business Object fields populate (a raw `queries/execute` snapshot) and the Decision's action log shows it firing. A config that returns `200`s can still be wired wrong (bad JSONPath, unfiltered Metric, mis-set threshold).

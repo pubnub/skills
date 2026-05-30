@@ -9,6 +9,8 @@ The canonical reference for Illuminate Business Objects: schema, field types, JS
 
 A Business Object defines the **schema** for the data Illuminate will ingest from your PubNub channels. Each field maps a JSONPath expression to a typed value extracted from incoming messages.
 
+A Business Object ingests **every** message on the subscribed channel(s) — not just one message or event type. A single channel commonly carries several payload shapes (e.g. `Product_View`, `Add_to_Cart`, `Payment_Processed`), and the BO captures them all; fields whose JSONPath isn't present in a given message are simply empty for that record. This is why downstream **Metrics** that aggregate a field must usually **filter to the one event type that carries it** (see [metrics.md](metrics.md)) — otherwise the aggregate is computed across unrelated messages. A good pattern is to map an explicit type/`event` discriminator field (e.g. `$.message.body.event`) so Metrics and Decisions can filter on it.
+
 It is the **first** Illuminate resource you create. **Metrics**, **Queries**, and **Decisions** depend on it directly; **Dashboards** are account-level and hold **charts** that reference metrics built from Business Object fields (see [Cascade Delete](#cascade-delete) when deleting a BO).
 
 ## Message Wrapping

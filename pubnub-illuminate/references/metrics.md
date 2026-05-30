@@ -87,6 +87,8 @@ curl -X POST https://admin-api.pubnub.com/v2/illuminate/metrics \
 
 Use `filters` to scope a Metric to relevant events only. Without filters, the Metric counts every record matching the schema. With filters, the Metric only includes rows where each filter expression matches.
 
+**For measure Metrics (`AVG`/`SUM`/`MIN`/`MAX`) this is a correctness requirement, not just a cost optimization.** A single channel usually carries several message/event types, and the Business Object ingests **all** of them (see [business-objects.md](business-objects.md)). An unfiltered measure Metric therefore aggregates across every type; records that don't contain the measured field contribute nothing, the aggregate becomes meaningless, and on a quiet window it collapses toward `0`. A threshold Decision built on such a Metric then misfires (typically firing on **every** window — see [decisions-4-step-workflow.md](decisions-4-step-workflow.md), "Avoiding False Positives"). **Always filter a measure Metric to the single event type that carries the measure**, e.g. `event STRING_EQUALS "purchase"`.
+
 ```json
 "filters": [
   { "fieldId": "<event-type-field-id>", "operation": "STRING_EQUALS", "value": "purchase" },
@@ -128,6 +130,7 @@ Deleting a Metric **permanently deletes all Decisions that reference it.** Confi
 | `400: measureId required` | Used SUM/AVG/MIN/MAX without `measureId` | Add a NUMERIC field and reference its id |
 | Cannot update Metric | Referencing Decision is still enabled | Disable Decision first |
 | Metric returns no data | Filters too narrow, or dimension never matches | Verify a sample message via [`subscribe_and_receive_pubnub_messages`](../../pubnub-app-developer/references/publish-subscribe.md) |
+| A Decision on this Metric fires every window | Measure Metric not scoped to one event type — it averages across all message types and collapses toward `0` | Add a `STRING_EQUALS` filter on the event-type field; see [decisions-4-step-workflow.md](decisions-4-step-workflow.md), "Avoiding False Positives" |
 
 ## Related Reading
 
