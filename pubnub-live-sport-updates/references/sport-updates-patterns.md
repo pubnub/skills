@@ -28,7 +28,7 @@ class MultiSportDashboard {
     this.leagues = leagues;
     const channels = leagues.flatMap(league => [
       `sports.${league}.scores`,
-      `sports.${league}.games.*`
+      `sports.${league}.*`
     ]);
     this.pubnub.subscribe({ channels });
   }
@@ -398,7 +398,7 @@ class DeltaApplier {
 
 ```javascript
 async function replayGame(pubnub, league, gameId, onEvent, speedMultiplier = 10) {
-  const channel = `sports.${league}.games.${gameId}.plays`;
+  const channel = `sports.${league}.${gameId}-plays`;
   const response = await pubnub.fetchMessages({ channels: [channel], count: 100 });
 
   const events = (response.channels[channel] || [])
@@ -419,7 +419,7 @@ async function replayGame(pubnub, league, gameId, onEvent, speedMultiplier = 10)
 
 ```javascript
 async function buildGameSummary(pubnub, league, gameId) {
-  const channel = `sports.${league}.games.${gameId}`;
+  const channel = `sports.${league}.${gameId}`;
   const response = await pubnub.fetchMessages({ channels: [channel], count: 100 });
   const messages = (response.channels[channel] || []).map(e => e.message);
 
@@ -477,7 +477,7 @@ class ResilientSportsClient {
 ## Best Practices
 
 1. **Separate concerns by channel** - Use distinct channels for scores, play-by-play, fan engagement, and statistics so each client subscribes only to what it needs
-2. **Wildcard subscriptions for dashboards** - Use `sports.<league>.games.*` for multi-game views rather than subscribing to dozens of individual channels
+2. **Wildcard subscriptions for dashboards** - Use `sports.<league>.*` for multi-game views rather than subscribing to dozens of individual channels (3-level limit: `sports.nfl.*` is valid; `sports.nfl.games.*` is not — that would require 4-level channel names)
 3. **Delta compression** - For high-frequency updates (pitch-by-pitch, possession tracking), send only changed fields to minimize bandwidth
 4. **Push notification thresholds** - Send push notifications only for critical events (goals, game start, game end) to avoid notification fatigue
 5. **Reconnection with backfill** - Always fetch recent history on reconnect; use sequence numbers to detect what was missed

@@ -18,10 +18,14 @@ Channels are named pathways for routing messages in PubNub. They act as labels t
 
 ## Channel Naming Rules
 
+> **HARD LIMIT — `.` is a reserved character.**
+> PubNub uses `.` exclusively as a hierarchy delimiter. Channel names that use dots are capped at **3 levels (2 dots): `a.b.c`**. A fourth segment — `a.b.c.d` — is **always invalid** and will cause publish/subscribe failures. This limit applies everywhere: regular channel names, wildcard patterns, and any channel name produced by a Decision, Function, or SDK call.
+
 ### Valid Names
 
 - **Length**: Up to 92 characters
 - **Character Set**: UTF-8 compatible
+- **Dot-separated depth**: Maximum 3 levels (`a.b.c`) — never 4 or more
 
 ### Invalid Characters (DO NOT USE)
 
@@ -33,7 +37,7 @@ Channels are named pathways for routing messages in PubNub. They act as labels t
 | `/` | Slash |
 | `\` | Backslash |
 | ` ` | Space |
-| `.` | Period (reserved for wildcards) |
+| `.` | Period — **reserved**; only valid as hierarchy delimiter, max 2 dots per name |
 
 ### Naming Conventions
 
@@ -92,18 +96,21 @@ function getDirectChannelName(userId1, userId2) {
 
 ### 4. Hierarchical Topics (for Wildcard Subscribe)
 
-```javascript
-// Sports hierarchy
-'sports.football.scores'
-'sports.basketball.news'
-'sports.baseball.highlights'
+Max 3 levels (`a.b.c`). Design your hierarchy to fit within this limit.
 
-// IoT sensor hierarchy
-'iot.building1.floor2.temp'
-'iot.building1.floor2.humidity'
+```javascript
+// Sports hierarchy — 3 levels max
+'sports.football.scores'      // ✓ valid (3 levels)
+'sports.basketball.news'      // ✓ valid (3 levels)
+
+// IoT sensor hierarchy — encode device+metric into the 3rd segment
+'iot.building1.temp'          // ✓ valid (3 levels)
+'iot.building1.humidity'      // ✓ valid (3 levels)
+// 'iot.building1.floor2.temp' — INVALID: 4 levels
 
 // Subscribe to all with wildcard
 pubnub.subscribe({ channels: ['sports.*'] });
+pubnub.subscribe({ channels: ['iot.building1.*'] });
 ```
 
 ### 5. Device/IoT Channels
@@ -260,3 +267,4 @@ For longer storage, enable **Message Persistence** add-on.
 4. **Document your channel naming scheme** for team consistency
 5. **Use Channel Groups** for user-specific aggregations (feeds, notifications)
 6. **Plan for scale** - structure channels for wildcard patterns if needed
+7. **Never exceed 3 dot-separated levels** — `a.b.c` is the maximum. If your natural hierarchy has 4+ levels (e.g. `sport.league.game.metric`), flatten by combining segments with a non-dot separator: `sport.league.game-metric` or encode the extra dimension into the message payload instead.

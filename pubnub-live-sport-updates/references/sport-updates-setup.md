@@ -82,36 +82,43 @@ function SportsApp({ userId }) {
 
 ## Channel Hierarchy
 
-The channel naming convention follows a dot-delimited hierarchy that supports wildcard subscriptions at every level.
+> **Hard limit:** PubNub channel names support a maximum of **3 dot-separated levels (`a.b.c`)**.  
+> `sports.<league>.games.<gameId>` is **4 levels and invalid**. All channel patterns below are designed to stay within 3 levels.
+
+The channel naming convention follows a 3-level dot-delimited hierarchy: `sports.<league>.<segment>`.
 
 ### Channel Naming Pattern
 
 ```
-sports.<league>.<context>.<identifier>
+sports.<league>.<segment>
 ```
+
+`<segment>` is the game ID, team ID, or a fixed keyword. When a game needs multiple event-type channels, encode the type into the segment using a hyphen: `<gameId>-plays`, `<gameId>-fan`.
 
 ### Channel Types
 
 | Channel Pattern | Purpose | Example |
 |----------------|---------|---------|
 | `sports.<league>.scores` | League-wide score ticker | `sports.nfl.scores` |
-| `sports.<league>.games.<gameId>` | Single game updates | `sports.nfl.games.2024-SEA-SF-week5` |
-| `sports.<league>.games.<gameId>.plays` | Play-by-play for one game | `sports.nfl.games.2024-SEA-SF-week5.plays` |
-| `sports.<league>.teams.<teamId>` | All updates for one team | `sports.nfl.teams.SF` |
 | `sports.<league>.standings` | Standings and league table | `sports.epl.standings` |
-| `sports.<league>.games.<gameId>.fan` | Fan engagement for a game | `sports.nba.games.2024-LAL-BOS-g3.fan` |
+| `sports.<league>.<gameId>` | All updates for a single game | `sports.nfl.2024-SEA-SF-wk5` |
+| `sports.<league>.<gameId>-plays` | Play-by-play for one game | `sports.nfl.2024-SEA-SF-wk5-plays` |
+| `sports.<league>.<gameId>-fan` | Fan engagement for a game | `sports.nba.2024-LAL-BOS-g3-fan` |
+| `sports.<league>.<teamId>-team` | All updates for one team | `sports.nfl.SF-team` |
 
 ### Wildcard Subscription Examples
 
 ```javascript
-// All NFL game updates
-pubnub.subscribe({ channels: ['sports.nfl.games.*'] });
+// All NFL channels (scores, standings, all games)
+pubnub.subscribe({ channels: ['sports.nfl.*'] });
 
-// All NBA games and standings
+// All NBA channels
 pubnub.subscribe({
-  channels: ['sports.nba.games.*', 'sports.nba.standings']
+  channels: ['sports.nba.*']
 });
 ```
+
+> Note: with the 3-level design you can wildcard-subscribe to an entire league (`sports.nfl.*`) but not to a specific game across event types — that would require 4 levels. If per-game wildcard subscription is critical, put all game event types on a single channel and use a `type` field in the message payload to differentiate them.
 
 ### Sport-Specific Channel Tables
 
@@ -119,32 +126,32 @@ pubnub.subscribe({
 
 | Channel | Content |
 |---------|---------|
-| `sports.nfl.games.<gameId>` | Score updates, quarter changes, game status |
-| `sports.nfl.games.<gameId>.plays` | Individual plays, penalties, challenges |
+| `sports.nfl.<gameId>` | Score updates, quarter changes, game status |
+| `sports.nfl.<gameId>-plays` | Individual plays, penalties, challenges |
 | `sports.nfl.redzone` | Aggregated red zone alerts across all games |
 
 #### Basketball (NBA)
 
 | Channel | Content |
 |---------|---------|
-| `sports.nba.games.<gameId>` | Score updates, quarter changes |
-| `sports.nba.games.<gameId>.plays` | Shot attempts, assists, turnovers |
+| `sports.nba.<gameId>` | Score updates, quarter changes |
+| `sports.nba.<gameId>-plays` | Shot attempts, assists, turnovers |
 | `sports.nba.scores` | All active game scores |
 
 #### Soccer (EPL, MLS, UEFA)
 
 | Channel | Content |
 |---------|---------|
-| `sports.epl.games.<gameId>` | Score updates, half changes |
-| `sports.epl.games.<gameId>.plays` | Shots, fouls, cards, substitutions |
+| `sports.epl.<gameId>` | Score updates, half changes |
+| `sports.epl.<gameId>-plays` | Shots, fouls, cards, substitutions |
 | `sports.epl.standings` | League table updates |
 
 #### Baseball (MLB)
 
 | Channel | Content |
 |---------|---------|
-| `sports.mlb.games.<gameId>` | Score updates, inning changes |
-| `sports.mlb.games.<gameId>.plays` | At-bats, pitches, base running |
+| `sports.mlb.<gameId>` | Score updates, inning changes |
+| `sports.mlb.<gameId>-plays` | At-bats, pitches, base running |
 
 ## Score Data Models
 
@@ -233,7 +240,8 @@ class SportDataIngestionService {
   }
 
   async publishScoreUpdate(game) {
-    const channel = `sports.${game.league}.games.${game.gameId}`;
+    // 3-level max: sports.<league>.<gameId>  — do NOT add a 4th segment
+    const channel = `sports.${game.league}.${game.gameId}`;
     const sequence = this.getNextSequence(game.gameId);
 
     await this.pubnub.publish({
@@ -280,9 +288,10 @@ class SportDataIngestionService {
 
 ```javascript
 function subscribeToGame(pubnub, league, gameId, handlers) {
+  // 3-level max: sports.<league>.<gameId> and sports.<league>.<gameId>-plays
   const channels = [
-    `sports.${league}.games.${gameId}`,
-    `sports.${league}.games.${gameId}.plays`
+    `sports.${league}.${gameId}`,
+    `sports.${league}.${gameId}-plays`
   ];
 
   const listener = {
@@ -343,7 +352,7 @@ let config = PubNubConfiguration(
     userId: "fan-ios-\(userId)"
 )
 let pubnub = PubNub(configuration: config)
-pubnub.subscribe(to: ["sports.nfl.games.*"])
+pubnub.subscribe(to: ["sports.nfl.*"])
 ```
 
 ### Kotlin (Android)
@@ -353,7 +362,7 @@ val config = PNConfiguration(UserId("fan-android-$userId")).apply {
     subscribeKey = "sub-c-..."
 }
 val pubnub = PubNub.create(config)
-pubnub.subscribe(channels = listOf("sports.nfl.games.*"))
+pubnub.subscribe(channels = listOf("sports.nfl.*"))
 ```
 
 ## Required Keyset Settings

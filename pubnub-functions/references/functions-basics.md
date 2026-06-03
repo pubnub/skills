@@ -126,23 +126,24 @@ Configure which channels trigger the function.
 ### Rules
 
 - Wildcard (`*`) must be at the **end**
-- Maximum **two literal segments** before wildcard
-- Period (`.`) is the delimiter
+- **Maximum 3 dot-separated levels (`a.b.c`) — this is a hard platform limit that applies to all PubNub channel names, not just wildcard patterns.** A channel name like `a.b.c.d` is invalid whether or not a wildcard is involved. If your Function publishes to a dynamically-built channel name, ensure the resulting string never exceeds 3 dot-separated segments.
+- Period (`.`) is a **reserved** hierarchy delimiter
 
 ### Valid Patterns
 
 ```
-alerts.*           → matches alerts.critical, alerts.info
-user.notifications.* → matches user.notifications.email
-chat.*             → matches chat.room1, chat.general
+alerts.*              → matches alerts.critical, alerts.info      (2 levels)
+user.notifications.*  → matches user.notifications.email          (3 levels — max)
+chat.*                → matches chat.room1, chat.general          (2 levels)
 ```
 
 ### Invalid Patterns
 
 ```
-alerts.*.critical  → wildcard not at end
-*.notifications    → wildcard at start
-a.b.c.d.*          → too many segments
+alerts.*.critical     → wildcard not at end
+*.notifications       → wildcard at start
+a.b.c.d.*             → too many segments (4 levels)
+a.b.c.d               → ALSO invalid without a wildcard — channel name itself exceeds 3 levels
 ```
 
 ## On Request URI Routing
