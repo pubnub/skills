@@ -29,6 +29,7 @@ Channels are named pathways for routing messages in PubNub. They act as labels t
 - **Length**: Up to 92 characters
 - **Character Set**: UTF-8 compatible
 - **Dot-separated depth**: Maximum 3 levels (`a.b.c`) — never 4 or more
+- **Wildcard Subscribe** must be explicitly enabled in the Stream Controller add-on in the Admin Portal. Do not enable it unless the use case specifically requires it.
 
 ### Invalid Characters (DO NOT USE)
 
