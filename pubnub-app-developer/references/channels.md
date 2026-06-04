@@ -19,7 +19,10 @@ Channels are named pathways for routing messages in PubNub. They act as labels t
 ## Channel Naming Rules
 
 > **HARD LIMIT — `.` is a reserved character.**
-> PubNub uses `.` exclusively as a hierarchy delimiter. Channel names that use dots are capped at **3 levels (2 dots): `a.b.c`**. A fourth segment — `a.b.c.d` — is **always invalid** and will cause publish/subscribe failures. This limit applies everywhere: regular channel names, wildcard patterns, and any channel name produced by a Decision, Function, or SDK call.
+> PubNub uses `.` exclusively as a hierarchy delimiter. Channel names that use dots are capped at **3 levels (2 dots): `a.b.c`**. A fourth segment — `a.b.c.d` — is **always invalid** and will cause publish/subscribe failures. This limit applies everywhere: regular channel names, wildcard patterns, and any channel name produced by a Decision, Function, or `pubnub.publish()` / `pubnub.subscribe()` call.
+> - Use **underscores (`_`)** for sub-hierarchy within a segment when 3 levels are not enough — never add a third dot.
+> - Keep segment literals short — abbreviate where context allows (`ntf` not `notification`, `cmd` not `command`).
+> - **Wildcard Subscribe must be explicitly enabled** in the Stream Controller add-on in the Admin Portal. Do not enable it unless the use case specifically requires it.
 
 ### Valid Names
 
@@ -99,18 +102,18 @@ function getDirectChannelName(userId1, userId2) {
 Max 3 levels (`a.b.c`). Design your hierarchy to fit within this limit.
 
 ```javascript
-// Sports hierarchy — 3 levels max
-'sports.football.scores'      // ✓ valid (3 levels)
-'sports.basketball.news'      // ✓ valid (3 levels)
+// Sports hierarchy — 3 levels max; keep segment literals short
+'sp.fb.scores'    // ✓ valid (sport prefix . league . metric)
+'sp.bk.news'      // ✓ valid
 
-// IoT sensor hierarchy — encode device+metric into the 3rd segment
-'iot.building1.temp'          // ✓ valid (3 levels)
-'iot.building1.humidity'      // ✓ valid (3 levels)
-// 'iot.building1.floor2.temp' — INVALID: 4 levels
+// IoT sensor hierarchy — abbreviate segment literals
+'iot.bld1.tmp'    // ✓ valid (3 levels)
+'iot.bld1.hmd'    // ✓ valid
+// 'iot.bld1.flr2.tmp' — INVALID: 4 levels
 
-// Subscribe to all with wildcard
-pubnub.subscribe({ channels: ['sports.*'] });
-pubnub.subscribe({ channels: ['iot.building1.*'] });
+// Subscribe to all with wildcard (requires Stream Controller enabled)
+pubnub.subscribe({ channels: ['sp.*'] });
+pubnub.subscribe({ channels: ['iot.bld1.*'] });
 ```
 
 ### 5. Device/IoT Channels
@@ -128,7 +131,7 @@ pubnub.subscribe({ channels: ['iot.building1.*'] });
 
 ## Wildcard Subscriptions
 
-> **Requires**: Stream Controller enabled in Admin Portal
+> **Requires**: Stream Controller add-on enabled in Admin Portal. **Disable the Wildcard Subscribe property unless your use case specifically requires it** — it is off by default and adds unnecessary overhead for most applications.
 
 ### Pattern Rules
 
