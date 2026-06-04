@@ -398,7 +398,7 @@ class DeltaApplier {
 
 ```javascript
 async function replayGame(pubnub, league, gameId, onEvent, speedMultiplier = 10) {
-  const channel = `sports.${league}.${gameId}-plays`;
+  const channel = `sports.${league}.plays_${gameId}`;
   const response = await pubnub.fetchMessages({ channels: [channel], count: 100 });
 
   const events = (response.channels[channel] || [])

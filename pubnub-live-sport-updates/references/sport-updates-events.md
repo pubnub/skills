@@ -196,9 +196,9 @@ class GameEventPublisher {
     const sequence = this.nextSequence(event.gameId);
     const enrichedEvent = { ...event, sequence, timestamp: Date.now() };
 
-    // 3-level max: sports.<league>.<gameId> and sports.<league>.<gameId>-plays
+    // 3-level max: sports.<league>.<gameId> and sports.<league>.plays_<gameId>
     const gameChannel = `sports.${event.sport}.${event.gameId}`;
-    const playsChannel = `sports.${event.sport}.${event.gameId}-plays`;
+    const playsChannel = `sports.${event.sport}.plays_${event.gameId}`;
 
     if (this.isCriticalEvent(event.type, event.sport)) {
       await Promise.all([

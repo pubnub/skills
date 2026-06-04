@@ -93,7 +93,7 @@ The channel naming convention follows a 3-level dot-delimited hierarchy: `sports
 sports.<league>.<segment>
 ```
 
-`<segment>` is the game ID, team ID, or a fixed keyword. When a game needs multiple event-type channels, encode the type into the segment using a hyphen: `<gameId>-plays`, `<gameId>-fan`.
+`<segment>` is the game ID, team ID, or a fixed keyword. When a game needs multiple event-type channels, put the type as a **prefix** before the game ID using an underscore: `plays_<gameId>`, `fan_<gameId>`. This keeps the type at the front of the segment where Functions channel binding patterns (e.g. `sports.nfl.plays*`) can leverage it.
 
 ### Channel Types
 
@@ -102,9 +102,9 @@ sports.<league>.<segment>
 | `sports.<league>.scores` | League-wide score ticker | `sports.nfl.scores` |
 | `sports.<league>.standings` | Standings and league table | `sports.epl.standings` |
 | `sports.<league>.<gameId>` | All updates for a single game | `sports.nfl.2024-SEA-SF-wk5` |
-| `sports.<league>.<gameId>-plays` | Play-by-play for one game | `sports.nfl.2024-SEA-SF-wk5-plays` |
-| `sports.<league>.<gameId>-fan` | Fan engagement for a game | `sports.nba.2024-LAL-BOS-g3-fan` |
-| `sports.<league>.<teamId>-team` | All updates for one team | `sports.nfl.SF-team` |
+| `sports.<league>.plays_<gameId>` | Play-by-play for one game | `sports.nfl.plays_2024-SEA-SF-wk5` |
+| `sports.<league>.fan_<gameId>` | Fan engagement for a game | `sports.nba.fan_2024-LAL-BOS-g3` |
+| `sports.<league>.team_<teamId>` | All updates for one team | `sports.nfl.team_SF` |
 
 ### Wildcard Subscription Examples
 
@@ -127,7 +127,7 @@ pubnub.subscribe({
 | Channel | Content |
 |---------|---------|
 | `sports.nfl.<gameId>` | Score updates, quarter changes, game status |
-| `sports.nfl.<gameId>-plays` | Individual plays, penalties, challenges |
+| `sports.nfl.plays_<gameId>` | Individual plays, penalties, challenges |
 | `sports.nfl.redzone` | Aggregated red zone alerts across all games |
 
 #### Basketball (NBA)
@@ -135,7 +135,7 @@ pubnub.subscribe({
 | Channel | Content |
 |---------|---------|
 | `sports.nba.<gameId>` | Score updates, quarter changes |
-| `sports.nba.<gameId>-plays` | Shot attempts, assists, turnovers |
+| `sports.nba.plays_<gameId>` | Shot attempts, assists, turnovers |
 | `sports.nba.scores` | All active game scores |
 
 #### Soccer (EPL, MLS, UEFA)
@@ -143,7 +143,7 @@ pubnub.subscribe({
 | Channel | Content |
 |---------|---------|
 | `sports.epl.<gameId>` | Score updates, half changes |
-| `sports.epl.<gameId>-plays` | Shots, fouls, cards, substitutions |
+| `sports.epl.plays_<gameId>` | Shots, fouls, cards, substitutions |
 | `sports.epl.standings` | League table updates |
 
 #### Baseball (MLB)
@@ -151,7 +151,7 @@ pubnub.subscribe({
 | Channel | Content |
 |---------|---------|
 | `sports.mlb.<gameId>` | Score updates, inning changes |
-| `sports.mlb.<gameId>-plays` | At-bats, pitches, base running |
+| `sports.mlb.plays_<gameId>` | At-bats, pitches, base running |
 
 ## Score Data Models
 
@@ -288,10 +288,10 @@ class SportDataIngestionService {
 
 ```javascript
 function subscribeToGame(pubnub, league, gameId, handlers) {
-  // 3-level max: sports.<league>.<gameId> and sports.<league>.<gameId>-plays
+  // 3-level max: sports.<league>.<gameId> and sports.<league>.plays_<gameId>
   const channels = [
     `sports.${league}.${gameId}`,
-    `sports.${league}.${gameId}-plays`
+    `sports.${league}.plays_${gameId}`
   ];
 
   const listener = {
