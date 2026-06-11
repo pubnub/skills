@@ -61,7 +61,7 @@ The following fields are **required** despite being documented as optional. Omit
 
 | `actionType` | What it does |
 |---|---|
-| `PUBNUB_PUBLISH` | Publishes a message to a PubNub channel (requires valid pub + sub key in template) |
+| `PUBNUB_PUBLISH` | Publishes a message to a PubNub channel (requires valid pub + sub key in template). **Channel name must follow PubNub naming rules: `.` is reserved, maximum 3 dot-separated levels (`a.b.c`). `a.b.c.d` is invalid and will silently fail.** |
 | `WEBHOOK_EXECUTION` | POSTs a payload to an external URL |
 | `APPCONTEXT_SET_USER_METADATA` | Sets custom fields on a user object |
 | `APPCONTEXT_SET_CHANNEL_METADATA` | Sets custom fields on a channel object |
@@ -254,6 +254,7 @@ PUT is always **full replacement** — include the complete body every time.
 | Output field rejected | Used `"type"` instead of `"variable"` | Use `variable` and `name` only |
 | `executionLimitType` rejected | Used `ONCE_PER_INTERVAL_PER_CONDITION` | Use `ONCE_PER_INTERVAL_PER_CONDITION_GROUP` |
 | `400: "A business object cannot have more than 3 associated decisions."` | Hit METRIC decision limit | Delete one (with user confirmation) and retry |
+| `PUBNUB_PUBLISH` action fires but no message is received | Channel name exceeds 3 dot-separated levels (e.g. `a.b.c.d`) | Redesign to `a.b.c` max — see [channel naming rules](../../pubnub-app-developer/references/channels.md) |
 
 ## Related Reading
 

@@ -94,7 +94,7 @@ For [idempotent publish with `message_id`](../pubnub-reliability/references/idem
 
 - Always require a unique, persistent `userId` for SDK initialization (see [sdk-patterns.md](references/sdk-patterns.md)).
 - Keep message payloads under 32 KB; aim for much less in practice ([cost & payload hygiene](../pubnub-observability/references/cost-and-payload-hygiene.md)).
-- Use valid channel names ([channels.md](references/channels.md)).
+- Use valid channel names ([channels.md](references/channels.md)). **`.` is reserved: maximum 3 dot-separated levels (`a.b.c`). `a.b.c.d` is always invalid** and causes publish/subscribe failures. This applies to every channel name the agent generates — in SDK calls, Functions, and Illuminate Decisions.
 - Handle connection status events for robust applications ([dropped connections](../pubnub-presence/references/dropped-connections.md)).
 - Never expose [secret keys in client-side code](../pubnub-keyset-management/references/keysets-and-environments.md).
 - Use TLS (enabled by default) for all connections; see [TLS configuration](../pubnub-security/references/encryption.md).

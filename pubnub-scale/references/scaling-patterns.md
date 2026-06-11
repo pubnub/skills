@@ -129,8 +129,9 @@ pubnub.subscribe({
 ### Pattern Rules
 
 - Wildcard (`*`) must be at the **end**
-- Maximum **2 dots** (3 levels)
-- Period (`.`) is the hierarchy delimiter
+- Maximum **2 dots** (3 levels: `a.b.c`) — this is a **hard platform limit**, not just a wildcard rule
+- Period (`.`) is the hierarchy delimiter — **reserved character**
+- `a.b.c.d` is **always invalid**, with or without a wildcard
 
 ### Valid Patterns
 
@@ -139,7 +140,7 @@ pubnub.subscribe({
 pubnub.subscribe({ channels: ['sports.*'] });
 // Matches: sports.football, sports.basketball, sports.baseball
 
-// Two levels
+// Two levels (maximum depth with wildcard)
 pubnub.subscribe({ channels: ['iot.building1.*'] });
 // Matches: iot.building1.temp, iot.building1.humidity
 
@@ -157,18 +158,24 @@ pubnub.subscribe({ channels: ['stocks.nasdaq.*'] });
 // Wildcard at start - INVALID
 '*.notifications'
 
-// Too many levels - INVALID
+// Too many levels - INVALID (4 segments = 3 dots)
 'a.b.c.d.*'
+
+// Also invalid without a wildcard — the channel name itself exceeds 3 levels
+'a.b.c.d'
 ```
 
 ### IoT Sensor Pattern
 
+The 3-level limit means a 4-part IoT path like `sensors.floor.room.metric` must be collapsed. Encode the extra dimension into the third segment using a non-dot separator, or move the metric into the message payload.
+
 ```javascript
-// Publish sensor data to specific channel
+// Publish sensor data — 3 levels max
 await pubnub.publish({
-  channel: 'sensors.floor1.room101.temperature',
-  message: { value: 72.5, unit: 'F', timestamp: Date.now() }
+  channel: 'sensors.floor1.room101',          // ✓ 3 levels
+  message: { metric: 'temperature', value: 72.5, unit: 'F', timestamp: Date.now() }
 });
+// 'sensors.floor1.room101.temperature' — INVALID: 4 levels
 
 // Subscribe to all sensors on floor 1
 pubnub.subscribe({
@@ -178,8 +185,8 @@ pubnub.subscribe({
 // Listener receives from all matching channels
 pubnub.addListener({
   message: (event) => {
-    console.log('Channel:', event.channel);  // sensors.floor1.room101.temperature
-    console.log('Data:', event.message);
+    console.log('Channel:', event.channel);  // sensors.floor1.room101
+    console.log('Data:', event.message);     // { metric: 'temperature', value: 72.5 }
   }
 });
 ```
