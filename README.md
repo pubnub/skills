@@ -26,7 +26,7 @@ npx skills add pubnub/skills
 | [pubnub-functions](./pubnub-functions) | Serverless edge functions, webhooks, KVStore |
 | [pubnub-security](./pubnub-security) | Access Manager, AES-256 encryption, TLS |
 | [pubnub-chat](./pubnub-chat) | Chat SDK, messaging, typing indicators, reactions |
-| [pubnub-scale](./pubnub-scale) | High-volume optimization, channel groups, persistence |
+| [pubnub-scale](./pubnub-scale) | High-volume optimization, channel groups, wildcard subscriptions |
 | [pubnub-choose-docs-path](./pubnub-choose-docs-path) | Router skill: chat-vs-non-chat, MCP tool selection |
 | [pubnub-keyset-management](./pubnub-keyset-management) | Apps, keysets, env separation, key hygiene, demo keys |
 | [pubnub-app-context](./pubnub-app-context) | Objects API: users, channels, memberships, metadata |
@@ -46,9 +46,16 @@ npx skills add pubnub/skills
 
 For more details, see the [CLI documentation](https://skills.sh/docs/cli).
 
-### Use in Claude Code
+### Use with AI Coding Assistants
 
-Once installed, skills are automatically available. Ask Claude about PubNub topics and the relevant skill will be invoked.
+Once installed, skills are automatically available in any compatible AI coding assistant. Ask about PubNub topics and the relevant skill will be invoked.
+
+Supported tools include:
+
+- **Claude Code** — skills load automatically from the project directory
+- **Cursor** — skills are picked up via the `.cursor/skills/` convention
+- **VS Code (GitHub Copilot)** — compatible via the Vercel skills CLI
+- **Codex** and other agents that support the SKILL.md format
 
 ## Skill Details
 
@@ -65,6 +72,9 @@ Build real-time applications with PubNub pub/sub messaging.
 - `publish-subscribe.md` - Core pub/sub patterns
 - `channels.md` - Channel naming and design
 - `sdk-patterns.md` - SDK initialization across platforms
+- `message-filters.md` - Subscribe-side filter expressions
+- `rest-api.md` - REST API usage and auth headers
+- `sdk-upgrades.md` - Migration guide between SDK major versions
 
 ---
 
@@ -82,6 +92,8 @@ Implement real-time presence tracking with PubNub.
 - `presence-setup.md` - Admin Portal configuration
 - `presence-events.md` - Join/leave/timeout handling
 - `presence-patterns.md` - Scalable presence best practices
+- `dropped-connections.md` - Heartbeat, reconnect, and disconnect detection
+- `multi-device-sync.md` - Presence across multiple devices per user
 
 ---
 
@@ -121,6 +133,9 @@ Secure PubNub applications with Access Manager and encryption.
 - `access-manager.md` - Access Manager setup and grants
 - `encryption.md` - Message and file encryption
 - `security-best-practices.md` - Key security, compliance
+- `dos-mitigation.md` - Rate limiting and abuse prevention
+- `ip-whitelisting.md` - IP allowlist configuration
+- `compliance-reports.md` - SOC 2, HIPAA, GDPR compliance evidence
 
 ---
 
@@ -138,6 +153,9 @@ Build chat applications with PubNub Chat SDK.
 - `chat-setup.md` - Chat SDK initialization
 - `chat-features.md` - Channels, messages, reactions
 - `chat-patterns.md` - User management, real-time sync
+- `file-sharing.md` - File upload, download, and message attachments
+- `message-actions.md` - Reactions, receipts, and custom action types
+- `threading.md` - Threaded replies and conversation trees
 
 ---
 
@@ -447,7 +465,7 @@ Build HIPAA-compliant telemedicine apps with PubNub real-time messaging.
 To publish a new skill to the `pubnub` workspace:
 
 ```bash
-tessl skill publish --workspace pubnub --public ./skills/<skill-name>
+tessl skill publish --workspace pubnub --public ./<skill-name>
 ```
 
 ### Publish All Skills (admin-only)
@@ -455,61 +473,71 @@ tessl skill publish --workspace pubnub --public ./skills/<skill-name>
 To publish or update all PubNub skills:
 
 ```bash
-# From the tessl directory
 npm i -g @tessl/cli
 tessl login
-tessl skill publish --workspace pubnub --public ./skills/pubnub-app-developer
-tessl skill publish --workspace pubnub --public ./skills/pubnub-presence
-tessl skill publish --workspace pubnub --public ./skills/pubnub-functions
-tessl skill publish --workspace pubnub --public ./skills/pubnub-security
-tessl skill publish --workspace pubnub --public ./skills/pubnub-chat
-tessl skill publish --workspace pubnub --public ./skills/pubnub-scale
-tessl skill publish --workspace pubnub --public ./skills/pubnub-choose-docs-path
-tessl skill publish --workspace pubnub --public ./skills/pubnub-keyset-management
-tessl skill publish --workspace pubnub --public ./skills/pubnub-app-context
-tessl skill publish --workspace pubnub --public ./skills/pubnub-illuminate
-tessl skill publish --workspace pubnub --public ./skills/pubnub-history
-tessl skill publish --workspace pubnub --public ./skills/pubnub-reliability
-tessl skill publish --workspace pubnub --public ./skills/pubnub-observability
-tessl skill publish --workspace pubnub --public ./skills/pubnub-events-and-actions
-tessl skill publish --workspace pubnub --public ./skills/pubnub-live-auctions
-tessl skill publish --workspace pubnub --public ./skills/pubnub-live-betting-casino
-tessl skill publish --workspace pubnub --public ./skills/pubnub-live-sport-updates
-tessl skill publish --workspace pubnub --public ./skills/pubnub-live-stock-quote-updates
-tessl skill publish --workspace pubnub --public ./skills/pubnub-live-voting
-tessl skill publish --workspace pubnub --public ./skills/pubnub-multiplayer-gaming
-tessl skill publish --workspace pubnub --public ./skills/pubnub-order-delivery-driver
-tessl skill publish --workspace pubnub --public ./skills/pubnub-telemedicine
+tessl skill publish --workspace pubnub --public ./pubnub-app-developer
+tessl skill publish --workspace pubnub --public ./pubnub-presence
+tessl skill publish --workspace pubnub --public ./pubnub-functions
+tessl skill publish --workspace pubnub --public ./pubnub-security
+tessl skill publish --workspace pubnub --public ./pubnub-chat
+tessl skill publish --workspace pubnub --public ./pubnub-scale
+tessl skill publish --workspace pubnub --public ./pubnub-choose-docs-path
+tessl skill publish --workspace pubnub --public ./pubnub-keyset-management
+tessl skill publish --workspace pubnub --public ./pubnub-app-context
+tessl skill publish --workspace pubnub --public ./pubnub-illuminate
+tessl skill publish --workspace pubnub --public ./pubnub-history
+tessl skill publish --workspace pubnub --public ./pubnub-reliability
+tessl skill publish --workspace pubnub --public ./pubnub-observability
+tessl skill publish --workspace pubnub --public ./pubnub-events-and-actions
+tessl skill publish --workspace pubnub --public ./pubnub-live-auctions
+tessl skill publish --workspace pubnub --public ./pubnub-live-betting-casino
+tessl skill publish --workspace pubnub --public ./pubnub-live-sport-updates
+tessl skill publish --workspace pubnub --public ./pubnub-live-stock-quote-updates
+tessl skill publish --workspace pubnub --public ./pubnub-live-voting
+tessl skill publish --workspace pubnub --public ./pubnub-multiplayer-gaming
+tessl skill publish --workspace pubnub --public ./pubnub-order-delivery-driver
+tessl skill publish --workspace pubnub --public ./pubnub-telemedicine
 ```
 
 ### Updating a Skill
 
 1. **Edit the skill files** - Update `SKILL.md` or reference files in the skill directory
 
-2. **Bump the version** - Update the version in `tile.json`:
+2. **Bump the version** - Update the version in both `tile.json` and the `metadata.version` field in `SKILL.md` — they must stay in sync:
    ```json
    {
      "version": "0.2.0"
    }
    ```
+   ```yaml
+   metadata:
+     version: "0.2.0"
+   ```
 
-3. **Re-publish** - Run the publish command again:
+3. **Re-publish** - Run the publish command again from the repo root:
    ```bash
-   tessl skill publish --workspace pubnub --public ./skills/<skill-name>
+   tessl skill publish --workspace pubnub --public ./<skill-name>
    ```
 
 ### Skill Structure
 
-Each skill follows this directory structure:
+Each skill lives at the repo root and follows this directory structure:
 
 ```
-skills/<skill-name>/
+pubnub-<skill-name>/
 ├── SKILL.md           # Main skill definition with frontmatter
-├── tile.json          # Generated manifest (auto-created on first publish)
-└── references/        # Supporting documentation
-    ├── <topic-1>.md
-    ├── <topic-2>.md
-    └── <topic-3>.md
+├── tile.json          # Committed manifest (name, version, summary, dependencies)
+├── references/        # Supporting documentation
+│   ├── <topic-1>.md
+│   ├── <topic-2>.md
+│   └── <topic-3>.md
+└── evals/             # Automated evaluation harness (5 scenarios per skill)
+    ├── instructions.json
+    ├── summary.json
+    └── scenario-0/
+        ├── task.md
+        ├── capability.txt
+        └── criteria.json
 ```
 
 ### SKILL.md Frontmatter
@@ -523,7 +551,7 @@ description: Short description for CLI display
 license: PubNub
 metadata:
   author: pubnub
-  version: "1.0.0"
+  version: "0.1.0"
   domain: real-time
   triggers: comma, separated, keywords
   role: specialist
