@@ -2,6 +2,8 @@
 
 A comprehensive set of skills for building real-time applications with PubNub's platform. Each skill provides focused guidance, code examples, and best practices for specific PubNub capabilities.
 
+For installation instructions, supported AI coding assistants, and the full skill catalog, see the [PubNub Skills documentation](https://www.pubnub.com/docs/ai/pubnub-skills).
+
 ## Quick Start
 
 ### Tessl Install PubNub Skills
