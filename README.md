@@ -6,18 +6,35 @@ For installation instructions, supported AI coding assistants, and the full skil
 
 ## Quick Start
 
-### Tessl Install PubNub Skills
+### Vercel Skills Install PubNub Skills (Recommended)
+
+Installs all 22 PubNub skills to every supported AI agent on your machine (Claude, Cursor, etc.) without any prompts:
 
 ```bash
-npx tessl skill search pubnub
+npx skills add pubnub/skills --all
 ```
-### Vercel Skills Install PubNub Skills
 
-The skills CLI requires no installation and can be run directly using npx:
+If you want to choose specific skills or agents interactively, omit `--all`:
 
 ```bash
 npx skills add pubnub/skills
 ```
+
+### Tessl Install PubNub Skills
+
+To search for PubNub skills in the Tessl registry:
+
+```bash
+npx tessl search --type skills pubnub
+```
+
+To install a specific skill individually:
+
+```bash
+npx tessl install pubnub/<skill-name>
+```
+
+> Note: Tessl requires installing skills one at a time; use the Vercel Skills CLI above to install all skills in one command.
 
 ## Available Skills
 
@@ -578,11 +595,12 @@ All skills are published to the `pubnub` workspace on tessl.io.
 
 Catalog versions:
 
-- **8 vertical skills at `0.2.0`**: `pubnub-live-auctions`, `pubnub-live-betting-casino`, `pubnub-live-sport-updates`, `pubnub-live-stock-quote-updates`, `pubnub-live-voting`, `pubnub-multiplayer-gaming`, `pubnub-order-delivery-driver`, `pubnub-telemedicine`.
-- **5 foundational skills at `0.2.0`**: `pubnub-app-developer`, `pubnub-presence`, `pubnub-security`, `pubnub-chat`, `pubnub-scale`.
-- **9 cross-cutting skills**:
-  - `pubnub-functions` at `0.3.0`.
-  - `pubnub-choose-docs-path`, `pubnub-keyset-management`, `pubnub-app-context`, `pubnub-illuminate`, `pubnub-history`, `pubnub-reliability`, `pubnub-observability`, `pubnub-events-and-actions` at `0.1.0`.
+- **8 Vertical skills at `0.2.0`**: `pubnub-live-auctions`, `pubnub-live-betting-casino`, `pubnub-live-sport-updates`, `pubnub-live-stock-quote-updates`, `pubnub-multiplayer-gaming`, `pubnub-order-delivery-driver`, `pubnub-telemedicine`, `pubnub-live-voting`
+- **5 Core Platform skills at `0.2.0`**: `pubnub-app-developer`, `pubnub-chat`, `pubnub-presence`, `pubnub-app-context`, `pubnub-security`
+- **4 Platform Services skills**:
+  - `pubnub-functions` at `0.3.0`
+  - `pubnub-history`, `pubnub-events-and-actions`, `pubnub-illuminate` at `0.1.0`
+- **4 Operations skills at `0.1.0`**: `pubnub-scale`, `pubnub-reliability`, `pubnub-observability`, `pubnub-keyset-management`
 
 ## License
 
