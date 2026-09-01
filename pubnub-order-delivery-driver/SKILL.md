@@ -163,7 +163,7 @@ await updateOrderStatus('order-5678', 'dispatched', {
 ## MCP Tools
 
 - **`get_sdk_documentation`** — pull SDK-specific publish/subscribe APIs (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
-- **`create_pubnub_function`** — scaffold the After-Publish geofence trigger / dispatch logic
+- **`manage_functions`** — scaffold the After-Publish geofence trigger / dispatch logic
 - **`grant_token`** — issue scoped grants per order (driver, customer, dispatcher)
 - **`manage_apps`** — verify Stream Controller for fleet dashboard fan-in
 

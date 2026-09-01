@@ -1,6 +1,6 @@
 ---
 name: pubnub-functions
-description: Create, configure, and deploy PubNub Functions 2.0 event handlers, triggers, and serverless endpoints. Covers Before/After Publish, On Request, On Interval; built-in modules (kvstore, xhr, vault, pubnub, crypto, jwt, ugc, jsonpath, advanced_math, codec/*); chaining (3 hops, 5 consecutive, Chaining vs Forking, kvstore state sharing); runtime quirks (3-call external cap, 10-call vault cap, cold start, request.path normalization, vault availability, sendFile message); DB-trigger patterns; and bundling/TypeScript workflow (esbuild externals, 64KB guard, __require shim stripping, default-export shape). Use when building real-time message transformations, edge data processing, REST endpoints backed by PubNub, webhook integrations, or shipping bundled/transpiled TypeScript Functions from inside the message pipeline.
+description: Create, configure, and deploy PubNub Functions 2.0 event handlers, triggers, and serverless endpoints. Covers Before/After Publish, On Request, On Interval; built-in modules (kvstore, xhr, vault, pubnub, crypto, jwt, ugc, jsonpath, advanced_math, codec/*); chaining (3 hops, 5 consecutive, Chaining vs Forking, kvstore state sharing); runtime quirks (per-module execution limits, 10-call vault cap, cold start, request.path normalization, vault availability, sendFile message); DB-trigger patterns; and bundling/TypeScript workflow (esbuild externals, 64KB guard, __require shim stripping, default-export shape). Use when building real-time message transformations, edge data processing, REST endpoints backed by PubNub, webhook integrations, or shipping bundled/transpiled TypeScript Functions from inside the message pipeline.
 license: PubNub
 metadata:
   author: pubnub
@@ -32,7 +32,7 @@ Invoke this skill when:
 2. **Design Logic**: Plan the transformation, integration, or business logic.
 3. **Implement Function**: Write async/await code with proper error handling.
 4. **Use Modules**: Leverage kvstore, xhr, vault, pubnub, crypto modules.
-5. **Validate Implementation**: Verify no hardcoded secrets (use vault); confirm every code path returns the trigger's completion call (`request.ok()` / `request.abort()` / `response.send()`); check that `xhr` + `pubnub` external calls stay within the **3-call cap** (KVStore, vault, and pure-CPU helpers do **not** count — see [Quirk 2](references/db-triggers-and-runtime-quirks.md)); ensure proper try/catch wrapping.
+5. **Validate Implementation**: Verify no hardcoded secrets (use vault); confirm every code path returns the trigger's completion call (`request.ok()` / `request.abort()` / `response.send()`); check per-module execution budgets (XHR, KV Store, PubNub API, Vault are independent — see [Quirk 2](references/db-triggers-and-runtime-quirks.md)); ensure proper try/catch wrapping.
 6. **Handle Response**: Return `request.ok()` / `request.abort()` or `response.send()` appropriately.
 7. **Configure Channel Patterns**: Wildcard patterns must end with `.*`, max two literal segments before wildcard.
 8. **Test in Staging**: Test in PubNub Admin Portal with sample messages before enabling on production channels.
@@ -46,7 +46,7 @@ Invoke this skill when:
 | [functions-modules.md](references/functions-modules.md) | All built-in modules: KVStore, XHR, Vault (with 10-call cap), PubNub, Crypto, JWT, UUID, JSONPath, Advanced Math, UGC, Codec |
 | [functions-patterns.md](references/functions-patterns.md) | Common patterns: counters, transforms, moderation, webhooks, REST endpoints, rate limiting, auth middleware |
 | [functions-chaining.md](references/functions-chaining.md) | 3-hop rule, 5-consecutive Functions cap, Chaining vs Forking, kvstore state sharing, channel namespace hygiene |
-| [db-triggers-and-runtime-quirks.md](references/db-triggers-and-runtime-quirks.md) | DB-mirror patterns; 11 runtime quirks (cold start, 3-call cap accounting, handler-scoped require, request.path normalization, vault availability, sendFile message) |
+| [db-triggers-and-runtime-quirks.md](references/db-triggers-and-runtime-quirks.md) | DB-mirror patterns; 11 runtime quirks (cold start, per-module execution limits, handler-scoped require, request.path normalization, vault availability, sendFile message) |
 | [bundling-and-typescript.md](references/bundling-and-typescript.md) | TypeScript + esbuild workflow: externals list, 64 KB size guard, `__require` shim stripping, default-export shape, require placement, minification gotchas, LLM do/don't checklist |
 
 ## Key Implementation Requirements
@@ -86,8 +86,8 @@ export default async (request, response) => {
 
 - **Function chaining**: maximum **3 chained executions per inbound publish**; up to **5 consecutive Functions** in a single sequence ([functions-chaining.md](references/functions-chaining.md)).
 - **External calls per execution**: maximum **3** (`xhr.fetch` + `pubnub` API invocations). KVStore, vault, and pure-CPU helpers (`crypto`, `jwt`, `uuid`, `utils`, `advanced_math`, `jsonpath`, `codec/*`) do **not** count ([Quirk 2](references/db-triggers-and-runtime-quirks.md)).
-- **Vault reads per execution**: maximum **10** `vault.get(...)` calls. Vault has its own per-execution ceiling separate from the 3-call external cap ([Vault Module](references/functions-modules.md), [Quirk 10](references/db-triggers-and-runtime-quirks.md)).
-- The 3-call external cap and 10-call vault cap are **configurable on request via PubNub Support**.
+- **Vault reads per execution**: maximum **10** `vault.get(...)` calls. Vault has its own per-execution ceiling separate from the per-module execution limits ([Vault Module](references/functions-modules.md), [Quirk 10](references/db-triggers-and-runtime-quirks.md)).
+- The per-module execution limits and 10-call vault cap are **configurable on request via PubNub Support**.
 - Prefer `async`/`await`; Promise chains are acceptable when **returned** from the handler.
 - Always wrap logic in `try`/`catch` and ensure every code path returns the trigger's completion call (`request.ok()` / `request.abort()` / `response.send()`).
 - Use `vault` for secrets, never hardcode. Guard `vault.get(...)` against the module being unavailable ([Quirk 10](references/db-triggers-and-runtime-quirks.md)).
@@ -97,7 +97,7 @@ export default async (request, response) => {
 
 ## MCP Tools
 
-- **`create_pubnub_function`** — scaffold a Function from this skill's templates
+- **`manage_functions`** (`resource=package`, `operation=create`) — create a Functions package/revision from this skill's templates
 - **`get_sdk_documentation`** — pull current Function module API references (see [intent-to-tool routing](../pubnub-choose-docs-path/references/intent-to-tool.md))
 
 ## See Also

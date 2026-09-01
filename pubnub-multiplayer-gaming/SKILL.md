@@ -171,7 +171,7 @@ pubnub.addListener({
 ## MCP Tools
 
 - **`get_sdk_documentation`** — pull SDK-specific publish/subscribe and signal APIs (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
-- **`create_pubnub_function`** — scaffold the Before-Publish anti-cheat / state validator
+- **`manage_functions`** — scaffold the Before-Publish anti-cheat / state validator
 - **`grant_token`** — issue scoped grants per game room
 - **`manage_apps`** — verify Stream Controller for room and lobby fan-out
 

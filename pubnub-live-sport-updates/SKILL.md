@@ -158,7 +158,7 @@ await pubnub.publish({
 ## MCP Tools
 
 - **`get_sdk_documentation`** — pull SDK-specific publish/subscribe APIs (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
-- **`create_pubnub_function`** — scaffold the After-Publish push trigger / message transformer
+- **`manage_functions`** — scaffold the After-Publish push trigger / message transformer
 - **`manage_apps`** — verify Stream Controller add-on for wildcard subscribes
 
 ## See Also

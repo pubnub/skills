@@ -21,8 +21,8 @@ A 4th hop is dropped.
 ### Related limits
 
 - **5 consecutive Functions per sequence.** Beyond the 3-hop cap, the runtime enforces a separate cap on the total number of Functions that may execute in a single sequence. Treat **5** as the practical ceiling; design for **3 hops** and you stay safely under both limits.
-- **3 external calls per Function** (XHR + PubNub API invocations). Each hop in a chain still has its own 3-call cap, so a 3-hop chain can do up to 9 external calls across the chain — but each individual hop is still capped at 3. See [`functions-basics.md` "Execution Limits"](functions-basics.md) and the [3-Operation Cap quirk](db-triggers-and-runtime-quirks.md).
-- **Contact PubNub Support** if your application requires more than 3 hops or more than 3 external calls per hop. Both limits are configurable on request.
+- **Per-module execution budgets.** Each hop has its own independent XHR (5), KV Store (10), PubNub API (10), and Vault (10) budgets — not a combined pool across modules. See [`functions-basics.md` "Execution Limits"](functions-basics.md) and [Quirk 2: Per-module execution limits](db-triggers-and-runtime-quirks.md).
+- **Contact PubNub Support** if your application requires more than 3 hops or higher per-module limits. Both are configurable on request.
 
 ## Chaining vs Forking
 
@@ -138,7 +138,7 @@ Design notes:
 - **Use a short TTL.** Chain hops complete within seconds; a 1–5 minute TTL keeps KVStore tidy.
 - **Don't store secrets** in the chain stash — they should come from `vault` in each Function independently.
 - **Don't depend on TTL** for cleanup of large stashes — see [Quirk 6: KVStore TTL is Not Real-Time](db-triggers-and-runtime-quirks.md).
-- KVStore reads and writes both count toward each Function's 3-call cap if you treat KVStore as a counted op (see Quirk 2 for the canonical accounting).
+- KVStore reads and writes consume the **KV Store module budget** (default 10 ops per execution), independent of XHR and PubNub API budgets (see [Quirk 2](db-triggers-and-runtime-quirks.md)).
 
 ## Channel Namespace Hygiene
 

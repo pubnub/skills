@@ -39,7 +39,7 @@
     },
     {
       "name": "Operation limit respected",
-      "description": "The function uses at most 3 combined operations (vault.get counts as KV, xhr.fetch, pubnub.fire) per execution path",
+      "description": "The function respects per-module execution limits on its execution path (e.g., avoids unbounded loops of xhr.fetch, pubnub.fire, or vault.get) or documents awareness of independent module budgets",
       "max_score": 8
     },
     {

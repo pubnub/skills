@@ -18,20 +18,14 @@ A Message Action is a tuple of:
 
 ## Add a Reaction
 
-```javascript
-await chat.sdk.addMessageAction({
-  channel: channel.id,
-  messageTimetoken: '17000000000000000',
-  action: { type: 'reaction', value: ':thumbsup:' }
-});
-```
-
-In the high-level Chat SDK:
+In the Chat SDK:
 
 ```javascript
 const message = /* a Message instance */;
 await message.toggleReaction({ value: ':thumbsup:' });
 ```
+
+For raw Core SDK actions use `pubnub.addMessageAction` — retrieve the schema via **`get_chat_sdk_documentation`**.
 
 ## Listen for Actions
 
@@ -66,11 +60,15 @@ await message.delete();
 
 ## Read Receipts
 
-Use `type: 'receipt'`, `value: 'read'`, or use `chat.markAllMessagesAsRead()`:
+Requires Unread Message Count enabled on the keyset. Orchestration:
 
 ```javascript
 await chat.markAllMessagesAsRead();
+// Per-channel: membership.setLastReadMessage(latestMessage)
+// Live updates: channel.onReadReceiptReceived(callback)
 ```
+
+Retrieve exact API shapes via **`get_chat_sdk_documentation`** (read receipts / unread sections).
 
 ## Constraints
 

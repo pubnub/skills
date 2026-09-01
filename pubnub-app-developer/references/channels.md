@@ -18,9 +18,11 @@ Channels are named pathways for routing messages in PubNub. They act as labels t
 
 ## Channel Naming Rules
 
-> **HARD LIMIT — `.` is a reserved character.**
-> PubNub uses `.` exclusively as a hierarchy delimiter. Channel names that use dots are capped at **3 levels (2 dots): `a.b.c`**. A fourth segment — `a.b.c.d` — is **always invalid** and will cause publish/subscribe failures. This limit applies everywhere: regular channel names, wildcard patterns, and any channel name produced by a Decision, Function, or `pubnub.publish()` / `pubnub.subscribe()` call.
-> - Use **underscores (`_`)** for sub-hierarchy within a segment when 3 levels are not enough — never add a third dot.
+> **`.` is reserved — scope matters.**
+> The period (`.`) is reserved for **Wildcard Subscribe** and **Function event bindings**. Avoid dots in general names unless you intentionally use those features.
+> - **Plain explicit channel names** are not capped at three segments — e.g. `sports.nba.games.game123` is valid for direct publish/subscribe.
+> - **Wildcard patterns** are limited to max **two dots** in the pattern (`a.*`, `a.b.*`); wildcard at end only.
+> - Use **underscores (`_`)** inside a segment for extra dimensions without adding wildcard depth.
 > - Keep segment literals short — abbreviate where context allows (`ntf` not `notification`, `cmd` not `command`).
 > - **Wildcard Subscribe must be explicitly enabled** in the Stream Controller add-on in the Admin Portal. Do not enable it unless the use case specifically requires it.
 
@@ -28,7 +30,7 @@ Channels are named pathways for routing messages in PubNub. They act as labels t
 
 - **Length**: Up to 92 characters
 - **Character Set**: UTF-8 compatible
-- **Dot-separated depth**: Maximum 3 levels (`a.b.c`) — never 4 or more
+- **Wildcard patterns**: Max **two dots** in the pattern (`a.*`, `a.b.*`) — not a universal cap on plain channel names
 - **Wildcard Subscribe** must be explicitly enabled in the Stream Controller add-on in the Admin Portal. Do not enable it unless the use case specifically requires it.
 
 ### Invalid Characters (DO NOT USE)
@@ -100,7 +102,7 @@ function getDirectChannelName(userId1, userId2) {
 
 ### 4. Hierarchical Topics (for Wildcard Subscribe)
 
-Max 3 levels (`a.b.c`). Design your hierarchy to fit within this limit.
+Wildcard patterns allow max **two dots** (`a.*` or `a.b.*`). Plain leaf names can be deeper when subscribed explicitly or via channel groups.
 
 ```javascript
 // Sports hierarchy — 3 levels max; keep segment literals short
@@ -271,4 +273,4 @@ For longer storage, enable **Message Persistence** add-on.
 4. **Document your channel naming scheme** for team consistency
 5. **Use Channel Groups** for user-specific aggregations (feeds, notifications)
 6. **Plan for scale** - structure channels for wildcard patterns if needed
-7. **Never exceed 3 dot-separated levels** — `a.b.c` is the maximum. If your natural hierarchy has 4+ levels (e.g. `sport.league.game.metric`), flatten by combining segments with a non-dot separator: `sport.league.game-metric` or encode the extra dimension into the message payload instead.
+7. **Match depth to subscription mode** — wildcard patterns max two dots; plain names can be deeper; use channel groups or payload encoding when wildcards cannot cover your leaves.

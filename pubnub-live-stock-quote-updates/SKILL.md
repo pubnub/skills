@@ -170,7 +170,7 @@ export default (request) => {
 ## MCP Tools
 
 - **`get_sdk_documentation`** — pull SDK-specific publish/subscribe and signal APIs (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
-- **`create_pubnub_function`** — scaffold a server-side price-alert evaluator
+- **`manage_functions`** — scaffold a server-side price-alert evaluator
 - **`grant_token`** — issue scoped grants per market data tier
 - **`manage_apps`** — verify Stream Controller for high-frequency tick fan-out
 

@@ -83,27 +83,30 @@ A Function that hasn't run in a while takes ~100–300ms longer on the first inv
 
 **Mitigation:** Set up an On Interval Function that pings the cold endpoint every 5 minutes, OR move the work to After Publish (delay isn't user-visible).
 
-### Quirk 2: 3-Call Cap on XHR + PubNub API Calls
+### Quirk 2: Per-Module Execution Limits
 
-A single Function execution is capped at **3 external calls** — counting **only `xhr.fetch(...)` and PubNub API invocations** from the `pubnub` module (`publish`, `signal`, `fire`, `grant`, etc.). The 4th call raises an `"execution calls exceeds"` error and aborts the handler.
+Each external module is metered **independently** per Function execution. Exceeding any one module's budget raises an `"execution calls exceeds"` error for that module — budgets do **not** share a common pool.
 
-**What counts toward the 3-call cap:**
-- `xhr.fetch(...)` — any HTTP request via the `xhr` module
-- `pubnub.publish(...)`, `pubnub.signal(...)`, `pubnub.fire(...)`
-- Other `pubnub` module API calls (grants, presence, etc.)
+| Module | Operations | Default limit |
+|--------|-----------|---------------|
+| **XHR** | `xhr.fetch()` | 5 |
+| **KV Store** | `kvstore.get/set/removeItem/incrCounter/getCounter` | 10 |
+| **PubNub API** | `pubnub.publish()`, `pubnub.fire()`, `pubnub.signal()`, grants, etc. | 10 |
+| **Vault** | `vault.get()` | 10 |
 
-**What does NOT count toward the 3-call cap:**
-- `kvstore.get(...)`, `kvstore.set(...)`, `kvstore.removeItem(...)`, `kvstore.incrCounter(...)` — all KVStore ops are local to the runtime and free of this cap.
-- `vault.get(...)` — vault is local; vault has its **own** 10-call-per-execution limit (see [Quirk 10](#quirk-10-vault-may-be-unavailable-or-return-not-found) and the [Vault Module section](functions-modules.md#vault-module)).
-- `console.log`, `console.error`.
-- Pure CPU helpers: `crypto`, `jwt`, `uuid`, `utils`, `advanced_math`, `jsonpath`, `codec/*`.
+**What does NOT consume another module's budget:**
+- All `kvstore.*` operations (KV Store has its own 10-op budget)
+- `vault.get(...)` (Vault has its own 10-read budget)
+- `console.log`, `console.error`
+- Pure CPU helpers: `crypto`, `jwt`, `uuid`, `utils`, `advanced_math`, `jsonpath`, `codec/*`
 
-**Configurable.** The 3-call cap can be **raised by request via PubNub Support** if your application legitimately needs more external calls per invocation.
+**Configurable.** Per-module caps can be **raised by request via PubNub Support**.
 
 **Mitigation:**
-- For HTTP fan-out, replace N fetches with one fetch to a downstream service that fans out for you (a small Lambda / Cloud Function / SQS+worker).
-- For chain-level designs, prefer **3 hops × 3 calls = 9 calls** spread across the chain over jamming everything into one Function. See [Chaining vs Forking](functions-chaining.md).
-- Use the `pubnub` module's `fire(...)` for analytics side-effects rather than `publish(...)` — same 1-call cost, but `fire` skips subscriber delivery if all you want is to trigger another Function.
+- Batch KV reads/writes instead of fan-out loops that burn the 10-op KV budget
+- Replace N `xhr.fetch` calls with one downstream aggregator when near the 5-op XHR budget
+- For chain-level designs, each hop gets its own per-module budgets — see [Chaining vs Forking](functions-chaining.md)
+- Use `pubnub.fire(...)` for analytics side-effects when appropriate — still counts toward the PubNub API budget
 
 ### Quirk 3: No Top-Level `await`
 

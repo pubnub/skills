@@ -137,7 +137,7 @@ function updateCountdownDisplay(auctionId, remainingMs) {
 ## MCP Tools
 
 - **`get_sdk_documentation`** — pull SDK-specific publish/subscribe/listener APIs (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
-- **`create_pubnub_function`** — scaffold the Before-Publish bid validator
+- **`manage_functions`** (`resource=package`, `operation=create`) — create the Before-Publish bid validator package
 - **`grant_token`** — issue scoped grants for bidder vs admin roles
 - **`manage_apps`** — verify Stream Controller add-on for high-traffic auctions
 

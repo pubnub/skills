@@ -5,9 +5,11 @@
 
 # PubNub Encryption Guide
 
-## AES-256 Message Encryption
+## Message Encryption
 
-PubNub provides built-in AES-256 encryption for end-to-end message security.
+PubNub provides client-side message encryption for end-to-end payload security.
+
+> Prefer **`CryptoModule.aesCbcCryptoModule`** for true 256-bit AES-CBC on new work. Legacy bare `cipherKey` configuration had effectively ~128-bit strength before the October 2023 crypto-module upgrade — retrieve current migration guidance via **`get_sdk_documentation`** / **`how_to`** before mixing old and new clients.
 
 ### How It Works
 
@@ -23,7 +25,8 @@ const pubnub = new PubNub({
   publishKey: 'pub-c-...',
   subscribeKey: 'sub-c-...',
   userId: 'user-123',
-  cipherKey: 'my-strong-secret-cipher-key'  // AES-256 encryption enabled
+  // Prefer cryptoModule: CryptoModule.aesCbcCryptoModule({ cipherKey: '…' })
+  cipherKey: 'my-strong-secret-cipher-key'  // legacy path — see CryptoModule migration docs
 });
 
 // All messages automatically encrypted/decrypted

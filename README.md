@@ -133,7 +133,7 @@ Develop serverless edge functions with PubNub Functions 2.0.
 - `functions-modules.md` - KVStore, XHR, Vault, PubNub, Crypto/JWT/UUID, codec/*, jsonpath, advanced_math, ugc modules
 - `functions-patterns.md` - Counters, rate limiting, workflows
 - `functions-chaining.md` - 3-chain rule, Chaining vs Forking, kvstore state sharing, channel hygiene
-- `db-triggers-and-runtime-quirks.md` - DB-trigger patterns and runtime quirks (3-call cap, vault availability, request.path, sendFile, etc.)
+- `db-triggers-and-runtime-quirks.md` - DB-trigger patterns and runtime quirks (per-module execution limits, vault availability, request.path, sendFile, etc.)
 - `bundling-and-typescript.md` - esbuild externals, 64 KB guard, default-export shape, require-placement
 
 ---

@@ -82,10 +82,9 @@ function SportsApp({ userId }) {
 
 ## Channel Hierarchy
 
-> **Hard limit:** PubNub channel names support a maximum of **3 dot-separated levels (`a.b.c`)**.  
-> `sports.<league>.games.<gameId>` is **4 levels and invalid**. All channel patterns below are designed to stay within 3 levels.
+> **Wildcard Subscribe constraint:** Wildcard patterns are limited to **two dots** (`sports.*` or `sports.nba.*`, not `sports.nba.games.*`). Plain channel names are **not** capped at three segments — but if you rely on wildcards, design names so a valid pattern covers your leaves.
 
-The channel naming convention follows a 3-level dot-delimited hierarchy: `sports.<league>.<segment>`.
+The channel naming convention uses a dot-delimited hierarchy. When wildcards are required, prefer three-segment leaves under a two-dot pattern (e.g. `sports.<league>.<segment>` with `sports.<league>.*`). For deeper paths like `sports.<league>.games.<gameId>`, use explicit subscribe, channel groups, or encode extra dimensions in the segment (`plays_<gameId>`).
 
 ### Channel Naming Pattern
 

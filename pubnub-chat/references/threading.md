@@ -20,13 +20,13 @@ A thread is a side conversation attached to a parent message. In PubNub Chat SDK
 
 ```javascript
 const message = /* a Message instance */;
-const thread = await message.createThread();
+const { threadChannel } = await message.createThread(text);
 ```
 
 ## Reply in a Thread
 
 ```javascript
-await thread.sendText('Reply in thread');
+await threadChannel.sendText('Reply in thread');
 ```
 
 Same API as a regular channel — under the hood it's just publishing to the thread channel.
@@ -34,7 +34,7 @@ Same API as a regular channel — under the hood it's just publishing to the thr
 ## Connect to a Thread
 
 ```javascript
-thread.connect((reply) => {
+threadChannel.connect((reply) => {
   console.log('Thread reply:', reply.text);
 });
 ```
@@ -44,7 +44,7 @@ Treat the thread like any other channel. Subscribe / unsubscribe / fetch history
 ## Thread History
 
 ```javascript
-const { messages } = await thread.getHistory({ count: 50 });
+const { messages } = await threadChannel.getHistory({ count: 50 });
 ```
 
 Backed by the same [Message Persistence retention](../../pubnub-history/references/retention-and-storage.md) as the parent channel.
@@ -61,9 +61,9 @@ const replyCount = await message.getThread();
 
 - **Threads are channels** — every thread you create counts as a channel for billing and presence purposes (see [usage metrics owner](../../pubnub-observability/references/usage-metrics.md)).
 - **No nested threads** — you cannot create a thread inside a thread reply. Design the UI accordingly.
-- **Thread channel name is deterministic** — `PUBNUB_INTERNAL_THREAD.<parentChannel>.<parentTimetoken>`. Don't write to that channel name directly.
+- **Thread channel name is deterministic** — IDs start with `PUBNUB_INTERNAL_THREAD_...`. Do not publish directly to that name.
 - **Permissions** — grant Access Manager access to the thread channel separately from the parent (see [Access Manager](../../pubnub-security/references/access-manager.md)).
-- **Cleanup** — deleting the parent message does **not** delete the thread channel. Add `chat.removeThreadChannel(thread)` if needed.
+- **Cleanup** — deleting the parent message does **not** delete the thread channel. Use `message.removeThread()` when explicit teardown is required.
 
 ## Common Pitfalls
 

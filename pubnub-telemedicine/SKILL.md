@@ -183,7 +183,7 @@ async function grantPatientAccess(patientId, consultationChannelId, ttlMinutes =
 - **`get_chat_sdk_documentation`** — pull Chat SDK reference for the patient-provider conversation surface (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
 - **`get_sdk_documentation`** — pull SDK-specific publish/subscribe APIs
 - **`grant_token`** — issue scoped grants per encounter (patient + provider only, short TTL)
-- **`create_pubnub_function`** — scaffold the Before-Publish consent / PHI redaction validator
+- **`manage_functions`** — scaffold the Before-Publish consent / PHI redaction validator
 - **`manage_apps`** — verify Message Persistence and add-ons against your BAA
 
 ## See Also

@@ -78,6 +78,7 @@ Is the user asking about chat / messaging features (DMs, group chat, typing, rea
 | Intent | Skill | MCP tool | Docs surface |
 |---|---|---|---|
 | Per-message transform, validate, enrich, moderate at the edge | `pubnub-functions` | `get_sdk_documentation` (Functions section) | Functions 2.0 docs |
+| Create/deploy a Functions package or revision | `pubnub-functions` | `manage_functions` (`resource=package`, `operation=create`) | Functions 2.0 docs |
 | HTTP endpoint backed by PubNub | `pubnub-functions` | `get_sdk_documentation` | Functions 2.0 docs |
 | Scheduled task running every N minutes | `pubnub-functions` | `get_sdk_documentation` | Functions 2.0 docs |
 | Forward every message to webhook / Lambda / Kafka / SQS / EventBridge | `pubnub-events-and-actions` | `get_sdk_documentation` | Events & Actions docs |

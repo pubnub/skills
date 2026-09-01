@@ -126,7 +126,7 @@ pubnub.addListener({
 ## MCP Tools
 
 - **`get_sdk_documentation`** — pull SDK-specific publish/subscribe APIs (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
-- **`create_pubnub_function`** — scaffold the Before-Publish vote validator with KVStore counters
+- **`manage_functions`** — scaffold the Before-Publish vote validator with KVStore counters
 - **`grant_token`** — issue scoped grants for voter vs admin
 - **`manage_apps`** — verify Stream Controller for high-fan-in polling
 

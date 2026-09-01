@@ -59,7 +59,7 @@
     },
     {
       "name": "Operation limit respected",
-      "description": "The function uses at most 3 combined operations (vault.get, incrCounter, etc.) per execution path",
+      "description": "The function respects per-module execution limits (Vault, KV Store, and other modules have independent budgets) or documents awareness of those limits",
       "max_score": 8
     }
   ]

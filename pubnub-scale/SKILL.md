@@ -79,7 +79,7 @@ pubnub.subscribe({
 ## Constraints
 
 - **Stream Controller add-on required** for channel groups and wildcards.
-- Wildcard patterns must end with `.*`; max 2 dots (3 levels).
+- Wildcard patterns must end with `.*`; max **two dots in the pattern** (`a.*` or `a.b.*`).
 - Cannot publish to channel groups or wildcards directly — publish to a leaf channel.
 - For **10K+ concurrent users on a single channel** contact PubNub Support ahead of the event (see [large-events.md](references/large-events.md)).
 - Message buffer: 100 messages per channel (configurable).

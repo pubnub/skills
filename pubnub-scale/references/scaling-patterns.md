@@ -129,9 +129,8 @@ pubnub.subscribe({
 ### Pattern Rules
 
 - Wildcard (`*`) must be at the **end**
-- Maximum **2 dots** (3 levels: `a.b.c`) — this is a **hard platform limit**, not just a wildcard rule
-- Period (`.`) is the hierarchy delimiter — **reserved character**
-- `a.b.c.d` is **always invalid**, with or without a wildcard
+- Maximum **two dots in the wildcard pattern** (e.g. `a.b.*`, not `a.b.c.*`) — this is a **Wildcard Subscribe rule**, not a universal channel-name limit
+- Period (`.`) is the hierarchy delimiter — **reserved character** for wildcard and Function bindings
 
 ### Valid Patterns
 
@@ -158,24 +157,21 @@ pubnub.subscribe({ channels: ['stocks.nasdaq.*'] });
 // Wildcard at start - INVALID
 '*.notifications'
 
-// Too many levels - INVALID (4 segments = 3 dots)
-'a.b.c.d.*'
-
-// Also invalid without a wildcard — the channel name itself exceeds 3 levels
-'a.b.c.d'
+// Too many dots in the wildcard pattern - INVALID
+'a.b.c.*'
 ```
 
 ### IoT Sensor Pattern
 
-The 3-level limit means a 4-part IoT path like `sensors.floor.room.metric` must be collapsed. Encode the extra dimension into the third segment using a non-dot separator, or move the metric into the message payload.
+The wildcard depth limit applies to **patterns**, not every leaf channel name. A 4-segment leaf like `sensors.floor1.room101.metric` is valid for explicit publish/subscribe; to cover it with wildcards, use a shallower pattern (e.g. `sensors.floor1.*`) and encode extra dimensions in the segment or payload.
 
 ```javascript
-// Publish sensor data — 3 levels max
+// Publish sensor data — explicit channel (depth not capped at 3 segments)
 await pubnub.publish({
-  channel: 'sensors.floor1.room101',          // ✓ 3 levels
+  channel: 'sensors.floor1.room101',          // ✓ valid plain channel
   message: { metric: 'temperature', value: 72.5, unit: 'F', timestamp: Date.now() }
 });
-// 'sensors.floor1.room101.temperature' — INVALID: 4 levels
+// Wildcard pattern 'sensors.floor1.room101.*' — INVALID (3 dots in pattern)
 
 // Subscribe to all sensors on floor 1
 pubnub.subscribe({

@@ -126,7 +126,7 @@ Configure which channels trigger the function.
 ### Rules
 
 - Wildcard (`*`) must be at the **end**
-- **Maximum 3 dot-separated levels (`a.b.c`) — this is a hard platform limit that applies to all PubNub channel names, not just wildcard patterns.** A channel name like `a.b.c.d` is invalid whether or not a wildcard is involved. If your Function publishes to a dynamically-built channel name, ensure the resulting string never exceeds 3 dot-separated segments.
+- **Wildcard Subscribe patterns**: max **two dots** in the pattern (`a.*`, `a.b.*`) — this is **not** a universal cap on plain channel names. If your Function publishes to a dynamically-built channel name, verify it against current naming rules.
 - Period (`.`) is a **reserved** hierarchy delimiter
 
 ### Valid Patterns
@@ -142,8 +142,8 @@ chat.*                → matches chat.room1, chat.general          (2 levels)
 ```
 alerts.*.critical     → wildcard not at end
 *.notifications       → wildcard at start
-a.b.c.d.*             → too many segments (4 levels)
-a.b.c.d               → ALSO invalid without a wildcard — channel name itself exceeds 3 levels
+a.b.c.*               → too many dots in wildcard pattern (3 dots)
+// Plain channel 'a.b.c.d' may be valid for explicit publish — wildcard depth limit applies to patterns only
 ```
 
 ## On Request URI Routing
@@ -299,14 +299,16 @@ export default async (request) => {
 | Limit | Value |
 |-------|-------|
 | Function chain depth | 3 executions (5 consecutive Functions total) |
-| External calls per execution | 3 (XHR + PubNub API invocations) |
-| Vault reads per execution | 10 (`vault.get(...)` calls) |
+| XHR ops per execution | 5 (`xhr.fetch`) |
+| KV Store ops per execution | 10 |
+| PubNub API ops per execution | 10 (`publish`, `fire`, `signal`, grants, …) |
+| Vault reads per execution | 10 (`vault.get(...)`) |
 | Execution timeout | Few seconds |
 | Response payload | Reasonable size |
 
-> The 3-call XHR/PubNub cap and the 10-call vault cap are **configurable on request via PubNub Support** for Functions that legitimately need more. The chain depth and execution timeout are platform limits and not user-tunable.
+> Per-module caps are **independent budgets** (not a shared pool). Limits are **configurable on request via PubNub Support**. Chain depth and execution timeout are platform limits.
 >
-> **`kvstore`, `crypto`, `jwt`, `uuid`, `utils`, `advanced_math`, `jsonpath`, and `codec/*` calls do NOT count** toward the 3-call cap — they are local-runtime helpers. See [Quirk 2: 3-Call Cap on XHR + PubNub API Calls](db-triggers-and-runtime-quirks.md) for the canonical accounting.
+> Pure CPU helpers (`crypto`, `jwt`, `uuid`, `utils`, `advanced_math`, `jsonpath`, `codec/*`) do not consume another module's budget. See [Quirk 2: Per-Module Execution Limits](db-triggers-and-runtime-quirks.md).
 
 ### Handling Limits
 
@@ -317,7 +319,7 @@ export default async (request) => {
   const xhr    = require('xhr');
 
   try {
-    // FREE — KVStore ops do NOT count toward the 3-call external cap
+    // KVStore ops consume the KV Store module budget (default 10), not XHR/PubNub budgets
     const cached = await db.get('cachedConfig');
     await db.set('lastSeen', Date.now(), 60);
 

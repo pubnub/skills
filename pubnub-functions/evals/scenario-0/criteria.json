@@ -49,7 +49,7 @@
     },
     {
       "name": "Operation limit respected",
-      "description": "The function uses at most 3 combined operations (KV reads, KV writes, XHR calls, publish/fire/signal) per execution path",
+      "description": "The function respects per-module execution limits (does not loop unbounded xhr.fetch or pubnub.publish calls) or documents awareness that module budgets are independent",
       "max_score": 10
     },
     {

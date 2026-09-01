@@ -158,7 +158,7 @@ export default async (request) => {
 
 Secure storage for API keys and secrets.
 
-> **Execution limit:** A single Function execution can perform up to **10 vault lookups** (`vault.get('KEY')`) before failing. Load only the keys you need per invocation, and use a single consistent key casing (e.g., uppercase) to avoid accidental duplicate lookups. Vault reads do **not** count toward the 3-call external-operation cap (vault is local to the runtime).
+> **Execution limit:** A single Function execution can perform up to **10 vault lookups** (`vault.get('KEY')`) before failing. Load only the keys you need per invocation, and use a single consistent key casing (e.g., uppercase) to avoid accidental duplicate lookups. Vault has an **independent per-module budget** — it does not share a pool with XHR or PubNub API ops (see [Quirk 2](db-triggers-and-runtime-quirks.md)).
 
 ```javascript
 const vault = require('vault');
@@ -374,7 +374,7 @@ const ugc = require('ugc');
 // Consult the PubNub Functions documentation for the current `ugc` API.
 ```
 
-For full-featured moderation (toxicity scoring, multi-category classification, threshold tuning), call an external moderation API via `xhr` (see [Pattern 3: Content Moderation](functions-patterns.md)). Use the built-in `ugc` module for lightweight checks that don't require an external API call — they don't consume an entry from the 3-call external-operation cap.
+For full-featured moderation (toxicity scoring, multi-category classification, threshold tuning), call an external moderation API via `xhr` (see [Pattern 3: Content Moderation](functions-patterns.md)). Use the built-in `ugc` module for lightweight checks that don't require an external API call — they save XHR budget rather than sharing a combined external-call pool.
 
 ## Module Usage Summary
 
