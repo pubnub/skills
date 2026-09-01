@@ -37,7 +37,7 @@ PubNub message size affects:
 | Telemetry tick | < 256 B |
 | Notification | < 512 B |
 
-PubNub's hard limit is 32 KB per message, but most apps should be far under that. Anything > 4 KB is a flag for review.
+PubNub enforces a hard per-message size limit — retrieve the current value via **`how_to`** (`calculate-message-payload-size`). Most apps should stay far under that cap; anything unusually large is a flag for review (see targets below).
 
 ### Trim Aggressively
 

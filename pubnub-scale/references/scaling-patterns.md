@@ -12,80 +12,32 @@ PubNub is designed for massive scale:
 
 ### When to Use What
 
-| Channels Needed | Strategy | Max Channels |
-|-----------------|----------|--------------|
-| 1-30 | Multiplexing | 30 recommended |
-| 30-2,000 | Single Channel Group | 2,000 |
-| 2,000-20,000 | Multiple Channel Groups | 10 groups × 2,000 |
-| Hierarchical | Wildcard Subscribe | Unlimited matching |
+| Scale profile | Strategy | Decision |
+|---------------|----------|----------|
+| Small, fixed channel set | Multiplexing | Few named channels on one subscribe connection |
+| Medium fan-in | Single Channel Group | Many channels grouped under one subscribe |
+| Large fan-in | Multiple Channel Groups | Partition channels across several groups |
+| Hierarchical / dynamic namespaces | Wildcard Subscribe | Match many leaf channels with one pattern |
+
+Retrieve current numeric caps (channels per connection, per group, groups per client) via **`get_sdk_documentation`** and **`how_to`** (`understand-channel-limits`, `use-channel-groups`) before finalizing topology.
 
 ## Channel Multiplexing
 
-Subscribe to multiple named channels over single connection.
-
-```javascript
-// Subscribe to multiple channels (up to 30 recommended)
-pubnub.subscribe({
-  channels: ['chat-room-1', 'chat-room-2', 'notifications']
-});
-```
+Subscribe to multiple named channels over a single connection.
 
 **Best for**: Small, known set of channels per client.
+
+Retrieve current multiplexing recommendations and caps via **`get_sdk_documentation`** for the target SDK.
 
 ## Channel Groups
 
 > **Requires**: Stream Controller enabled in Admin Portal
 
-### Setup
+Use channel groups when a client must subscribe to more channels than multiplexing alone supports efficiently.
 
-```javascript
-// Add channels to a group
-await pubnub.channelGroups.addChannels({
-  channelGroup: 'user-alice-feeds',
-  channels: [
-    'feed-news',
-    'feed-sports',
-    'feed-tech',
-    'user-notifications-alice'
-  ]
-});
+**API surface:** Retrieve current `channelGroups.*` CRUD methods, parameters, and limits via **`get_sdk_documentation`** — do not copy SDK signatures into Skills.
 
-// Subscribe to the group
-pubnub.subscribe({
-  channelGroups: ['user-alice-feeds']
-});
-```
-
-### Managing Channel Groups
-
-```javascript
-// List channels in group
-const result = await pubnub.channelGroups.listChannels({
-  channelGroup: 'user-alice-feeds'
-});
-console.log('Channels:', result.channels);
-
-// Remove channels from group
-await pubnub.channelGroups.removeChannels({
-  channelGroup: 'user-alice-feeds',
-  channels: ['feed-tech']
-});
-
-// Delete entire group
-await pubnub.channelGroups.deleteChannelGroup({
-  channelGroup: 'user-alice-feeds'
-});
-```
-
-### Limits
-
-| Resource | Limit |
-|----------|-------|
-| Channels per group | 2,000 (configurable) |
-| Groups per client | 10 |
-| Total channels | 20,000 per client |
-
-### User Feed Pattern
+### User Feed Pattern (orchestration)
 
 ```javascript
 // Server-side: Create personalized feed group

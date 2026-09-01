@@ -314,7 +314,7 @@ function handleWeightedVote(kvstore, pollId, optionId, voterId, weight) {
 - **Always validate server-side**: Client-side validation is for UX only. The Before Publish Function is the source of truth for vote acceptance.
 - **Use atomic counters for all tallies**: Never use `get` then `set` to update counts. The `incrCounter` method prevents race conditions under concurrent load.
 - **Initialize KV Store before opening polls**: Ensure all option counters, status, and configuration are set before transitioning to the open state.
-- **Keep KV Store keys small**: Use short, predictable key patterns. KV Store has per-key size limits of 256 bytes for keys and 32 KB for values.
+- **Keep KV Store keys small**: Use short, predictable key patterns. Retrieve current KV Store key/value size limits via **`how_to`** (`understand-pubnub-functions-limits-and-constraints`) or Functions docs.
 - **Throttle result broadcasts for high-volume polls**: For polls expecting thousands of votes per second, broadcast on a time interval rather than after every vote.
 - **Clean up KV Store after finalization**: Once results are persisted to your backend, remove KV Store keys to free up storage.
 - **Log rejected votes for auditing**: Even rejected votes should be logged for post-event analysis and fraud review.

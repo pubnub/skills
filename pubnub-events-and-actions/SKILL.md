@@ -59,18 +59,9 @@ E&A vs Functions decision:
 
 ### Plan Tier Affects Capabilities
 
-| Tier | Events ingested | Listeners | Actions/listener | Action types | Retry |
-|---|---|---|---|---|---|
-| Free | 10K/mo | 1 | 1 | Webhook only | No |
-| Intro | 2M | Unlimited | 3 | All | Yes |
-| Tier 1 | 4M | Unlimited | 3 | All | Yes |
-| Tier 2 | 25M | Unlimited | 3 | All | Yes |
-| Tier 3 | 66M | Unlimited | 3 | All | Yes |
-| Tier 4 | 200M | Unlimited | 3 | All | Yes |
-| Tier 5 | 500M | Unlimited | 3 | All | Yes |
-| Tier 6 | Unlimited | Unlimited | Unlimited | All | Yes |
+Paid tiers unlock retries, additional action types, and higher listener/action limits. **Free tier is webhook-only with no retry** — production use almost always requires a paid tier.
 
-**Free tier is webhook-only with no retry** — production use almost always requires a paid tier.
+Retrieve current tier limits (events ingested, listeners, actions per listener, supported action types) from PubNub pricing/docs or Admin Portal — do not hard-code tier tables in Skills.
 
 ### Listener / Action Decoupling
 
@@ -109,6 +100,10 @@ E&A supports envelope versions 1.0, 2.0, and 2.1 (default). Each version comes i
 ## MCP Tools
 
 Events & Actions configuration is currently UI-driven via the Admin Portal. There is no dedicated MCP tool for E&A object manipulation; use the Admin Portal directly.
+
+For limits, retry/batch defaults, and envelope schemas:
+
+- **`get_sdk_documentation`** — Events & Actions configuration surface and numeric knobs
 
 For verifying event flow:
 

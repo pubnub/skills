@@ -2,22 +2,22 @@
 
 PubNub Functions can trigger one another by republishing on a channel that another Function watches. This is **chaining**.
 
-## The 3-Chain Rule
+## The Chain Depth Rule
 
-A single inbound publish can result in **at most 3 chained Function executions**. After that, further publishes from inside a Function are silently dropped to prevent infinite loops.
+A single inbound publish can trigger a sequence of Functions via republish. The platform enforces a **maximum chain depth** — further publishes from inside a Function are silently dropped once the cap is reached, preventing infinite loops.
 
-Count includes:
+Retrieve current chain-depth and consecutive-Function caps via **`how_to`** (`understand-pubnub-functions-limits-and-constraints`) before designing multi-hop pipelines.
+
+Count typically includes:
 - The Before Publish on the source channel
 - A republish that triggers another Function
-- A second republish that triggers a third Function
-
-A 4th hop is dropped.
+- Additional republish hops until the platform cap
 
 ### Related limits
 
-- **5 consecutive Functions per sequence.** Beyond the 3-hop cap, the runtime enforces a separate cap on the total number of Functions that may execute in a single sequence. Treat **5** as the practical ceiling; design for **3 hops** and you stay safely under both limits.
-- **Per-module execution budgets.** Each hop has its own independent XHR (5), KV Store (10), PubNub API (10), and Vault (10) budgets — not a combined pool across modules. See [`functions-basics.md` "Execution Limits"](functions-basics.md) and [Quirk 2: Per-module execution limits](db-triggers-and-runtime-quirks.md).
-- **Contact PubNub Support** if your application requires more than 3 hops or higher per-module limits. Both are configurable on request.
+- **Consecutive Functions per sequence.** A separate cap limits total Functions in one sequence. Design for the **shallower** of the chain-depth and consecutive-Function limits — retrieve both via **`how_to`**.
+- **Per-module execution budgets.** Each hop has its own independent XHR, KV Store, PubNub API, and Vault budgets — **not** a combined pool across modules. See [`functions-basics.md` "Execution budgets"](functions-basics.md) and [Quirk 2: Per-module execution limits](db-triggers-and-runtime-quirks.md).
+- **Contact PubNub Support** if your application requires deeper chains or higher per-module limits. Both are configurable on request.
 
 ## Chaining vs Forking
 
@@ -133,11 +133,11 @@ Design notes:
 - **Use a short TTL.** Chain hops complete within seconds; a 1–5 minute TTL keeps KVStore tidy.
 - **Don't store secrets** in the chain stash — they should come from `vault` in each Function independently.
 - **Don't depend on TTL** for cleanup of large stashes — see [Quirk 6: KVStore TTL is Not Real-Time](db-triggers-and-runtime-quirks.md).
-- KVStore reads and writes consume the **KV Store module budget** (default 10 ops per execution), independent of XHR and PubNub API budgets (see [Quirk 2](db-triggers-and-runtime-quirks.md)).
+- KVStore reads and writes consume the **KV Store module budget**, independent of XHR and PubNub API budgets (see [Quirk 2](db-triggers-and-runtime-quirks.md)).
 
 ## Channel Namespace Hygiene
 
-The runtime detects infinite loops and silently caps the chain at 3 hops, but **don't rely on that detection**. Avoid topology where a Function's output channel could re-trigger the same Function (directly or transitively).
+The runtime detects infinite loops and silently enforces the platform chain-depth cap, but **don't rely on that detection**. Avoid topology where a Function's output channel could re-trigger the same Function (directly or transitively).
 
 ### Pitfall 1: Republishing to a channel your Function listens on
 
@@ -151,7 +151,7 @@ export default async (request) => {
 };
 ```
 
-`events.*` matches `events.processed`, so the Function's own output re-triggers it. The 3-hop cap kicks in eventually, but each chain still burns its budget.
+`events.*` matches `events.processed`, so the Function's own output re-triggers it. The chain-depth cap kicks in eventually, but each hop still burns its per-module budgets.
 
 ### Pitfall 2: Wildcard subscribers downstream that point back
 
@@ -171,7 +171,7 @@ export default async (request) => {
 };
 ```
 
-When in doubt, **prefix every stage's output channel with a name distinct from any active Function's pattern**. The 3-hop cap is a safety net, not a design tool.
+When in doubt, **prefix every stage's output channel with a name distinct from any active Function's pattern**. The chain-depth cap is a safety net, not a design tool.
 
 ## Ordering
 
@@ -180,7 +180,7 @@ Chained executions are **best-effort ordered** but not guaranteed. If ordering m
 ## Debugging Chain Loops
 
 1. In Admin Portal → Functions → My Function, watch the execution count.
-2. If you see a flatline at exactly 3 executions per inbound publish, you have hit the chain cap.
+2. If execution count flatlines at the platform chain-depth cap (retrieve via **`how_to`**), you have hit the limit.
 3. Trace by tagging the message with a `chain_hop` counter and logging it on every Function.
 
 ## Example: 2-Hop Chain
@@ -212,4 +212,4 @@ export default async (request) => {
 };
 ```
 
-This counts as 2 executions out of the 3-chain budget.
+This counts as two executions toward the chain-depth budget (retrieve current cap via **`how_to`**).

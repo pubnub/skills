@@ -1,6 +1,6 @@
 ---
 name: pubnub-functions
-description: Create, configure, and deploy PubNub Functions 2.0 event handlers, triggers, and serverless endpoints. Covers Before/After Publish, On Request, On Interval; built-in modules (kvstore, xhr, vault, pubnub, crypto, jwt, ugc, jsonpath, advanced_math, codec/*); chaining (3 hops, 5 consecutive, Chaining vs Forking, kvstore state sharing); runtime quirks (per-module execution limits, 10-call vault cap, cold start, request.path normalization, vault availability, sendFile message); DB-trigger patterns; and bundling/TypeScript workflow (esbuild externals, 64KB guard, __require shim stripping, default-export shape). Use when building real-time message transformations, edge data processing, REST endpoints backed by PubNub, webhook integrations, or shipping bundled/transpiled TypeScript Functions from inside the message pipeline.
+description: Create, configure, and deploy PubNub Functions 2.0 event handlers, triggers, and serverless endpoints. Covers Before/After Publish, On Request, On Interval; built-in modules (kvstore, xhr, vault, pubnub, crypto, jwt, ugc, jsonpath, advanced_math, codec/*); chaining (depth caps, Chaining vs Forking, kvstore state sharing); runtime quirks (independent per-module execution budgets, cold start, request.path normalization, vault availability, sendFile message); DB-trigger patterns; and bundling/TypeScript workflow (esbuild externals, bundle size guard, __require shim stripping, default-export shape). Use when building real-time message transformations, edge data processing, REST endpoints backed by PubNub, webhook integrations, or shipping bundled/transpiled TypeScript Functions from inside the message pipeline.
 license: PubNub
 metadata:
   author: pubnub
@@ -47,11 +47,11 @@ Invoke this skill when:
 | Reference | Purpose |
 |-----------|---------|
 | [functions-basics.md](references/functions-basics.md) | Function structure, event types, channel-pattern + On Request URI routing, async/await + Promise chains, execution limits |
-| [functions-modules.md](references/functions-modules.md) | All built-in modules: KVStore, XHR, Vault (with 10-call cap), PubNub, Crypto, JWT, UUID, JSONPath, Advanced Math, UGC, Codec |
+| [functions-modules.md](references/functions-modules.md) | All built-in modules: KVStore, XHR, Vault, PubNub, Crypto, JWT, UUID, JSONPath, Advanced Math, UGC, Codec |
 | [functions-patterns.md](references/functions-patterns.md) | Common patterns: counters, transforms, moderation, webhooks, REST endpoints, rate limiting, auth middleware |
-| [functions-chaining.md](references/functions-chaining.md) | 3-hop rule, 5-consecutive Functions cap, Chaining vs Forking, kvstore state sharing, channel namespace hygiene |
+| [functions-chaining.md](references/functions-chaining.md) | Chain depth caps, Chaining vs Forking, kvstore state sharing, channel namespace hygiene |
 | [db-triggers-and-runtime-quirks.md](references/db-triggers-and-runtime-quirks.md) | DB-mirror patterns; 11 runtime quirks (cold start, per-module execution limits, handler-scoped require, request.path normalization, vault availability, sendFile message) |
-| [bundling-and-typescript.md](references/bundling-and-typescript.md) | TypeScript + esbuild workflow: externals list, 64 KB size guard, `__require` shim stripping, default-export shape, require placement, minification gotchas, LLM do/don't checklist |
+| [bundling-and-typescript.md](references/bundling-and-typescript.md) | TypeScript + esbuild workflow: externals list, bundle size guard, `__require` shim stripping, default-export shape, require placement, minification gotchas, LLM do/don't checklist |
 
 ## Key Implementation Requirements
 
@@ -66,9 +66,9 @@ Invoke this skill when:
 
 ## Constraints
 
-- **Function chaining**: maximum **3 chained executions per inbound publish**; up to **5 consecutive Functions** in a single sequence ([functions-chaining.md](references/functions-chaining.md)).
-- **Per-module execution limits**: each module has an **independent** budget — XHR (5), KV Store (10), PubNub API (10), Vault (10) per execution ([Quirk 2](references/db-triggers-and-runtime-quirks.md)). Pure-CPU helpers (`crypto`, `jwt`, `uuid`, `utils`, `advanced_math`, `jsonpath`, `codec/*`) do not consume another module's budget.
-- Per-module caps are **configurable on request via PubNub Support**.
+- **Function chaining**: the platform enforces chain-depth and consecutive-Function caps per inbound publish — retrieve current values via **`how_to`** (`understand-pubnub-functions-limits-and-constraints`) before designing multi-hop pipelines ([functions-chaining.md](references/functions-chaining.md)).
+- **Per-module execution limits**: XHR, KV Store, PubNub API, and Vault each have an **independent** per-execution budget — they do **not** share a combined pool ([Quirk 2](references/db-triggers-and-runtime-quirks.md)). Retrieve current default caps via **`how_to`** before counting ops in a handler. Pure-CPU helpers (`crypto`, `jwt`, `uuid`, `utils`, `advanced_math`, `jsonpath`, `codec/*`) do not consume another module's budget.
+- Per-module caps are **configurable on request via PubNub Support** — confirm current ceilings with **`how_to`** or Functions docs.
 - Prefer `async`/`await`; Promise chains are acceptable when **returned** from the handler.
 - Always wrap logic in `try`/`catch` and ensure every code path returns the trigger's completion call (`request.ok()` / `request.abort()` / `response.send()`).
 - Use `vault` for secrets, never hardcode. Guard `vault.get(...)` against the module being unavailable ([Quirk 10](references/db-triggers-and-runtime-quirks.md)).
@@ -78,6 +78,9 @@ Invoke this skill when:
 
 ## MCP Tools
 
+For **limits, chain depth, and runtime constraints**, call **`how_to`** (`understand-pubnub-functions-limits-and-constraints`) first — do not rely on web search or cached numbers.
+
+- **`how_to`** — Functions execution limits, chain depth, timeout, and per-module budgets (authoritative for numeric caps)
 - **`manage_functions`** (`resource=package`, `operation=create`) — create a Functions package/revision from this skill's templates
 - **`get_sdk_documentation`** — pull current Function module API references (see [intent-to-tool routing](../pubnub-choose-docs-path/references/intent-to-tool.md))
 

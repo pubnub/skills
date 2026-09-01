@@ -37,7 +37,7 @@ Use **`fire`** for analytics or internal pipeline events that must not fan out t
 
 ## Vault
 
-Never hardcode secrets. Vault reads have an independent per-execution budget — retrieve current cap via Functions docs. Configure secrets in Admin Portal → Functions → Module → My Secrets.
+Never hardcode secrets. Vault reads have an independent per-execution budget — retrieve current cap via **`how_to`** or Functions docs. Configure secrets in Admin Portal → Functions → Module → My Secrets.
 
 ## XHR vs UGC vs external moderation
 

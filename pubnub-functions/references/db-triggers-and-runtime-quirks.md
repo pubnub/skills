@@ -82,24 +82,19 @@ A Function that hasn't run in a while takes ~100–300ms longer on the first inv
 
 Each external module is metered **independently** per Function execution. Exceeding any one module's budget raises an `"execution calls exceeds"` error for that module — budgets do **not** share a common pool.
 
-| Module | Operations | Default limit |
-|--------|-----------|---------------|
-| **XHR** | `xhr.fetch()` | 5 |
-| **KV Store** | `kvstore.get/set/removeItem/incrCounter/getCounter` | 10 |
-| **PubNub API** | `pubnub.publish()`, `pubnub.fire()`, `pubnub.signal()`, grants, etc. | 10 |
-| **Vault** | `vault.get()` | 10 |
+Retrieve current default caps per module (XHR, KV Store, PubNub API, Vault) via **`how_to`** (`understand-pubnub-functions-limits-and-constraints`) or Functions docs — do not hard-code limit tables in application logic.
 
 **What does NOT consume another module's budget:**
-- All `kvstore.*` operations (KV Store has its own 10-op budget)
-- `vault.get(...)` (Vault has its own 10-read budget)
+- `kvstore.*` operations (KV Store module budget only)
+- `vault.get(...)` (Vault module budget only)
 - `console.log`, `console.error`
 - Pure CPU helpers: `crypto`, `jwt`, `uuid`, `utils`, `advanced_math`, `jsonpath`, `codec/*`
 
 **Configurable.** Per-module caps can be **raised by request via PubNub Support**.
 
 **Mitigation:**
-- Batch KV reads/writes instead of fan-out loops that burn the 10-op KV budget
-- Replace N `xhr.fetch` calls with one downstream aggregator when near the 5-op XHR budget
+- Batch KV reads/writes instead of fan-out loops that exhaust the KV Store budget
+- Replace N `xhr.fetch` calls with one downstream aggregator when approaching the XHR budget
 - For chain-level designs, each hop gets its own per-module budgets — see [Chaining vs Forking](functions-chaining.md)
 - Use `pubnub.fire(...)` for analytics side-effects when appropriate — still counts toward the PubNub API budget
 
@@ -240,7 +235,7 @@ const apiKey = await vault.get('API_KEY');
 
 **B. "Not Found" despite the key being visible in the Portal.** If `vault.get('API_KEY')` returns `"Not Found"` (or `null`) but the key clearly exists in the Admin Portal's Secrets section, the Portal entry almost certainly contains **hidden characters** — trailing whitespace, zero-width characters, or copy-paste residue from a rich-text source. Re-create the key by typing it directly into the Portal field.
 
-**Caching tip.** Cache `vault.get(...)` results on `globalThis` to stay under the 10-call execution limit:
+**Caching tip.** Cache `vault.get(...)` results on `globalThis` to stay under the Vault module's per-execution budget (retrieve current cap via **`how_to`**):
 
 ```javascript
 export default async (request) => {
@@ -254,7 +249,7 @@ export default async (request) => {
 };
 ```
 
-The cache survives across invocations on the same warm worker (see Quirk 3 for the same warm-worker behavior on KVStore reads). Combined with the per-execution 10-call ceiling, you rarely hit the limit in practice.
+The cache survives across invocations on the same warm worker (see Quirk 1 for warm-worker behavior on KVStore reads). Combined with a modest per-execution Vault budget, you rarely hit the limit in practice when secrets are cached.
 
 ### Quirk 11: `sendFile()` events: `request.message` may be undefined
 

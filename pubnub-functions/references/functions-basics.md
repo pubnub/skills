@@ -47,7 +47,7 @@ On Request uses **URI path matching**, not channel wildcards.
 
 ## Execution budgets
 
-Per-module limits (XHR, KV Store, PubNub API, Vault) are **independent** — not a shared pool. Chain depth and timeout are platform limits. Retrieve current defaults and raise limits via Support using **`manage_functions`** / Functions docs.
+Per-module limits (XHR, KV Store, PubNub API, Vault) are **independent** — not a shared pool. Chain depth and timeout are platform limits. Retrieve current defaults via **`how_to`** (`understand-pubnub-functions-limits-and-constraints`) or **`manage_functions`** / Functions docs; raise limits via Support when needed.
 
 When approaching limits: prioritize kvstore for hot paths, use `fire` for analytics that must not hit subscribers, and split heavy fan-out across [chained Functions](functions-chaining.md) within depth cap.
 

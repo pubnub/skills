@@ -233,7 +233,7 @@ async function publishTick(pubnub, symbol, price) {
 
 | Feature | Publish | Signal |
 |---------|---------|--------|
-| Max payload | 32 KB | 64 bytes |
+| Max payload | Retrieve via **`get_sdk_documentation`** / **`how_to`** | Retrieve via **`get_sdk_documentation`** / **`how_to`** |
 | History storage | Yes (optional) | No |
 | Message cost | Standard | Reduced |
 | Use case | Full quote snapshots | Price-only ticks |

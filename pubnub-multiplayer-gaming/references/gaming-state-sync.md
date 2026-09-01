@@ -135,7 +135,7 @@ class HostAuthoritativeSync {
 
 ## Delta Updates
 
-Sending only changed state properties instead of the full game state reduces message size and bandwidth consumption. This is critical for keeping messages under PubNub's 32 KB limit.
+Sending only changed state properties instead of the full game state reduces message size and bandwidth consumption. This is critical for staying under PubNub's message size limit — retrieve the current cap via **`how_to`** (`calculate-message-payload-size`).
 
 ### Delta Update Structure
 
@@ -667,7 +667,7 @@ function decodePositions(encoded, playerIds) {
 
 6. **Use Message Persistence for recovery** -- enable message storage so reconnecting clients can fetch missed updates from PubNub history.
 
-7. **Keep state messages under 32 KB** -- PubNub's maximum message size is 32 KB. If your full state exceeds this, you must use delta updates or split into multiple messages.
+7. **Keep state messages within PubNub's message size limit** — retrieve the current cap via **`how_to`**. If your full state exceeds it, use delta updates or split into multiple messages.
 
 8. **Handle out-of-order processing gracefully** -- even though PubNub guarantees per-channel ordering, cross-channel messages may arrive in any order. Use timestamps or sequence numbers for cross-channel coordination.
 

@@ -381,7 +381,7 @@ export default async (request) => {
 1. **Use vault for secrets** - Never hardcode API keys
 2. **Implement try/catch** - Always handle errors gracefully
 3. **Use async/await** - Avoid .then()/.catch() chains
-4. **Consider operation limits** - Max 3 per execution
+4. **Consider operation limits** - Count xhr / pubnub / kvstore / vault ops per execution; budgets are independent per module (retrieve caps via **`how_to`**)
 5. **Log appropriately** - Use console.log/error for debugging
 6. **Fail gracefully** - Decide whether to block or allow on errors
 7. **Validate inputs** - Check message structure before processing

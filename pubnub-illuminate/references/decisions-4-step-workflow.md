@@ -231,13 +231,11 @@ PUT is always **full replacement** — include the complete body every time.
 
 ## Account Limits
 
-| Decision type | Limit | Error returned |
-|---|---|---|
-| `METRIC` decisions | 3 per account | `400: "A business object cannot have more than 3 associated decisions."` |
-| `QUERY` decisions | ~10–11 per account | `500 Internal Server Error` (no descriptive message) |
-| `BUSINESSOBJECT` decisions | No enforced limit | — |
+Illuminate enforces per-account caps on certain decision types. Retrieve current limits via **`manage_illuminate`** and Illuminate docs before creating METRIC or QUERY decisions.
 
-**Before creating a new METRIC or QUERY decision, list existing decisions of that type.** If at or near the limit, ask the user which existing decision to delete before retrying. **Never delete without explicit confirmation.**
+**Before creating a new METRIC or QUERY decision, list existing decisions of that type.** If at or near the documented limit, ask the user which existing decision to delete before retrying. **Never delete without explicit confirmation.**
+
+When limits are exceeded, the API returns a typed error — decode using Illuminate docs rather than hard-coded messages in Skills.
 
 ## Common Error Decoder Ring
 

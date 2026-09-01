@@ -162,7 +162,7 @@ pubnub.addListener({
 
 ## Constraints
 
-- Keep game state messages under 32 KB; use delta updates instead of full state
+- Keep game state messages within PubNub's message size limit (retrieve via **`how_to`**); use delta updates instead of full state
 - Use PubNub Presence with short timeouts (15-30s) to detect player disconnections quickly
 - Always implement reconnection logic with state recovery for dropped players
 - Validate critical game actions server-side using PubNub Functions to prevent cheating
