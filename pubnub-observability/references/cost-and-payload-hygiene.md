@@ -13,7 +13,7 @@ PubNub bills by **transactions**, not bytes. The dominant cost drivers in most a
 |---|---|
 | Publishes per second | 1 per `publish()` call |
 | Fan-out (N subscribers per channel) | Multiplies receive transactions |
-| [Presence event](../../pubnub-presence/references/presence-events.md) volume | Joins/leaves and timers |
+| [Presence event](../../pubnub-presence/SKILL.md) volume | Joins/leaves and timers |
 | History reads | 1 per `fetchMessages` request |
 | Function executions | 1 per Function invocation |
 | [App Context](../../pubnub-app-context/references/users.md) operations | 1 per set/get |
@@ -56,7 +56,7 @@ const msg = {
 // Good — only what the receiver needs
 const msg = {
   schema_version: 1,
-  message_id: crypto.randomUUID(),   // not the same as the PubNub [userId/UUID](../../pubnub-app-developer/references/sdk-patterns.md)
+  message_id: crypto.randomUUID(),   // not the same as the PubNub [userId/UUID](../../pubnub-app-developer/SKILL.md)
   sender_id: userRecord.id,
   text: 'hi'
 };
@@ -140,7 +140,7 @@ Three publish-like operations with different semantics and pricing tiers:
 | Op | Persisted? | Triggers Functions? | Use for |
 |---|---|---|---|
 | `publish()` | Yes (if Message Persistence on) | Yes | Standard messages |
-| `signal()` | No | Yes | Ephemeral signals (typing indicators, presence-like updates); cheaper than [`pubnub.publish()`](../../pubnub-app-developer/references/publish-subscribe.md), smaller max payload (~64 bytes) |
+| `signal()` | No | Yes | Ephemeral signals (typing indicators, presence-like updates); cheaper than [`pubnub.publish()`](../../pubnub-app-developer/SKILL.md), smaller max payload (~64 bytes) |
 | `fire()` | No | Yes | Triggering server-side Functions only; not delivered to subscribers |
 
 When the receiver doesn't need to read the data later, `signal()` is cheaper than `publish()`. For [Functions](../../pubnub-functions/references/functions-basics.md) triggers without delivery, `fire()`.

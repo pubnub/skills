@@ -36,7 +36,7 @@ Required envelope fields:
 | Field | Purpose |
 |---|---|
 | `schema_version` | Integer. Bumped on any change to the shape. |
-| `message_id` | [UUID v4](../../pubnub-app-developer/references/sdk-patterns.md) for [idempotent publish](idempotent-publish.md) + [dedup](dedup-on-merge.md). |
+| `message_id` | [UUID v4](../../pubnub-app-developer/SKILL.md) for [idempotent publish](idempotent-publish.md) + [dedup](dedup-on-merge.md). |
 | `sent_at` | Producer timestamp in ms. Useful for stale-message detection. |
 | `type` | Discriminator if the payload shape varies by event type. |
 | `payload` | The application-specific body. |
@@ -180,5 +180,5 @@ If you use [Illuminate Business Objects](../../pubnub-illuminate/references/busi
 
 - [idempotent-publish.md](idempotent-publish.md) — envelope also carries `message_id`
 - [dedup-on-merge.md](dedup-on-merge.md) — dedup keys live in the envelope
-- [pubnub-app-developer/references/publish-subscribe.md](../../pubnub-app-developer/references/publish-subscribe.md) — what publish/subscribe actually transmits
+- [pubnub-app-developer/SKILL.md](../../pubnub-app-developer/SKILL.md) — what publish/subscribe actually transmits
 - [pubnub-illuminate/references/business-objects.md](../../pubnub-illuminate/references/business-objects.md) — Illuminate field extraction depends on stable shape

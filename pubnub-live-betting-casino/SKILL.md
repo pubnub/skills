@@ -130,7 +130,7 @@ pubnub.addListener({
 ## MCP Tools
 
 - **`get_sdk_documentation`** — pull SDK-specific publish/subscribe APIs (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
-- **`manage_functions`** — scaffold the Before-Publish wager validator and rate limiter
+- **`manage_functions`** (`resource=package`, `operation=create`) — create the Before-Publish wager validator and rate limiter package
 - **`grant_token`** — issue scoped grants per market / table / role
 - **`manage_apps`** — verify Stream Controller and Message Persistence add-ons
 
@@ -141,7 +141,7 @@ pubnub.addListener({
 - **[pubnub-reliability](../pubnub-reliability/SKILL.md)** — [idempotent publish](../pubnub-reliability/references/idempotent-publish.md) so a network retry doesn't double-bet; [schema versioning](../pubnub-reliability/references/schema-versioning.md) for evolving bet payloads
 - **[pubnub-history](../pubnub-history/SKILL.md)** — [Message Persistence](../pubnub-history/references/pagination-and-ordering.md) for wager audit trails
 - **[pubnub-scale](../pubnub-scale/SKILL.md)** — [channel groups for market hierarchies](../pubnub-scale/references/scaling-patterns.md) and [large-event playbook](../pubnub-scale/references/large-events.md) for major matches
-- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [tracking active users on markets and tables](../pubnub-presence/references/presence-events.md)
+- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [tracking active users on markets and tables](../pubnub-presence/SKILL.md)
 - **[pubnub-app-context](../pubnub-app-context/SKILL.md)** — [user profiles, KYC flags, exclusion lists](../pubnub-app-context/references/users.md)
 - **[pubnub-observability](../pubnub-observability/SKILL.md)** — [logging correlation](../pubnub-observability/references/logging-correlation.md) for every wager, [usage metrics](../pubnub-observability/references/usage-metrics.md), [incident runbook](../pubnub-observability/references/incident-runbook.md)
 - **[pubnub-illuminate](../pubnub-illuminate/SKILL.md)** — [Decisions](../pubnub-illuminate/references/decisions-4-step-workflow.md) for real-time fraud signaling

@@ -158,17 +158,17 @@ await pubnub.publish({
 ## MCP Tools
 
 - **`get_sdk_documentation`** — pull SDK-specific publish/subscribe APIs (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
-- **`manage_functions`** — scaffold the After-Publish push trigger / message transformer
+- **`manage_functions`** (`resource=package`, `operation=create`) — create the After-Publish push trigger / message transformer package
 - **`manage_apps`** — verify Stream Controller add-on for wildcard subscribes
 
 ## See Also
 
-- **[pubnub-scale](../pubnub-scale/SKILL.md)** — [wildcard subscriptions and channel groups](../pubnub-scale/references/scaling-patterns.md), [performance tuning](../pubnub-scale/references/performance.md), and the [10K+ live-event playbook](../pubnub-scale/references/large-events.md) for peak traffic
+- **[pubnub-scale](../pubnub-scale/SKILL.md)** — [wildcard subscriptions and channel groups](../pubnub-scale/references/scaling-patterns.md), [performance tuning](../pubnub-observability/references/cost-and-payload-hygiene.md), and the [10K+ live-event playbook](../pubnub-scale/references/large-events.md) for peak traffic
 - **[pubnub-functions](../pubnub-functions/SKILL.md)** — [After Publish for push notification fan-out](../pubnub-functions/references/functions-basics.md), [chaining](../pubnub-functions/references/functions-chaining.md) for enrich → notify
 - **[pubnub-events-and-actions](../pubnub-events-and-actions/SKILL.md)** — route score events to push providers, analytics warehouses via [action targets](../pubnub-events-and-actions/references/action-targets.md) and [filters/JSONPath](../pubnub-events-and-actions/references/filters-and-jsonpath.md)
 - **[pubnub-reliability](../pubnub-reliability/SKILL.md)** — [exponential backoff and jitter](../pubnub-reliability/references/backoff-and-jitter.md) on reconnect after a goal storm; [schema versioning](../pubnub-reliability/references/schema-versioning.md) for evolving score payloads
 - **[pubnub-history](../pubnub-history/SKILL.md)** — [Message Persistence and offline catch-up](../pubnub-history/references/offline-catch-up.md) so late joiners see recent plays
-- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [fan counts per game channel](../pubnub-presence/references/presence-events.md) (consider tuned [heartbeat for cost](../pubnub-presence/references/presence-setup.md))
+- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [fan counts per game channel](../pubnub-presence/SKILL.md) (consider tuned [heartbeat for cost](../pubnub-presence/references/presence-setup.md))
 - **[pubnub-observability](../pubnub-observability/SKILL.md)** — [usage metrics during peak match](../pubnub-observability/references/usage-metrics.md), [payload sizing](../pubnub-observability/references/cost-and-payload-hygiene.md) for tick-rate updates
 - **[pubnub-illuminate](../pubnub-illuminate/SKILL.md)** — [real-time stat aggregation via Metrics and Decisions](../pubnub-illuminate/SKILL.md)
 - **[pubnub-choose-docs-path](../pubnub-choose-docs-path/SKILL.md)** — for routing other PubNub questions

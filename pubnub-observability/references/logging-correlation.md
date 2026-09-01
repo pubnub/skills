@@ -13,14 +13,14 @@ Log all four on every send and every receive:
 |---|---|---|
 | `channel` | The PubNub channel name | Without it you can't filter logs |
 | `message_id` | Client-generated UUID from the envelope | Without it you can't trace a single message across logs |
-| `user_id` | The publisher's [`userId`](../../pubnub-app-developer/references/sdk-patterns.md) (and the subscriber's `userId`, separately) | Without it you can't answer "what did this user see?" |
+| `user_id` | The publisher's [`userId`](../../pubnub-app-developer/SKILL.md) (and the subscriber's `userId`, separately) | Without it you can't answer "what did this user see?" |
 | `timetoken` | Server-assigned, returned by `publish` and present on every received message | Without it you can't correlate to PubNub-side history or billing |
 
 For the `message_id` source see [pubnub-reliability/references/idempotent-publish.md](../../pubnub-reliability/references/idempotent-publish.md).
 
 ## Send-Side Logging
 
-For [`addListener` and `pubnub.publish` mechanics](../../pubnub-app-developer/references/publish-subscribe.md) see the canonical owner.
+For [`addListener` and `pubnub.publish` mechanics](../../pubnub-app-developer/SKILL.md) see the canonical owner.
 
 ```javascript
 async function publishWithLogging(channel, envelope) {

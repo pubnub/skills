@@ -90,7 +90,7 @@ This skill is design-and-pattern oriented. No MCP tool is required for the patte
 
 ## See Also
 
-- **pubnub-app-developer** — for the underlying [`new PubNub` initialization](../pubnub-app-developer/references/sdk-patterns.md), [`pubnub.publish` and `pubnub.subscribe` mechanics](../pubnub-app-developer/references/publish-subscribe.md)
+- **pubnub-app-developer** — for the underlying [`new PubNub` initialization](../pubnub-app-developer/SKILL.md), [`pubnub.publish` and `pubnub.subscribe` mechanics](../pubnub-app-developer/SKILL.md)
 - **pubnub-history** — [dedup-on-merge](../pubnub-reliability/references/dedup-on-merge.md) goes hand in hand with [history fetch + live merge](../pubnub-history/references/offline-catch-up.md)
 - **pubnub-presence** — [`PNNetworkDownCategory` / `PNReconnectedCategory`](../pubnub-presence/references/dropped-connections.md) drives backoff state
 - **pubnub-functions** — server-side idempotency check via a [Function](../pubnub-functions/references/functions-basics.md) that consults [KV Store](../pubnub-functions/references/functions-modules.md)

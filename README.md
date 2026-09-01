@@ -88,9 +88,11 @@ Build real-time applications with PubNub pub/sub messaging.
 - Cross-platform development (JavaScript, Python, Swift, Kotlin)
 
 **References:**
-- `publish-subscribe.md` - Core pub/sub patterns
-- `channels.md` - Channel naming and design
-- `sdk-patterns.md` - SDK initialization across platforms
+- `SKILL.md` — pub/sub orchestration, userId rules, MCP tool routing
+- `channels.md` — channel naming and wildcard decisions
+- `message-filters.md` — filter vs channel tradeoffs
+- `sdk-upgrades.md` — upgrade orchestration
+- `rest-api.md` — SDK vs REST decision
 - `message-filters.md` - Subscribe-side filter expressions
 - `rest-api.md` - REST API usage and auth headers
 - `sdk-upgrades.md` - Migration guide between SDK major versions
@@ -109,7 +111,7 @@ Implement real-time presence tracking with PubNub.
 
 **References:**
 - `presence-setup.md` - Admin Portal configuration
-- `presence-events.md` - Join/leave/timeout handling
+- `SKILL.md` — presence orchestration (hereNow + events)
 - `presence-patterns.md` - Scalable presence best practices
 - `dropped-connections.md` - Heartbeat, reconnect, and disconnect detection
 - `multi-device-sync.md` - Presence across multiple devices per user
@@ -169,8 +171,8 @@ Build chat applications with PubNub Chat SDK.
 - User management
 
 **References:**
-- `chat-setup.md` - Chat SDK initialization
-- `chat-features.md` - Channels, messages, reactions
+- `SKILL.md` — Chat SDK workflow; use **`get_chat_sdk_documentation`** for API details
+- `chat-patterns.md` - Caching, React integration patterns
 - `chat-patterns.md` - User management, real-time sync
 - `file-sharing.md` - File upload, download, and message attachments
 - `message-actions.md` - Reactions, receipts, and custom action types
@@ -190,7 +192,7 @@ Scale PubNub applications for high-volume events.
 
 **References:**
 - `scaling-patterns.md` - Channel groups, wildcards
-- `performance.md` - Message optimization, batching
+- `cost-and-payload-hygiene.md` (pubnub-observability) - Payload sizing, signal vs publish
 - `large-events.md` - 10K+ concurrent live-event playbook + PubNub engagement
 
 > Message persistence, history, and offline catch-up have moved to the dedicated `pubnub-history` skill.

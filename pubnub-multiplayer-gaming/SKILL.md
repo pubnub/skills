@@ -171,13 +171,13 @@ pubnub.addListener({
 ## MCP Tools
 
 - **`get_sdk_documentation`** — pull SDK-specific publish/subscribe and signal APIs (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
-- **`manage_functions`** — scaffold the Before-Publish anti-cheat / state validator
+- **`manage_functions`** (`resource=package`, `operation=create`) — create the Before-Publish anti-cheat / state validator package
 - **`grant_token`** — issue scoped grants per game room
 - **`manage_apps`** — verify Stream Controller for room and lobby fan-out
 
 ## See Also
 
-- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [room occupancy and player online/offline](../pubnub-presence/references/presence-events.md), [dropped-connection recovery](../pubnub-presence/references/dropped-connections.md), [multi-device sync](../pubnub-presence/references/multi-device-sync.md)
+- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [room occupancy and player online/offline](../pubnub-presence/SKILL.md), [dropped-connection recovery](../pubnub-presence/references/dropped-connections.md), [multi-device sync](../pubnub-presence/references/multi-device-sync.md)
 - **[pubnub-functions](../pubnub-functions/SKILL.md)** — [Before Publish](../pubnub-functions/references/functions-basics.md) for anti-cheat / move validation; [`require('kvstore')`](../pubnub-functions/references/functions-modules.md) for authoritative state; [chaining](../pubnub-functions/references/functions-chaining.md) for enrich-then-broadcast
 - **[pubnub-security](../pubnub-security/SKILL.md)** — [Access Manager grants per room](../pubnub-security/references/access-manager.md), [DoS mitigation](../pubnub-security/references/dos-mitigation.md) for griefer waves, [encryption](../pubnub-security/references/encryption.md) for sensitive payloads
 - **[pubnub-reliability](../pubnub-reliability/SKILL.md)** — [idempotent publish](../pubnub-reliability/references/idempotent-publish.md) so move-retries don't apply twice; [dedup-on-merge](../pubnub-reliability/references/dedup-on-merge.md) on rejoin after disconnect; use `signal` over `publish` for high-frequency state via [payload hygiene](../pubnub-observability/references/cost-and-payload-hygiene.md)

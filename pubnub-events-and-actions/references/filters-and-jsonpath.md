@@ -48,7 +48,7 @@ JSONPath is evaluated against the entire event payload. Returns matches → acti
 }
 ```
 
-(`uuid` here is the [PubNub userId/UUID](../../pubnub-app-developer/references/sdk-patterns.md) of the publisher.)
+(`uuid` here is the [PubNub userId/UUID](../../pubnub-app-developer/SKILL.md) of the publisher.)
 
 JSONPath expressions reference these top-level fields.
 

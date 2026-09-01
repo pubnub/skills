@@ -94,7 +94,7 @@ The SDK's subscribe loop is more nuanced than a single HTTP call:
 - It maintains a long-lived HTTP request that returns when there are messages.
 - On return, it reconnects immediately with the new timetoken.
 - It handles network interruptions, reconnects, and heartbeats.
-- It coordinates with the [presence](../../pubnub-presence/references/presence-events.md) endpoint.
+- It coordinates with the [presence](../../pubnub-presence/SKILL.md) endpoint.
 
 If you DIY this in raw HTTP, expect to reimplement most of the [reliability patterns](../../pubnub-reliability/SKILL.md): backoff, dedup, queue, etc. **Strongly prefer the SDK for subscribers.**
 
@@ -129,6 +129,5 @@ PubNub REST endpoints have version prefixes (`/v2`, `/v3`). Version mixing is al
 
 ## Related Reading
 
-- [sdk-patterns.md](sdk-patterns.md) — the recommended path
-- [publish-subscribe.md](publish-subscribe.md) — the higher-level abstraction
+- [SKILL.md](../SKILL.md) — SDK init and pub/sub (recommended over raw REST)
 - [pubnub-reliability/SKILL.md](../../pubnub-reliability/SKILL.md) — what you'll have to reimplement DIY

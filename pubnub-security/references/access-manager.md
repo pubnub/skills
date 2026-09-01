@@ -3,309 +3,49 @@
 
 > **Cross-references:** Requires the [Secret Key from your keyset](../../pubnub-keyset-management/references/keysets-and-environments.md) (server-side only). Pair with [end-to-end message encryption (AES-256)](encryption.md) and [IP allowlisting](ip-whitelisting.md) for layered defense. Token issuance integrates with [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md) and the [`pubnub.publish(`](../../pubnub-app-developer/references/publish-subscribe.md) call. Channel-group grants are owned by [pubnub-scale](../../pubnub-scale/references/scaling-patterns.md).
 
-# Access Manager
+# Access Manager — Orchestration and Decisions
 
-## Overview
 
-Access Manager provides fine-grained control over who can access channels and what actions they can perform.
+## Enabling AM changes the default
 
-### Key Concepts
+Once Access Manager is enabled on a keyset, **all channel access is token-gated**. Plan a server token-minting path before enabling in production.
 
-| Concept | Description |
-|---------|-------------|
-| **Permissions** | Read (subscribe), Write (publish), Get, Update, Manage, Delete, Join |
-| **Token** | JWT-like token issued by `grantToken()` containing embedded permissions |
-| **Secret Key** | Server-side key for issuing and revoking tokens |
-| **TTL** | Time-to-live for tokens (in minutes) |
+## Token flow (orchestration)
 
-## Enabling Access Manager
+1. **Server** (with secret key) mints token via `grantToken` for the authenticated user's `authorizedUUID` and required channel/group/uuid resources.
+2. **Client** initializes PubNub with publish/subscribe keys + persistent `userId`, then **`setToken(token)`** (not legacy `authKey` for new apps).
+3. **Client** handles `PNAccessDeniedCategory` by re-authing and refreshing the token.
+4. **Schedule refresh** before TTL expiry (e.g. 5 minutes early) — do not wait for hard failure.
 
-1. Log in to PubNub Admin Portal
-2. Select your Application and Keyset
-3. Enable **Access Manager** add-on
-4. **Securely store your Secret Key** - required for token grants
+## TTL guidance by sensitivity
 
-> **Critical**: Once enabled, all clients need valid tokens to access channels.
+| Use case | Typical TTL direction |
+|----------|----------------------|
+| Demo / short session | Shorter (tens of minutes) |
+| Normal user session | Hours to one day |
+| Long-lived service account | Days (within platform max) |
+| High-sensitivity channels | Shorter TTL + narrower grants |
 
-## Server-Side Setup (Node.js)
+Retrieve current TTL limits from SDK docs before hard-coding values.
 
-```javascript
-import PubNub from 'pubnub';
+## Grant design decisions
 
-const pubnub = new PubNub({
-  publishKey: 'pub-c-...',
-  subscribeKey: 'sub-c-...',
-  secretKey: 'sec-c-...',  // Server-side only!
-  userId: 'server'
-});
-```
+- Prefer **explicit channel lists** when cardinality is low and ACLs differ per room.
+- Use **patterns** when many channels share one policy (e.g. `public-*` read-only).
+- Grant **channel-group** permissions separately when using Stream Controller groups.
+- Pair grants with [encryption](encryption.md) and [IP allowlisting](ip-whitelisting.md) for layered defense.
 
-## Token-Based Access (Recommended)
+## Revocation and propagation
 
-### Grant Token for Specific Resources
+Token revocation can take **~60 seconds** to propagate due to caching — do not assume instant lockout for abuse response; also block at your app layer if needed.
 
-```javascript
-// Grant a user access to specific channels
-async function issueUserToken(userId, channels, ttlMinutes = 60) {
-  try {
-    const token = await pubnub.grantToken({
-      ttl: ttlMinutes,
-      authorizedUUID: userId,
-      resources: {
-        channels: Object.fromEntries(
-          channels.map(ch => [ch, { read: true, write: true }])
-        )
-      }
-    });
-    console.log('Token issued:', token);
-    return token;
-  } catch (error) {
-    console.error('Token grant failed:', error);
-    throw error;
-  }
-}
+## Legacy `grant()` / `authKey`
 
-// Usage
-const token = await issueUserToken('user-123', ['chat-room-private', 'notifications']);
-```
+Older apps may use server `grant()` + client `authKey`. **New implementations should use `grantToken()` + `setToken()`.** Chat SDK uses **`authKey`** (not `token`) for the AM token field name — retrieve Chat SDK init docs when mixing stacks.
 
-### Grant Token with Channel Patterns
+## Validation checklist
 
-```javascript
-// Grant access to all channels matching a pattern
-const token = await pubnub.grantToken({
-  ttl: 60,
-  authorizedUUID: 'user-123',
-  patterns: {
-    channels: {
-      'chat-room-*': { read: true, write: true }
-    }
-  }
-});
-```
-
-### Grant Token with Mixed Resources and Patterns
-
-```javascript
-const token = await pubnub.grantToken({
-  ttl: 60,
-  authorizedUUID: 'user-123',
-  resources: {
-    channels: {
-      'private-room': { read: true, write: true, get: true, update: true }
-    },
-    uuids: {
-      'user-123': { get: true, update: true }
-    }
-  },
-  patterns: {
-    channels: {
-      'public-*': { read: true }
-    }
-  }
-});
-```
-
-### Grant Token for Channel Groups
-
-```javascript
-const token = await pubnub.grantToken({
-  ttl: 60,
-  authorizedUUID: 'user-123',
-  resources: {
-    groups: {
-      'user-feeds-group': { read: true, manage: true }
-    }
-  }
-});
-```
-
-## Client-Side Configuration
-
-### Setting the Token on the Client
-
-```javascript
-const pubnub = new PubNub({
-  subscribeKey: 'sub-c-...',
-  publishKey: 'pub-c-...',
-  userId: 'user-123'
-});
-
-// Set the token received from your server
-pubnub.setToken(token);
-```
-
-### Parsing Token Permissions (Debugging)
-
-```javascript
-// Inspect what a token grants
-const parsed = pubnub.parseToken(token);
-console.log('Token permissions:', JSON.stringify(parsed, null, 2));
-```
-
-## Revoking Tokens
-
-```javascript
-// Revoke a specific token
-await pubnub.revokeToken(token);
-```
-
-> **Note**: Revocations may take up to 60 seconds to propagate due to caching.
-
-## Authentication Flow
-
-### Complete Server Flow
-
-```javascript
-import express from 'express';
-import PubNub from 'pubnub';
-import jwt from 'jsonwebtoken';
-
-const app = express();
-
-// Server-side instance with Secret Key
-const pubnub = new PubNub({
-  publishKey: 'pub-c-...',
-  subscribeKey: 'sub-c-...',
-  secretKey: 'sec-c-...',
-  userId: 'server'
-});
-
-// Auth endpoint
-app.post('/api/pubnub/auth', async (req, res) => {
-  try {
-    // 1. Verify user's session (your auth logic)
-    const userToken = req.headers.authorization?.split(' ')[1];
-    const user = jwt.verify(userToken, process.env.JWT_SECRET);
-
-    // 2. Determine channels based on user permissions
-    const channels = getUserChannels(user);
-
-    // 3. Issue token
-    const channelPermissions = {};
-    for (const ch of channels) {
-      channelPermissions[ch] = { read: true, write: user.canWrite };
-    }
-
-    const token = await pubnub.grantToken({
-      ttl: 60,  // 1 hour, then client must re-auth
-      authorizedUUID: user.id,
-      resources: { channels: channelPermissions }
-    });
-
-    // 4. Return credentials to client
-    res.json({
-      token: token,
-      subscribeKey: 'sub-c-...',
-      publishKey: user.canWrite ? 'pub-c-...' : null,
-      channels: channels,
-      expiresAt: Date.now() + (60 * 60 * 1000)  // 1 hour
-    });
-  } catch (error) {
-    console.error('Auth error:', error);
-    res.status(401).json({ error: 'Authentication failed' });
-  }
-});
-```
-
-### Client Flow
-
-```javascript
-async function initializePubNub() {
-  // 1. Get token from your server
-  const response = await fetch('/api/pubnub/auth', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${userSessionToken}`
-    }
-  });
-
-  const credentials = await response.json();
-
-  // 2. Initialize client and set token
-  const pubnub = new PubNub({
-    subscribeKey: credentials.subscribeKey,
-    publishKey: credentials.publishKey,
-    userId: currentUserId
-  });
-
-  pubnub.setToken(credentials.token);
-
-  // 3. Handle access denied errors
-  pubnub.addListener({
-    status: (statusEvent) => {
-      if (statusEvent.category === 'PNAccessDeniedCategory') {
-        console.error('Access denied - refreshing token');
-        refreshToken();
-      }
-    }
-  });
-
-  // 4. Schedule token refresh before expiry
-  const refreshTime = credentials.expiresAt - Date.now() - 300000;  // 5 min before
-  setTimeout(refreshToken, refreshTime);
-
-  return pubnub;
-}
-```
-
-## Permission Levels
-
-### Token Permissions
-
-| Permission | Allows |
-|------------|--------|
-| `read` | Subscribe to channel, fetch history |
-| `write` | Publish messages to channel |
-| `get` | Get channel/UUID metadata |
-| `update` | Set channel/UUID metadata |
-| `manage` | Add/remove channels in channel groups |
-| `delete` | Delete messages |
-| `join` | Join channel as a member |
-
-## TTL Best Practices
-
-| Use Case | Recommended TTL |
-|----------|-----------------|
-| Short session (demo) | 15-60 minutes |
-| Normal user session | 60-1440 minutes (1-24 hours) |
-| Long-lived service | 1440-10080 minutes (1-7 days) |
-| Maximum | 43200 minutes (30 days) |
-
-```javascript
-// Short TTL for sensitive operations
-const token = await pubnub.grantToken({
-  ttl: 15,  // 15 minutes
-  authorizedUUID: userId,
-  resources: {
-    channels: {
-      'payment-updates': { read: true }
-    }
-  }
-});
-```
-
-## Legacy: grant() and authKey
-
-For older implementations using the `grant()` API with `authKey`:
-
-```javascript
-// Server-side grant (legacy)
-await pubnub.grant({
-  channels: ['private-room'],
-  authKeys: ['user-auth-token'],
-  read: true,
-  write: true,
-  ttl: 60
-});
-
-// Client-side with authKey (legacy)
-const pubnub = new PubNub({
-  subscribeKey: 'sub-c-...',
-  publishKey: 'pub-c-...',
-  userId: 'user-123',
-  authKey: 'auth-token-from-server'
-});
-```
-
-> **Note**: New implementations should use `grantToken()` and `setToken()` instead.
+- [ ] Secret key never shipped to clients
+- [ ] Token TTL matches session model
+- [ ] Access denied triggers refresh, not infinite retry
+- [ ] Presence channels (`-pnpres`) granted when using presence on restricted channels

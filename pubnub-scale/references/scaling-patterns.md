@@ -172,6 +172,7 @@ await pubnub.publish({
   message: { metric: 'temperature', value: 72.5, unit: 'F', timestamp: Date.now() }
 });
 // Wildcard pattern 'sensors.floor1.room101.*' — INVALID (3 dots in pattern)
+```
 
 // Subscribe to all sensors on floor 1
 pubnub.subscribe({

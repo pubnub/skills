@@ -148,7 +148,7 @@ function updateCountdownDisplay(auctionId, remainingMs) {
 - **[pubnub-reliability](../pubnub-reliability/SKILL.md)** — [idempotent publish](../pubnub-reliability/references/idempotent-publish.md) and [dedup-on-merge](../pubnub-reliability/references/dedup-on-merge.md) so retries don't double-bid; [backoff and jitter](../pubnub-reliability/references/backoff-and-jitter.md) on bid storm
 - **[pubnub-history](../pubnub-history/SKILL.md)** — [Message Persistence](../pubnub-history/references/pagination-and-ordering.md) for bid audit trails and dispute resolution
 - **[pubnub-scale](../pubnub-scale/SKILL.md)** — [channel groups, wildcards, large-event playbook](../pubnub-scale/references/scaling-patterns.md) for high-traffic auctions
-- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [active bidder tracking](../pubnub-presence/references/presence-events.md)
+- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [active bidder tracking](../pubnub-presence/SKILL.md)
 - **[pubnub-app-context](../pubnub-app-context/SKILL.md)** — [bidder profiles](../pubnub-app-context/references/users.md)
 - **[pubnub-observability](../pubnub-observability/SKILL.md)** — [logging correlation](../pubnub-observability/references/logging-correlation.md) for every bid; [usage metrics](../pubnub-observability/references/usage-metrics.md) and [incident runbook](../pubnub-observability/references/incident-runbook.md) during peak auctions
 - **[pubnub-events-and-actions](../pubnub-events-and-actions/SKILL.md)** — route winning-bid events to billing / fulfillment via [action targets](../pubnub-events-and-actions/references/action-targets.md)

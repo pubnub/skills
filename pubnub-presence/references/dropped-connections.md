@@ -5,7 +5,6 @@
 
 The canonical reference for SDK status categories that signal connection state, plus heartbeat timeout semantics and the recovery sequence.
 
-> **Cross-references:** Built on [`addListener` and pub/sub basics](../../pubnub-app-developer/references/publish-subscribe.md). [Reconnect with backoff and jitter](../../pubnub-reliability/references/backoff-and-jitter.md) is the standard recovery pattern. [Offline catch-up via Message Persistence and fetchMessages](../../pubnub-history/references/pagination-and-ordering.md) handles missed messages on reconnect (see also [the catch-up flow](../../pubnub-history/references/offline-catch-up.md)). [Incident triage](../../pubnub-observability/references/incident-runbook.md) for "subscribe stops receiving" depends on these categories. Heartbeat affects [transaction count / billing](../../pubnub-observability/references/usage-metrics.md). New status categories may appear after [SDK upgrades](../../pubnub-app-developer/references/sdk-upgrades.md).
 
 ## The Status Listener
 
@@ -127,7 +126,7 @@ window.addEventListener('beforeunload', () => {
 
 ## Related Reading
 
-- [presence-events.md](presence-events.md) — join / leave / timeout / state-change events
+- [pubnub-presence/SKILL.md](../../pubnub-presence/SKILL.md) — join / leave / timeout / hereNow orchestration
 - [presence-setup.md](presence-setup.md) — heartbeat configuration
 - [multi-device-sync.md](multi-device-sync.md) — when the same user has multiple connections
 - [pubnub-reliability/references/backoff-and-jitter.md](../../pubnub-reliability/references/backoff-and-jitter.md) — reconnect strategy

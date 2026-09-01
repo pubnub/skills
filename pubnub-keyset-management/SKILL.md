@@ -77,7 +77,7 @@ const pubnub = new PubNub({
 
 ### Client-Side Initialization Skeleton
 
-For client SDK initialization, see the canonical owner: [pubnub-app-developer/references/sdk-patterns.md](../pubnub-app-developer/references/sdk-patterns.md). Clients receive only the publish + subscribe keys, never the secret.
+For client SDK initialization, see the canonical owner: [pubnub-app-developer/SKILL.md](../pubnub-app-developer/SKILL.md). Clients receive only the publish + subscribe keys, never the secret.
 
 ## Constraints
 

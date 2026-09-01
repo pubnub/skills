@@ -118,7 +118,7 @@ For verifying event flow:
 - **pubnub-functions** — when you need to **modify** messages in flight (E&A only routes); see [`before publish` / `after publish` / `on request`](../pubnub-functions/references/functions-basics.md)
 - **pubnub-illuminate** — when you need **threshold-triggered** actions on aggregated metrics (E&A is per-event); compare `WEBHOOK_EXECUTION` action type in [Decisions](../pubnub-illuminate/references/decisions-4-step-workflow.md)
 - **pubnub-app-context** — Users / Channels / Memberships event sources are CRUD events on [App Context objects](../pubnub-app-context/references/users.md)
-- **pubnub-presence** — Channels event source includes [presence events (join, leave, timeout, interval)](../pubnub-presence/references/presence-events.md)
+- **pubnub-presence** — Channels event source includes [presence events (join, leave, timeout, interval)](../pubnub-presence/SKILL.md)
 - **pubnub-keyset-management** — E&A is configured per [keyset](../pubnub-keyset-management/references/keysets-and-environments.md); environment separation matters
 - **pubnub-observability** — for [end-to-end correlation](../pubnub-observability/references/logging-correlation.md) of PubNub event → downstream system
 - **pubnub-choose-docs-path** — for routing other PubNub questions

@@ -21,7 +21,7 @@ PubNub has two distinct mechanisms for delivering missed messages, and they have
 
 By default, the SDK stores the last received timetoken locally. On reconnect after a brief disconnect, it subscribes from that timetoken, and the server pushes anything in the cache that arrived since.
 
-This works invisibly. **You don't need to write any code for it.** It's controlled by the `restore` option (see [SDK initialization patterns](../../pubnub-app-developer/references/sdk-patterns.md) for full `new PubNub(...)` config):
+This works invisibly. **You don't need to write any code for it.** It's controlled by the `restore` option (see [SDK initialization patterns](../../pubnub-app-developer/SKILL.md) for full `new PubNub(...)` config):
 
 ```javascript
 const pubnub = new PubNub({
@@ -104,7 +104,7 @@ For pagination details see [pagination-and-ordering.md](pagination-and-ordering.
 
 For full catch-up patterns, set `restore: false` on the PubNub instance — your explicit `fetchMessages` is the source of truth, not the short-term cache.
 
-For [`pubnub.subscribe` and `addListener` mechanics](../../pubnub-app-developer/references/publish-subscribe.md) see the canonical owner.
+For [`pubnub.subscribe` and `addListener` mechanics](../../pubnub-app-developer/SKILL.md) see the canonical owner.
 
 ```javascript
 pubnub.subscribe({ channels: [channel] });
@@ -195,4 +195,4 @@ This is application-level: useful for live tickers, presence indicators, or anyt
 - [pagination-and-ordering.md](pagination-and-ordering.md) — `fetchMessages` mechanics
 - [pubnub-reliability/references/dedup-on-merge.md](../../pubnub-reliability/references/dedup-on-merge.md) — dedup live + history
 - [pubnub-reliability/references/backoff-and-jitter.md](../../pubnub-reliability/references/backoff-and-jitter.md) — reconnect-with-backoff before catch-up
-- [pubnub-presence/references/presence-events.md](../../pubnub-presence/references/presence-events.md) — `PNReconnectedCategory` and connection state
+- [pubnub-presence/SKILL.md](../../pubnub-presence/SKILL.md) — `PNReconnectedCategory` and connection state

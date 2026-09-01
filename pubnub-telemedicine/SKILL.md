@@ -183,15 +183,15 @@ async function grantPatientAccess(patientId, consultationChannelId, ttlMinutes =
 - **`get_chat_sdk_documentation`** — pull Chat SDK reference for the patient-provider conversation surface (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
 - **`get_sdk_documentation`** — pull SDK-specific publish/subscribe APIs
 - **`grant_token`** — issue scoped grants per encounter (patient + provider only, short TTL)
-- **`manage_functions`** — scaffold the Before-Publish consent / PHI redaction validator
+- **`manage_functions`** (`resource=package`, `operation=create`) — create the Before-Publish consent / PHI redaction validator package
 - **`manage_apps`** — verify Message Persistence and add-ons against your BAA
 
 ## See Also
 
 - **[pubnub-security](../pubnub-security/SKILL.md)** — [Access Manager](../pubnub-security/references/access-manager.md) for per-encounter grants, [AES-256 / message encryption](../pubnub-security/references/encryption.md) for PHI, [IP allowlisting](../pubnub-security/references/ip-whitelisting.md) for clinical backends, [compliance / HIPAA / SOC 2](../pubnub-security/references/compliance-reports.md) (start here for BAA flow)
 - **[pubnub-functions](../pubnub-functions/SKILL.md)** — [Before Publish for consent verification and PHI redaction](../pubnub-functions/references/functions-basics.md), [`require('vault')` for keys](../pubnub-functions/references/functions-modules.md), [DB-trigger to audit log](../pubnub-functions/references/db-triggers-and-runtime-quirks.md)
-- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [provider availability and patient connection status](../pubnub-presence/references/presence-events.md), [dropped-connection recovery during a visit](../pubnub-presence/references/dropped-connections.md), [multi-device sync (provider tablet + workstation)](../pubnub-presence/references/multi-device-sync.md)
-- **[pubnub-chat](../pubnub-chat/SKILL.md)** — [Chat SDK](../pubnub-chat/references/chat-setup.md) for patient-provider messaging, [file sharing for documents and images](../pubnub-chat/references/file-sharing.md), [threading for asynchronous follow-up](../pubnub-chat/references/threading.md)
+- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [provider availability and patient connection status](../pubnub-presence/SKILL.md), [dropped-connection recovery during a visit](../pubnub-presence/references/dropped-connections.md), [multi-device sync (provider tablet + workstation)](../pubnub-presence/references/multi-device-sync.md)
+- **[pubnub-chat](../pubnub-chat/SKILL.md)** — [Chat SDK](../pubnub-chat/SKILL.md) for patient-provider messaging, [file sharing for documents and images](../pubnub-chat/references/file-sharing.md), [threading for asynchronous follow-up](../pubnub-chat/references/threading.md)
 - **[pubnub-reliability](../pubnub-reliability/SKILL.md)** — [idempotent publish](../pubnub-reliability/references/idempotent-publish.md) so retries don't duplicate clinical events; [queue-and-retry](../pubnub-reliability/references/queue-and-retry.md) for low-bandwidth patient apps
 - **[pubnub-history](../pubnub-history/SKILL.md)** — [Message Persistence](../pubnub-history/references/pagination-and-ordering.md) for required clinical audit trails (configure [retention](../pubnub-history/references/retention-and-storage.md) per your retention policy)
 - **[pubnub-app-context](../pubnub-app-context/SKILL.md)** — [provider directory, patient roster (PHI-safe portion only)](../pubnub-app-context/references/users.md)

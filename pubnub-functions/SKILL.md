@@ -16,6 +16,9 @@ metadata:
 
 You are the PubNub Functions specialist. Your role is to help developers build serverless event handlers and HTTP endpoints inside the PubNub message pipeline.
 
+
+> **Precedence:** PubNub MCP tools and official documentation are authoritative for API shapes, limits, and configuration values. This skill owns decisions, orchestration, assembly, patterns, tradeoffs, and validation.
+
 ## When to Use This Skill
 
 Invoke this skill when:
@@ -51,43 +54,20 @@ Invoke this skill when:
 
 ## Key Implementation Requirements
 
-> **Cross-references:** Built on [pub/sub basics](../pubnub-app-developer/references/publish-subscribe.md). Use [vault for secrets — including the secret key](../pubnub-keyset-management/references/keysets-and-environments.md) and the [key rotation guide](../pubnub-keyset-management/references/key-rotation-and-hygiene.md). For [logging correlation in functions](../pubnub-observability/references/logging-correlation.md) include the four required fields. [Wildcard pattern subscribe is owned by pubnub-scale](../pubnub-scale/references/scaling-patterns.md).
 
-### Function Structure
-
-```javascript
-export default async (request) => {
-  const db = require('kvstore');
-  const xhr = require('xhr');
-
-  try {
-    return request.ok();
-  } catch (error) {
-    console.error('Error:', error);
-    return request.abort();
-  }
-};
-```
-
-### HTTP Endpoint Function
-
-```javascript
-export default async (request, response) => {
-  try {
-    const body = await request.json();
-    return response.send({ success: true }, 200);
-  } catch (error) {
-    return response.send({ error: 'Server error' }, 500);
-  }
-};
-```
+| Requirement | Rule |
+|-------------|------|
+| Handler shape | Default async export; every path returns `ok`/`abort`/`send` |
+| Secrets | `vault.get` only — never hardcode |
+| Error handling | `try/catch` with explicit completion return |
+| On Request | Parse `request.path` yourself; wildcard routes do not fill `request.params` |
+| Budgets | Count xhr / pubnub / kvstore / vault ops per execution ([Quirk 2](references/db-triggers-and-runtime-quirks.md)) |
 
 ## Constraints
 
 - **Function chaining**: maximum **3 chained executions per inbound publish**; up to **5 consecutive Functions** in a single sequence ([functions-chaining.md](references/functions-chaining.md)).
-- **External calls per execution**: maximum **3** (`xhr.fetch` + `pubnub` API invocations). KVStore, vault, and pure-CPU helpers (`crypto`, `jwt`, `uuid`, `utils`, `advanced_math`, `jsonpath`, `codec/*`) do **not** count ([Quirk 2](references/db-triggers-and-runtime-quirks.md)).
-- **Vault reads per execution**: maximum **10** `vault.get(...)` calls. Vault has its own per-execution ceiling separate from the per-module execution limits ([Vault Module](references/functions-modules.md), [Quirk 10](references/db-triggers-and-runtime-quirks.md)).
-- The per-module execution limits and 10-call vault cap are **configurable on request via PubNub Support**.
+- **Per-module execution limits**: each module has an **independent** budget — XHR (5), KV Store (10), PubNub API (10), Vault (10) per execution ([Quirk 2](references/db-triggers-and-runtime-quirks.md)). Pure-CPU helpers (`crypto`, `jwt`, `uuid`, `utils`, `advanced_math`, `jsonpath`, `codec/*`) do not consume another module's budget.
+- Per-module caps are **configurable on request via PubNub Support**.
 - Prefer `async`/`await`; Promise chains are acceptable when **returned** from the handler.
 - Always wrap logic in `try`/`catch` and ensure every code path returns the trigger's completion call (`request.ok()` / `request.abort()` / `response.send()`).
 - Use `vault` for secrets, never hardcode. Guard `vault.get(...)` against the module being unavailable ([Quirk 10](references/db-triggers-and-runtime-quirks.md)).
@@ -102,7 +82,7 @@ export default async (request, response) => {
 
 ## See Also
 
-- **pubnub-app-developer** — for [pub/sub semantics, listeners](../pubnub-app-developer/references/publish-subscribe.md), [SDK patterns](../pubnub-app-developer/references/sdk-patterns.md)
+- **pubnub-app-developer** — for [pub/sub semantics, listeners](../pubnub-app-developer/SKILL.md), [SDK patterns](../pubnub-app-developer/SKILL.md)
 - **pubnub-events-and-actions** — alternative for **routing** (no transformation); see [Events & Actions overview](../pubnub-events-and-actions/SKILL.md)
 - **pubnub-illuminate** — alternative for **threshold-triggered** automation (no per-message transform); see [Decisions](../pubnub-illuminate/references/decisions-4-step-workflow.md)
 - **pubnub-app-context** — Functions can read/write [App Context users/channels](../pubnub-app-context/references/users.md)

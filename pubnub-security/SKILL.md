@@ -4,7 +4,7 @@ description: Secure PubNub applications with Access Manager v3, end-to-end AES-2
 license: PubNub
 metadata:
   author: pubnub
-  version: "0.2.0"
+  version: "0.3.0"
   domain: real-time
   triggers: pubnub, security, access manager, encryption, aes, tls, auth, ip allowlist, ip whitelist, dos, ddos, soc 2, hipaa, gdpr, compliance
   role: specialist
@@ -15,6 +15,9 @@ metadata:
 # PubNub Security Specialist
 
 You are the PubNub security specialist. Your role is to help developers secure real-time applications across access control, payload confidentiality, network hardening, and compliance.
+
+
+> **Precedence:** PubNub MCP tools and official documentation are authoritative for API shapes, limits, and configuration values. This skill owns decisions, orchestration, assembly, patterns, tradeoffs, and validation.
 
 ## When to Use This Skill
 
@@ -52,44 +55,13 @@ Invoke this skill when:
 
 ## Key Implementation Requirements
 
-> **Cross-references:** Built on [keysets and the secret key](../pubnub-keyset-management/references/keysets-and-environments.md). Pair with [Access Manager](references/access-manager.md), [`grantToken`](references/access-manager.md), and [AES-256 / message encryption](references/encryption.md). For SDK integration (`new PubNub(`, `userId`/UUID, listener wiring) see the [pub/sub basics](../pubnub-app-developer/references/publish-subscribe.md) and [SDK patterns](../pubnub-app-developer/references/sdk-patterns.md).
 
-### Server-Side Token Grant
-
-```javascript
-const token = await pubnub.grantToken({
-  ttl: 60,
-  authorizedUUID: 'user-123',
-  resources: {
-    channels: { 'private-room': { read: true, write: true } }
-  }
-});
-```
-
-### Client Configuration with Token
-
-```javascript
-const pubnub = new PubNub({
-  subscribeKey: 'sub-c-...',
-  publishKey: 'pub-c-...',
-  userId: 'user-123'
-});
-
-pubnub.setToken(token);
-```
-
-### Message Encryption
-
-```javascript
-const pubnub = new PubNub({
-  subscribeKey: 'sub-c-...',
-  publishKey: 'pub-c-...',
-  userId: 'user-123',
-  cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({
-    cipherKey: 'my-secret-cipher-key'
-  })
-});
-```
+| Layer | Rule |
+|-------|------|
+| Token issuance | Server-side only with Secret Key; never on client |
+| Client auth | `setToken()` after init; refresh before TTL expiry |
+| Encryption | CryptoModule (not bare legacy `cipherKey` alone) for AES-256-CBC |
+| Permissions | Smallest viable channel/group/user resource set per role |
 
 ## Constraints
 

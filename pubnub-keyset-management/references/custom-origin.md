@@ -68,7 +68,7 @@ const pubnub = new PubNub({
 });
 ```
 
-For full SDK initialization patterns and userId requirements, see [pubnub-app-developer/references/sdk-patterns.md](../../pubnub-app-developer/references/sdk-patterns.md).
+For full SDK initialization patterns and userId requirements, see [pubnub-app-developer/SKILL.md](../../pubnub-app-developer/SKILL.md).
 
 ## What a Custom Origin Does Not Do
 

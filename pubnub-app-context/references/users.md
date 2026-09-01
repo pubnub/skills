@@ -7,7 +7,7 @@ The canonical reference for storing, querying, and managing user profile data in
 
 ## What a User Object Is
 
-A User Object stores metadata about an individual identified by [`userId` (also known as UUID)](../../pubnub-app-developer/references/sdk-patterns.md). The same `userId` value identifies the user across all PubNub APIs (publish, subscribe, presence, App Context, [Access Manager](../../pubnub-security/references/access-manager.md)).
+A User Object stores metadata about an individual identified by [`userId` (also known as UUID)](../../pubnub-app-developer/SKILL.md). The same `userId` value identifies the user across all PubNub APIs (publish, subscribe, presence, App Context, [Access Manager](../../pubnub-security/references/access-manager.md)).
 
 Standard fields:
 
@@ -164,7 +164,7 @@ pubnub.addListener({
 pubnub.subscribe({ channels: ['user-123'] });  // events for this user are fanned out on the user channel
 ```
 
-For the basic [`addListener` and `subscribe` mechanics](../../pubnub-app-developer/references/publish-subscribe.md) see the canonical owner.
+For the basic [`addListener` and `subscribe` mechanics](../../pubnub-app-developer/SKILL.md) see the canonical owner.
 
 ## Common Anti-Patterns
 

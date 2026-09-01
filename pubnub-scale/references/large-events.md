@@ -40,7 +40,7 @@ These are not hard rejections — they are signals to pre-allocate capacity and 
 ### T-0 (event live)
 - [ ] Watch transaction count, error rate, presence event volume in real time.
 - [ ] Be ready to revoke abusive `userId`s via [Access Manager](../../pubnub-security/references/access-manager.md).
-- [ ] If shed-load is needed, fall back to [signal vs publish](performance.md) for non-critical events.
+- [ ] If shed-load is needed, fall back to signal vs publish for non-critical events — see [cost-and-payload-hygiene.md](../../pubnub-observability/references/cost-and-payload-hygiene.md).
 
 ### T+1 day
 - [ ] Review [usage metrics](../../pubnub-observability/references/usage-metrics.md) for cost spikes.
@@ -79,7 +79,7 @@ This isolates publisher rate from subscriber count.
 | Single-channel hot spot | Shard channels |
 | Token refresh storm | Issue tokens with TTL > event duration |
 | Cost spike post-event | Pre-set alerts on [usage metrics](../../pubnub-observability/references/usage-metrics.md) |
-| Pause-the-world publishes from the publisher app | Use signal for non-critical telemetry; see [performance.md](performance.md) |
+| Pause-the-world publishes from the publisher app | Use signal for non-critical telemetry; see [cost-and-payload-hygiene.md](../../pubnub-observability/references/cost-and-payload-hygiene.md) |
 
 ## After-Action
 

@@ -127,7 +127,7 @@ Deleting a Metric **permanently deletes all Decisions that reference it.** Confi
 | `400: invalid evaluationWindow` | Used a non-allowed window | Use 60, 300, 600, 900, 1800, 3600, or 86400 |
 | `400: measureId required` | Used SUM/AVG/MIN/MAX without `measureId` | Add a NUMERIC field and reference its id |
 | Cannot update Metric | Referencing Decision is still enabled | Disable Decision first |
-| Metric returns no data | Filters too narrow, or dimension never matches | Verify a sample message via [`subscribe_and_receive_pubnub_messages`](../../pubnub-app-developer/references/publish-subscribe.md) |
+| Metric returns no data | Filters too narrow, or dimension never matches | Verify a sample message via [`subscribe_and_receive_pubnub_messages`](../../pubnub-app-developer/SKILL.md) |
 
 ## Related Reading
 

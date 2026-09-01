@@ -5,388 +5,51 @@
 
 # PubNub Chat SDK Patterns
 
-## User Management
+## User lifecycle
 
-### Get or Create User Pattern
+| Pattern | Rule |
+|---------|------|
+| Get-or-create | Resolve user by ID before channel creation; create only when missing |
+| Profile updates | Current user vs other-user updates depend on App Context permissions |
+| List/filter users | Use App Context filters for online rosters; defer filter syntax to Chat SDK docs |
 
-```javascript
-async function getOrCreateUser(chat, userId, userData) {
-  let user = await chat.getUser(userId);
+## Channel lifecycle
 
-  if (!user) {
-    user = await chat.createUser(userId, userData);
-  }
+| Pattern | Rule |
+|---------|------|
+| Direct channel cache | Cache by sorted member pair key; search existing DMs before `createDirectConversation` |
+| Membership listing | Drive inbox from `currentUser.getMemberships`, not ad-hoc channel IDs |
+| Join/leave | Public channels: explicit join; private: grant + invite flow |
 
-  return user;
-}
+## Real-time UI orchestration
 
-// Usage
-const users = await Promise.all([
-  getOrCreateUser(chat, 'alice-123', { name: 'Alice', profileUrl: '...' }),
-  getOrCreateUser(chat, 'bob-456', { name: 'Bob', profileUrl: '...' })
-]);
-```
+Typical React (or equivalent) sequence:
 
-### Update User Profile
+1. Load channel + history chunk on mount
+2. `channel.connect` for live messages; unsubscribe on unmount
+3. Typing: `startTyping` / `stopTyping` with debounce; filter self from `onTyping`
+4. Send: `sendText` then clear input and stop typing
+5. Logout: `chat.disconnect`, clear caches, tear down listeners
 
-```javascript
-// Update current user
-await chat.currentUser.update({
-  name: 'Alice Smith',
-  profileUrl: 'https://example.com/alice-new.png',
-  email: 'alice@example.com',
-  custom: {
-    status: 'online',
-    bio: 'Hello, I am Alice!'
-  }
-});
+Pair live delivery with [offline catch-up](../../pubnub-history/references/offline-catch-up.md) and [dedup-on-merge](../../pubnub-reliability/references/dedup-on-merge.md) for reconnect gaps.
 
-// Update other user (if permitted)
-const user = await chat.getUser('bob-456');
-await user.update({ name: 'Robert Jones' });
-```
+## Notifications
 
-### List Users
+| Pattern | Rule |
+|---------|------|
+| Unread badges | Derive from membership unread counts; refresh on message events, not constant polling |
+| Mark read | When channel becomes visible, set last-read to latest message via membership API |
+| Global read | `markAllMessagesAsRead` for inbox-zero flows |
 
-```javascript
-// Get all users
-const users = await chat.getUsers({
-  limit: 100,
-  filter: "custom.status == 'online'"
-});
+## Threading UI
 
-users.users.forEach(user => {
-  console.log(`${user.id}: ${user.name}`);
-});
-```
+Load thread via `parentMessage.getThread()` when `hasThread`; subscribe on thread channel for replies. Lazy-create with `createThread(text)` on first reply. See [threading.md](threading.md).
 
-## Channel Management
+## Performance
 
-### Channel Caching
-
-```javascript
-const activeChannels = new Map();
-
-async function getOrCreateDirectChannel(chat, otherUser) {
-  const cacheKey = [chat.currentUser.id, otherUser.id].sort().join('_');
-
-  if (activeChannels.has(cacheKey)) {
-    return activeChannels.get(cacheKey);
-  }
-
-  // Check if channel exists
-  const existingChannels = await chat.getChannels({
-    filter: `type == 'direct'`
-  });
-
-  for (const channel of existingChannels.channels) {
-    const members = await channel.getMembers();
-    const memberIds = members.members.map(m => m.user.id);
-    if (memberIds.includes(otherUser.id)) {
-      activeChannels.set(cacheKey, channel);
-      return channel;
-    }
-  }
-
-  // Create new channel
-  const { channel } = await chat.createDirectConversation({
-    user: otherUser,
-    channelData: { name: `DM: ${otherUser.name}` }
-  });
-
-  activeChannels.set(cacheKey, channel);
-  return channel;
-}
-```
-
-### List User's Channels
-
-```javascript
-// Get channels user is member of
-const memberships = await chat.currentUser.getMemberships({
-  limit: 50
-});
-
-memberships.memberships.forEach(membership => {
-  const channel = membership.channel;
-  console.log(`${channel.id}: ${channel.name}`);
-});
-```
-
-### Join/Leave Channel
-
-```javascript
-// Join public channel
-await channel.join();
-
-// Leave channel
-await channel.leave();
-```
-
-## Real-time Message Sync
-
-### Complete Chat Room Component
-
-```javascript
-import { useState, useEffect, useCallback } from 'react';
-
-function ChatRoom({ chat, channelId }) {
-  const [channel, setChannel] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [text, setText] = useState('');
-  const [typing, setTyping] = useState([]);
-
-  // Initialize channel
-  useEffect(() => {
-    if (!chat) return;
-
-    async function loadChannel() {
-      const ch = await chat.getChannel(channelId);
-      setChannel(ch);
-
-      // Load message history
-      const history = await ch.getHistory({ count: 50 });
-      setMessages(history.messages);
-    }
-
-    loadChannel();
-  }, [chat, channelId]);
-
-  // Subscribe to messages
-  useEffect(() => {
-    if (!channel) return;
-
-    const unsubscribe = channel.connect((message) => {
-      setMessages(prev => [...prev, message]);
-    });
-
-    return () => unsubscribe();
-  }, [channel]);
-
-  // Subscribe to typing indicators
-  useEffect(() => {
-    if (!channel) return;
-
-    const unsubscribe = channel.onTyping((typingUserIds) => {
-      setTyping(typingUserIds.filter(id => id !== chat.currentUser.id));
-    });
-
-    return () => unsubscribe();
-  }, [channel, chat]);
-
-  // Handle typing
-  const handleTyping = useCallback(() => {
-    if (channel) {
-      channel.startTyping();
-    }
-  }, [channel]);
-
-  // Handle send
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!text.trim() || !channel) return;
-
-    await channel.sendText(text);
-    setText('');
-    channel.stopTyping();
-  };
-
-  return (
-    <div className="chat-room">
-      <div className="messages">
-        {messages.map(msg => (
-          <Message key={msg.timetoken} message={msg} />
-        ))}
-      </div>
-
-      {typing.length > 0 && (
-        <div className="typing-indicator">
-          {typing.join(', ')} typing...
-        </div>
-      )}
-
-      <form onSubmit={handleSend}>
-        <input
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            handleTyping();
-          }}
-          placeholder="Type a message..."
-        />
-        <button type="submit">Send</button>
-      </form>
-    </div>
-  );
-}
-
-function Message({ message }) {
-  return (
-    <div className="message">
-      <span className="author">{message.userId}</span>
-      <span className="text">{message.text}</span>
-      <span className="time">
-        {new Date(message.timetoken / 10000).toLocaleTimeString()}
-      </span>
-    </div>
-  );
-}
-```
-
-## Notifications Pattern
-
-### Unread Badge
-
-```javascript
-function useUnreadCounts(chat) {
-  const [unreadCounts, setUnreadCounts] = useState({});
-
-  useEffect(() => {
-    if (!chat) return;
-
-    async function fetchUnreadCounts() {
-      const memberships = await chat.currentUser.getMemberships();
-      const counts = {};
-
-      for (const membership of memberships.memberships) {
-        const channel = membership.channel;
-        const count = await channel.getUnreadMessagesCount();
-        counts[channel.id] = count;
-      }
-
-      setUnreadCounts(counts);
-    }
-
-    fetchUnreadCounts();
-
-    // Re-fetch periodically or on message events
-    const interval = setInterval(fetchUnreadCounts, 30000);
-    return () => clearInterval(interval);
-  }, [chat]);
-
-  return unreadCounts;
-}
-```
-
-### Mark Channel as Read
-
-```javascript
-async function markChannelRead(channel) {
-  // Get latest message
-  const history = await channel.getHistory({ count: 1 });
-  if (history.messages.length > 0) {
-    await channel.setLastReadMessage(history.messages[0]);
-  }
-}
-
-// Call when user views channel
-useEffect(() => {
-  if (channel && isVisible) {
-    markChannelRead(channel);
-  }
-}, [channel, isVisible]);
-```
-
-## Threading Pattern
-
-```javascript
-function ThreadView({ parentMessage }) {
-  const [thread, setThread] = useState(null);
-  const [replies, setReplies] = useState([]);
-
-  useEffect(() => {
-    async function loadThread() {
-      const t = await parentMessage.getThread();
-      setThread(t);
-
-      const history = await t.getHistory({ count: 50 });
-      setReplies(history.messages);
-    }
-
-    if (parentMessage.hasThread) {
-      loadThread();
-    }
-  }, [parentMessage]);
-
-  useEffect(() => {
-    if (!thread) return;
-
-    const unsubscribe = thread.connect((message) => {
-      setReplies(prev => [...prev, message]);
-    });
-
-    return () => unsubscribe();
-  }, [thread]);
-
-  const sendReply = async (text) => {
-    if (thread) {
-      await thread.sendText(text);
-    } else {
-      // Create thread with first reply
-      const t = await parentMessage.createThread(text);
-      setThread(t);
-    }
-  };
-
-  return (
-    <div className="thread">
-      <div className="parent-message">
-        {parentMessage.text}
-      </div>
-      <div className="replies">
-        {replies.map(reply => (
-          <div key={reply.timetoken}>{reply.text}</div>
-        ))}
-      </div>
-      <ReplyInput onSend={sendReply} />
-    </div>
-  );
-}
-```
-
-## Cleanup and Logout
-
-```javascript
-async function logout(chat, activeChannels) {
-  // Disconnect from PubNub
-  await chat.disconnect();
-
-  // Clear channel cache
-  activeChannels.clear();
-
-  // Clear local state
-  setChat(null);
-  setMessages([]);
-}
-
-// React cleanup
-useEffect(() => {
-  return () => {
-    if (chat) {
-      chat.disconnect();
-    }
-  };
-}, [chat]);
-```
-
-## Performance Tips
-
-1. **Cache channels** - Don't recreate channels on every render
-2. **Paginate history** - Load messages in chunks, not all at once
-3. **Debounce typing** - Don't send typing signal on every keystroke
-4. **Virtualize messages** - Use windowing for long message lists
-5. **Batch updates** - Group state updates to reduce re-renders
-6. **Cleanup subscriptions** - Always unsubscribe on unmount
-
-```javascript
-// Debounced typing example
-const debouncedTyping = useMemo(
-  () => debounce(() => channel?.startTyping(), 1000),
-  [channel]
-);
-
-const handleChange = (e) => {
-  setText(e.target.value);
-  debouncedTyping();
-};
-```
+1. **Cache channels** — avoid recreating channel objects each render
+2. **Paginate history** — load in chunks, not full backlog
+3. **Debounce typing** — do not signal on every keystroke
+4. **Virtualize long lists** — window message rendering
+5. **Batch state updates** — reduce re-renders on burst traffic
+6. **Cleanup subscriptions** — always disconnect on unmount

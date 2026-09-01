@@ -58,7 +58,7 @@ Test full round-trips against a real but isolated PubNub keyset.
 ### Setup
 
 - Use a dedicated test keyset (separate from dev — see [environment separation](../../pubnub-keyset-management/references/keysets-and-environments.md)).
-- Use unique channel names per test (`test-${uuid()}`; see [naming](../../pubnub-app-developer/references/sdk-patterns.md)) so parallel test runs don't collide.
+- Use unique channel names per test (`test-${uuid()}`; see [naming](../../pubnub-app-developer/SKILL.md)) so parallel test runs don't collide.
 - Cap test runtime — most receive tests should fail fast at 5–10s.
 
 ### What to Assert
@@ -98,7 +98,7 @@ test('publish-receive round trip preserves envelope', async () => {
 });
 ```
 
-For [`addListener` and `pubnub.subscribe` mechanics](../../pubnub-app-developer/references/publish-subscribe.md) see the canonical owner.
+For [`addListener` and `pubnub.subscribe` mechanics](../../pubnub-app-developer/SKILL.md) see the canonical owner.
 
 ## Load Tests (Few, Pre-Launch, Test Keyset)
 
@@ -112,7 +112,7 @@ Run before launch and before any [large event](../../pubnub-scale/references/lar
 | Subscribe fan-out latency at N concurrent subscribers | p50 < 100ms, p99 < 500ms (typical) |
 | Reconnect storm: thousands of clients reconnecting at once | All reconnect within bounded backoff window without errors |
 | History fetch concurrency | N concurrent `fetchMessages` calls succeed without throttling |
-| [Presence event](../../pubnub-presence/references/presence-events.md) volume | `join` / `leave` events scale with N |
+| [Presence event](../../pubnub-presence/SKILL.md) volume | `join` / `leave` events scale with N |
 
 ### Test Setup
 
@@ -127,7 +127,7 @@ Run before launch and before any [large event](../../pubnub-scale/references/lar
 async function loadTest(N, channel) {
   const clients = [];
   for (let i = 0; i < N; i++) {
-    // see [`new PubNub(...)` config options](../../pubnub-app-developer/references/sdk-patterns.md)
+    // see [`new PubNub(...)` config options](../../pubnub-app-developer/SKILL.md)
     const c = new PubNub({ subscribeKey, userId: `loadtest-${i}` });
     c.addListener({ message: () => receivedCount++ });
     c.subscribe({ channels: [channel] });

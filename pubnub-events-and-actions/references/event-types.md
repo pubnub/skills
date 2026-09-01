@@ -64,7 +64,7 @@ CRUD events here correspond to [App Context user metadata](../../pubnub-app-cont
 | CRUD | Channel updated | Channel metadata changed |
 | CRUD | Channel deleted | Channel metadata removed |
 
-For [Presence event semantics](../../pubnub-presence/references/presence-events.md) and CRUD see [App Context channel metadata](../../pubnub-app-context/references/channels-and-memberships.md).
+For [Presence event semantics](../../pubnub-presence/SKILL.md) and CRUD see [App Context channel metadata](../../pubnub-app-context/references/channels-and-memberships.md).
 
 ## Mobile Push Notifications Source
 
@@ -222,7 +222,7 @@ For legacy webhook payloads and migration to v2.1, see the PubNub migration guid
 
 ## userId / UUID Note
 
-User ID is referred to as both `userId` and `uuid` in different parts of the API and documentation. They hold the same value — the [`userId` set during PubNub initialization](../../pubnub-app-developer/references/sdk-patterns.md).
+User ID is referred to as both `userId` and `uuid` in different parts of the API and documentation. They hold the same value — the [`userId` set during PubNub initialization](../../pubnub-app-developer/SKILL.md).
 
 ## Related Reading
 

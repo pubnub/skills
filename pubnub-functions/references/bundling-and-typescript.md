@@ -258,7 +258,7 @@ Use this checklist when generating or reviewing Functions code that will be bund
 - Put `require()` calls **inside** the handler body.
 - Mark every Functions built-in as `--external:` for the bundler (full list in §3).
 - Use `async`/`await` for new code; Promise chains are acceptable when returned from the handler (see [`functions-basics.md`](functions-basics.md#promise-chains-are-acceptable-if-you-return-them)).
-- Keep external calls minimal — see the per-module execution limits in [Quirk 2](db-triggers-and-runtime-quirks.md#quirk-2-3-call-cap-on-xhr--pubnub-api-calls).
+- Keep external calls minimal — see [per-module execution limits](db-triggers-and-runtime-quirks.md#quirk-2-per-module-execution-limits).
 - Keep vault lookups minimal — 10 per execution (see [Vault Module](functions-modules.md#vault-module)).
 - Guard `vault.get(...)` and check `typeof vault.get === 'function'` (see [Quirk 10](db-triggers-and-runtime-quirks.md#quirk-10-vault-may-be-unavailable-or-return-not-found)).
 - Use `function` declarations for helpers if your entry calls them before their textual definition (see §7).
@@ -270,7 +270,7 @@ Use this checklist when generating or reviewing Functions code that will be bund
 - Don't assume Node.js built-ins exist — no `fs`, no Node `crypto`, no `process`, no `Buffer`, no Node-flavored `setTimeout`/`setInterval` semantics.
 - Don't install npm packages for runtime usage that aren't already provided by the Functions module list.
 - Don't omit the completion return (`ok` / `abort` / `send`). The runtime has no fallback for "no return".
-- Don't fan out N HTTP calls in a loop — you'll trip the per-module execution limits on the second iteration.
+- Don't fan out N HTTP calls in a loop — you'll burn through the XHR module budget (default 5 per execution).
 - Don't rely on `globalThis.require` being set by the runtime (see [Quirk 8](db-triggers-and-runtime-quirks.md#quirk-8-require-is-handler-scoped)).
 - Don't ship bundles that still contain `__require` or `Dynamic require of` — they will fail at first invocation.
 - Don't use dynamic-require tricks (`Function('return require')()`, `eval('require')`).

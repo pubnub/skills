@@ -163,18 +163,18 @@ await updateOrderStatus('order-5678', 'dispatched', {
 ## MCP Tools
 
 - **`get_sdk_documentation`** — pull SDK-specific publish/subscribe APIs (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
-- **`manage_functions`** — scaffold the After-Publish geofence trigger / dispatch logic
+- **`manage_functions`** (`resource=package`, `operation=create`) — create the After-Publish geofence trigger / dispatch logic package
 - **`grant_token`** — issue scoped grants per order (driver, customer, dispatcher)
 - **`manage_apps`** — verify Stream Controller for fleet dashboard fan-in
 
 ## See Also
 
-- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [driver online/offline](../pubnub-presence/references/presence-events.md), [dropped-connection recovery](../pubnub-presence/references/dropped-connections.md), [multi-device sync (driver app + tablet)](../pubnub-presence/references/multi-device-sync.md)
+- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [driver online/offline](../pubnub-presence/SKILL.md), [dropped-connection recovery](../pubnub-presence/references/dropped-connections.md), [multi-device sync (driver app + tablet)](../pubnub-presence/references/multi-device-sync.md)
 - **[pubnub-functions](../pubnub-functions/SKILL.md)** — [After Publish for geofence + dispatch](../pubnub-functions/references/functions-basics.md), [`require('kvstore')`](../pubnub-functions/references/functions-modules.md) for last-known-location, [DB-trigger pattern to mirror to your warehouse](../pubnub-functions/references/db-triggers-and-runtime-quirks.md)
 - **[pubnub-security](../pubnub-security/SKILL.md)** — [Access Manager grants](../pubnub-security/references/access-manager.md) to isolate order channels (driver vs customer vs dispatcher); [encryption](../pubnub-security/references/encryption.md) for location data; [compliance](../pubnub-security/references/compliance-reports.md) per region
 - **[pubnub-reliability](../pubnub-reliability/SKILL.md)** — [queue-and-retry](../pubnub-reliability/references/queue-and-retry.md) for offline driver phones; [idempotent publish](../pubnub-reliability/references/idempotent-publish.md) for status updates; [exponential backoff](../pubnub-reliability/references/backoff-and-jitter.md) on cellular hiccups; use `signal` for high-frequency GPS via [payload hygiene](../pubnub-observability/references/cost-and-payload-hygiene.md)
 - **[pubnub-history](../pubnub-history/SKILL.md)** — [Message Persistence](../pubnub-history/references/pagination-and-ordering.md) for delivery audit and replay; [offline catch-up](../pubnub-history/references/offline-catch-up.md) on customer-app reopen
-- **[pubnub-scale](../pubnub-scale/SKILL.md)** — [channel groups for fleet dashboards](../pubnub-scale/references/scaling-patterns.md), [performance tuning](../pubnub-scale/references/performance.md)
+- **[pubnub-scale](../pubnub-scale/SKILL.md)** — [channel groups for fleet dashboards](../pubnub-scale/references/scaling-patterns.md), [performance tuning](../pubnub-observability/references/cost-and-payload-hygiene.md)
 - **[pubnub-app-context](../pubnub-app-context/SKILL.md)** — [driver profiles, vehicle metadata, customer addresses](../pubnub-app-context/references/users.md)
 - **[pubnub-events-and-actions](../pubnub-events-and-actions/SKILL.md)** — route order-state-change events to ETA SMS, push, BI sinks via [action targets](../pubnub-events-and-actions/references/action-targets.md)
 - **[pubnub-illuminate](../pubnub-illuminate/SKILL.md)** — [real-time fleet KPIs and exception detection via Decisions](../pubnub-illuminate/references/decisions-4-step-workflow.md)

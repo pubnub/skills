@@ -154,7 +154,7 @@ For runtime testing of message data flowing into Business Objects, use:
 
 - **pubnub-keyset-management** — for [API key storage and rotation](../pubnub-keyset-management/references/key-rotation-and-hygiene.md), [environment separation](../pubnub-keyset-management/references/keysets-and-environments.md) (one Service Integration per environment)
 - **pubnub-app-context** — Decision actions can target [users, channels, and memberships](../pubnub-app-context/references/users.md) via `APPCONTEXT_SET_USER_METADATA`, `APPCONTEXT_SET_CHANNEL_METADATA`, `APPCONTEXT_SET_MEMBERSHIP_METADATA`
-- **pubnub-app-developer** — `PUBNUB_PUBLISH` actions [publish messages](../pubnub-app-developer/references/publish-subscribe.md) to a channel
+- **pubnub-app-developer** — `PUBNUB_PUBLISH` actions [publish messages](../pubnub-app-developer/SKILL.md) to a channel
 - **pubnub-events-and-actions** — for event-driven integrations to external systems (alternative to webhooks-from-Decisions when no threshold logic is needed)
 - **pubnub-functions** — for per-message edge logic (alternative to Decision actions when message-level transformation is needed)
 - **pubnub-choose-docs-path** — for routing other PubNub questions

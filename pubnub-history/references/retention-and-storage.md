@@ -41,7 +41,7 @@ Even with the add-on enabled, you can opt individual messages out of storage wit
 ```javascript
 await pubnub.publish({
   channel: 'chat-room',
-  message: { typingNotification: true, userId: 'user-123' },   // see [userId rules](../../pubnub-app-developer/references/sdk-patterns.md)
+  message: { typingNotification: true, userId: 'user-123' },   // see [userId rules](../../pubnub-app-developer/SKILL.md)
   storeInHistory: false
 });
 ```
@@ -56,7 +56,7 @@ Common candidates for `storeInHistory: false`:
 
 `storeInHistory: false` messages are **not retrievable**. There is no fallback fetch; the data is delivered live and then gone.
 
-For ephemeral, non-stored messages, also consider `signal()` instead of `publish()` — see [pubnub-app-developer/references/publish-subscribe.md](../../pubnub-app-developer/references/publish-subscribe.md).
+For ephemeral, non-stored messages, also consider `signal()` instead of `publish()` — see [pubnub-app-developer/SKILL.md](../../pubnub-app-developer/SKILL.md).
 
 ## Message Size and Cost
 

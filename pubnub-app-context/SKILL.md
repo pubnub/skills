@@ -28,7 +28,7 @@ Invoke this skill when:
 
 Do **not** use App Context for:
 - Heavy domain data (large records, transactional history) — keep that in your own database; use App Context as a lightweight directory only.
-- Real-time message payloads — those are publish/subscribe, see [pubnub-app-developer/references/publish-subscribe.md](../pubnub-app-developer/references/publish-subscribe.md).
+- Real-time message payloads — those are publish/subscribe, see [pubnub-app-developer/SKILL.md](../pubnub-app-developer/SKILL.md).
 
 ## Core Workflow
 
@@ -120,8 +120,8 @@ When this skill is active, prefer:
 ## See Also
 
 - **pubnub-keyset-management** — for [Admin Portal add-on enablement](../pubnub-keyset-management/references/keysets-and-environments.md) prerequisites
-- **pubnub-chat** — uses App Context under the hood for chat user/channel models; the Chat SDK provides higher-level abstractions ([chat-setup.md](../pubnub-chat/references/chat-setup.md))
-- **pubnub-app-developer** — for [`new PubNub(...)` initialization](../pubnub-app-developer/references/sdk-patterns.md) and [`userId` requirements](../pubnub-app-developer/references/sdk-patterns.md) (the same `userId` is the App Context user identifier)
+- **pubnub-chat** — uses App Context under the hood; retrieve Chat SDK APIs via **`get_chat_sdk_documentation`** ([pubnub-chat/SKILL.md](../pubnub-chat/SKILL.md))
+- **pubnub-app-developer** — for [`new PubNub(...)` initialization](../pubnub-app-developer/SKILL.md) and [`userId` requirements](../pubnub-app-developer/SKILL.md) (the same `userId` is the App Context user identifier)
 - **pubnub-security** — for [Access Manager](../pubnub-security/references/access-manager.md) grants over App Context resources
 - **pubnub-illuminate** — App Context can be a target of Illuminate [Decision actions](../pubnub-illuminate/references/decisions-4-step-workflow.md) (`APPCONTEXT_SET_USER_METADATA`, `APPCONTEXT_SET_CHANNEL_METADATA`, `APPCONTEXT_SET_MEMBERSHIP_METADATA`)
 - **pubnub-choose-docs-path** — for routing other PubNub questions

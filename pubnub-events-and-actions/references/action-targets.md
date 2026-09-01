@@ -93,7 +93,7 @@ Standard SQS for high throughput, at-least-once delivery (your consumer must ded
 - **Stream name**
 - **AWS credentials** (`kinesis:PutRecord` only)
 - **Region**
-- **Partition key strategy** (typically the [`userId`](../../pubnub-app-developer/references/sdk-patterns.md) or `channel`)
+- **Partition key strategy** (typically the [`userId`](../../pubnub-app-developer/SKILL.md) or `channel`)
 
 ### Use When
 
@@ -183,7 +183,7 @@ Generally not used for backend production. For backend, use plain Webhook or one
 | S3 target without batching | Configure batching (100 items / 5s default) |
 | Kinesis target with too few shards | Size shards by event throughput |
 | Kafka target on a private cluster with no egress path | Public proxy or IP allowlist PubNub egress |
-| Hardcoded AWS credentials in the action config | Use a least-privilege IAM user (e.g., `Sender-EventsActions-Prod`, distinct from your PubNub [userId](../../pubnub-app-developer/references/sdk-patterns.md)); rotate periodically (see [key rotation](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md)) |
+| Hardcoded AWS credentials in the action config | Use a least-privilege IAM user (e.g., `Sender-EventsActions-Prod`, distinct from your PubNub [userId](../../pubnub-app-developer/SKILL.md)); rotate periodically (see [key rotation](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md)) |
 | One action across multiple environments | One action per environment, bound to that env's keyset |
 
 ## Related Reading

@@ -92,9 +92,9 @@ When this skill is active, prefer:
 ## See Also
 
 - **pubnub-reliability** — for [dedup-on-merge](../pubnub-reliability/references/dedup-on-merge.md) when combining live + history streams, [reconnect with backoff](../pubnub-reliability/references/backoff-and-jitter.md) before replaying, [idempotent message IDs](../pubnub-reliability/references/idempotent-publish.md) that make dedup correct
-- **pubnub-app-developer** — for [`fetchMessages` SDK initialization](../pubnub-app-developer/references/sdk-patterns.md), [`pubnub.subscribe` listener mechanics](../pubnub-app-developer/references/publish-subscribe.md)
+- **pubnub-app-developer** — for [`fetchMessages` SDK initialization](../pubnub-app-developer/SKILL.md), [`pubnub.subscribe` listener mechanics](../pubnub-app-developer/SKILL.md)
 - **pubnub-keyset-management** — for [enabling Message Persistence](../pubnub-keyset-management/references/keysets-and-environments.md) on a keyset
-- **pubnub-chat** — Chat SDK's history methods wrap these primitives ([chat-setup.md](../pubnub-chat/references/chat-setup.md))
+- **pubnub-chat** — Chat SDK history wraps these primitives — use **`get_chat_sdk_documentation`** ([pubnub-chat/SKILL.md](../pubnub-chat/SKILL.md))
 - **pubnub-scale** — for scaling considerations with high-volume history reads
 - **pubnub-observability** — for [tracking history-call costs and usage metrics](../pubnub-observability/references/usage-metrics.md)
 - **pubnub-choose-docs-path** — for routing other PubNub questions

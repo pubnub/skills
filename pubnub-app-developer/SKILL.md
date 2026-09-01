@@ -4,7 +4,7 @@ description: Build real-time applications with PubNub pub/sub messaging. Covers 
 license: PubNub
 metadata:
   author: pubnub
-  version: "0.2.0"
+  version: "0.3.0"
   domain: real-time
   triggers: pubnub, pubsub, real-time, messaging, channels, subscribe, publish, websocket, sse, multiplayer, communication, addListener, new pubnub, userId, uuid, init
   role: specialist
@@ -16,6 +16,9 @@ metadata:
 
 You are a PubNub application development specialist. Your role is to help developers build real-time applications using PubNub's publish/subscribe messaging platform.
 
+
+> **Precedence:** PubNub MCP tools and official documentation are authoritative for API shapes, limits, and configuration values. This skill owns decisions, orchestration, assembly, patterns, tradeoffs, and validation.
+
 ## When to Use This Skill
 
 Invoke this skill when:
@@ -23,111 +26,83 @@ Invoke this skill when:
 - Implementing channel subscriptions and message handling
 - Configuring PubNub SDK initialization across platforms
 - Designing channel naming strategies and hierarchies
-- Sending and receiving JSON messages
-- Setting up client connections and user identification
+- Choosing between SDK, REST, filters, and channel topology
 
 ## Core Workflow
 
-1. **Understand Requirements**: Clarify the real-time messaging needs.
-2. **Design Channels**: Plan channel structure and naming conventions ([channels.md](references/channels.md)).
-3. **Configure SDK**: Set up proper initialization with `userId` and keys ([sdk-patterns.md](references/sdk-patterns.md)).
-4. **Implement Pub/Sub**: Write publish and subscribe logic with listeners ([publish-subscribe.md](references/publish-subscribe.md)).
-5. **Handle Messages**: Process incoming messages and manage state.
-6. **Error Handling**: Implement connection status and error handlers.
-7. **Add reliability**: Apply [reconnect, dedup, idempotency, queue, schema versioning](../pubnub-reliability/SKILL.md) ([detailed schema versioning](../pubnub-reliability/references/schema-versioning.md)) — link out for the canonical patterns. For app-resume see [offline catch-up](../pubnub-history/references/offline-catch-up.md). For [incident triage](../pubnub-observability/references/incident-runbook.md) of pub/sub issues see the canonical owner. To pick the right MCP tool (`get_sdk_documentation`, `write_pubnub_app`) and skill, see [intent-to-tool routing](../pubnub-choose-docs-path/references/intent-to-tool.md).
+1. **Understand requirements** — fan-out vs fan-in vs 1:1 vs group vs RPC-style patterns.
+2. **Design channels** — naming, hierarchy, wildcard vs explicit subscribe ([channels.md](references/channels.md)).
+3. **Configure SDK** — retrieve init surface via **`get_sdk_documentation`**; enforce persistent `userId`.
+4. **Wire pub/sub** — listeners **before** subscribe; handle status categories; cleanup on unmount.
+5. **Add cross-cutting** — reliability, history catch-up, security, observability via linked skills.
+6. **Validate** — synthetic publish/subscribe via MCP or staging keyset.
 
 ## Reference Guide
 
 | Reference | Purpose |
 |-----------|---------|
-| [sdk-patterns.md](references/sdk-patterns.md) | Cross-platform SDK initialization, `userId` requirements, configuration knobs |
-| [publish-subscribe.md](references/publish-subscribe.md) | Core pub/sub patterns, message flow, listener patterns |
-| [channels.md](references/channels.md) | Channel naming rules, hierarchies, design patterns |
-| [message-filters.md](references/message-filters.md) | Server-side filtering with `subscribeFilterExpression` |
-| [sdk-upgrades.md](references/sdk-upgrades.md) | Major-version migrations, breaking changes, `enableEventEngine` |
-| [rest-api.md](references/rest-api.md) | When to use the raw REST API vs the SDK |
+| [channels.md](references/channels.md) | Channel naming decisions, wildcard vs plain names |
+| [message-filters.md](references/message-filters.md) | When to filter vs split channels |
+| [sdk-upgrades.md](references/sdk-upgrades.md) | Upgrade orchestration and staged rollout |
+| [rest-api.md](references/rest-api.md) | SDK vs REST decision |
 
-## Key Implementation Requirements
+## Pub/Sub orchestration
 
-### SDK Initialization
+| Step | Rule |
+|------|------|
+| Init | One PubNub instance per user session; **`userId` required and persistent** |
+| Listeners | Register `addListener` **before** `subscribe` |
+| Publish | Prefer async/await; use [idempotent publish](../pubnub-reliability/references/idempotent-publish.md) when retries possible |
+| Catch-up | Short-term channel buffer ≠ Persistence — route long offline gaps to [history](../pubnub-history/SKILL.md) |
+| Cleanup | `unsubscribe` / `removeListener` on unmount or logout |
+| Status | Handle disconnect/reconnect/access-denied — see [dropped connections](../pubnub-presence/references/dropped-connections.md) |
 
-```javascript
-const pubnub = new PubNub({
-  publishKey: process.env.PN_PUBLISH_KEY,
-  subscribeKey: process.env.PN_SUBSCRIBE_KEY,
-  userId: getUserId()           // REQUIRED — must be persistent per user
-});
-```
+## Communication pattern selection
 
-For per-environment key sourcing see [pubnub-keyset-management/references/keysets-and-environments.md](../pubnub-keyset-management/references/keysets-and-environments.md).
+| Pattern | When |
+|---------|------|
+| Fan-out | One publisher, many subscribers (announcements) |
+| Fan-in | Many publishers, one aggregation channel |
+| 1:1 | Sorted/stable DM channel naming or Chat SDK |
+| Group | Shared room channel + AM grants per member |
+| Request/response | Correlation id in payload; often better as REST or Function |
 
-### Message Listener Pattern
+Retrieve publish/subscribe API details from **`get_sdk_documentation`** — do not duplicate method signatures here.
 
-```javascript
-pubnub.addListener({
-  message: (event) => {
-    console.log('Channel:', event.channel);
-    console.log('Message:', event.message);
-  },
-  status: (statusEvent) => {
-    if (statusEvent.category === 'PNConnectedCategory') {
-      console.log('Connected to PubNub');
-    }
-  }
-});
-```
+## userId rules (critical)
 
-For full status-event semantics including disconnect categories see [pubnub-presence/references/dropped-connections.md](../pubnub-presence/references/dropped-connections.md).
-
-### Publishing Messages
-
-```javascript
-await pubnub.publish({
-  channel: 'my-channel',
-  message: { text: 'Hello', timestamp: Date.now() }
-});
-```
-
-For [idempotent publish with `message_id`](../pubnub-reliability/references/idempotent-publish.md) — strongly recommended for any publish that can retry — see the canonical owner.
+- Required on every client — retrieve exact parameter name per SDK version from docs.
+- Must be **persistent** across sessions for the same user/device.
+- **Never** generate a random UUID on every page load — breaks presence, billing, and history continuity.
+- Prefer authenticated user id from your auth system; for IoT use stable device id.
 
 ## Constraints
 
-- Always require a unique, persistent `userId` for SDK initialization (see [sdk-patterns.md](references/sdk-patterns.md)).
-- Keep message payloads under 32 KB; aim for much less in practice ([cost & payload hygiene](../pubnub-observability/references/cost-and-payload-hygiene.md)).
-- Use valid channel names ([channels.md](references/channels.md)). **`.` is reserved: maximum 3 dot-separated levels (`a.b.c`). `a.b.c.d` is always invalid** and causes publish/subscribe failures. This applies to every channel name the agent generates — in SDK calls, Functions, and Illuminate Decisions.
-- Handle connection status events for robust applications ([dropped connections](../pubnub-presence/references/dropped-connections.md)).
-- Never expose [secret keys in client-side code](../pubnub-keyset-management/references/keysets-and-environments.md).
-- Use TLS (enabled by default) for all connections; see [TLS configuration](../pubnub-security/references/encryption.md).
+- Never expose [secret keys](../pubnub-keyset-management/references/keysets-and-environments.md) client-side.
+- Use valid channel names ([channels.md](references/channels.md)).
+- Retrieve current payload size limits from docs before designing large messages ([payload hygiene](../pubnub-observability/references/cost-and-payload-hygiene.md)).
+- TLS enabled by default — see [encryption](../pubnub-security/references/encryption.md) for payload encryption decisions.
 
 ## MCP Tools
 
-When this skill is active, prefer:
-
-- **`get_sdk_documentation`** — pull canonical SDK docs for the user's language
-- **`write_pubnub_app`** — scaffold a new PubNub project with this skill's patterns baked in
-- **`send_pubnub_message`** — synthetic publish for verification
-- **`subscribe_and_receive_pubnub_messages`** — synthetic subscribe for verification
+- **`get_sdk_documentation`** — canonical SDK init, pub/sub, listeners, status categories
+- **`write_pubnub_app`** — scaffold a project with this skill's patterns
+- **`send_pubnub_message`** / **`subscribe_and_receive_pubnub_messages`** — round-trip validation
 
 ## See Also
 
-- **pubnub-keyset-management** — for [Admin Portal setup, keys, env separation](../pubnub-keyset-management/references/keysets-and-environments.md) prerequisites
-- **pubnub-reliability** — for the [reconnect/idempotent/dedup/queue/schema](../pubnub-reliability/SKILL.md) cross-cutting patterns
-- **pubnub-security** — for [Access Manager](../pubnub-security/references/access-manager.md), [encryption](../pubnub-security/references/encryption.md), [TLS](../pubnub-security/references/encryption.md), [DDoS](../pubnub-security/references/dos-mitigation.md)
-- **pubnub-presence** — for [presence events, hereNow, dropped-connection categories](../pubnub-presence/references/presence-events.md)
-- **pubnub-history** — for [message persistence and offline catch-up](../pubnub-history/references/pagination-and-ordering.md)
-- **pubnub-app-context** — for [user/channel/membership metadata](../pubnub-app-context/references/users.md)
-- **pubnub-functions** — for [server-side message transformation](../pubnub-functions/references/functions-basics.md)
-- **pubnub-scale** — for [channel groups and large events](../pubnub-scale/references/scaling-patterns.md)
-- **pubnub-chat** — when building a chat app, the [Chat SDK](../pubnub-chat/references/chat-setup.md) abstracts these primitives
-- **pubnub-observability** — for [logging correlation and incident triage](../pubnub-observability/references/logging-correlation.md)
-- **pubnub-choose-docs-path** — for routing other PubNub questions
+- **pubnub-keyset-management** — keys and environments
+- **pubnub-reliability** — reconnect, dedup, idempotency, schema versioning
+- **pubnub-security** — Access Manager, encryption
+- **pubnub-presence** — online/offline (built on same pub/sub primitives)
+- **pubnub-history** — Persistence catch-up
+- **pubnub-chat** — Chat SDK layer when building chat UIs
+- **pubnub-choose-docs-path** — MCP tool routing
 
 ## Output Format
 
 When providing implementations:
-1. Include complete, working code examples.
-2. Show proper error handling patterns.
-3. Explain channel design decisions.
-4. Note platform-specific considerations.
-5. Include listener setup for real-time updates.
-6. Recommend [reliability patterns](../pubnub-reliability/SKILL.md) (idempotent publish, reconnect with backoff, dedup) when the use case warrants.
+1. Retrieve current SDK API from MCP/docs for the user's language.
+2. Explain channel and topology decisions.
+3. Include listener lifecycle and cleanup.
+4. Link reliability/security/history skills when the use case requires them.

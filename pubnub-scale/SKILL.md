@@ -42,12 +42,11 @@ Invoke this skill when:
 | Reference | Purpose |
 |-----------|---------|
 | [scaling-patterns.md](references/scaling-patterns.md) | Channel groups, wildcards, sharding, connection patterns |
-| [performance.md](references/performance.md) | Throughput tuning, batching, signal vs publish |
+| [cost-and-payload-hygiene.md](../pubnub-observability/references/cost-and-payload-hygiene.md) | Payload sizing, signal vs publish tradeoffs |
 | [large-events.md](references/large-events.md) | 10K+ concurrent live-event playbook + PubNub engagement |
 
 ## Key Implementation Requirements
 
-> **Cross-references:** Built on [pub/sub basics](../pubnub-app-developer/references/publish-subscribe.md) and [SDK initialization](../pubnub-app-developer/references/sdk-patterns.md). For [history retrieval / Message Persistence and `fetchMessages`](../pubnub-history/references/pagination-and-ordering.md) see the canonical owner. For [payload sizing and coalescing](../pubnub-observability/references/cost-and-payload-hygiene.md) see the cost owner. Pair fan-out designs with [reliable publish (idempotent)](../pubnub-reliability/references/idempotent-publish.md).
 
 ### Channel Groups (2000 channels per group)
 

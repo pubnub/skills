@@ -61,13 +61,13 @@ The following fields are **required** despite being documented as optional. Omit
 
 | `actionType` | What it does |
 |---|---|
-| `PUBNUB_PUBLISH` | Publishes a message to a PubNub channel (requires valid pub + sub key in template). **Channel name must follow PubNub naming rules: avoid invalid characters; `.` is reserved for Wildcard Subscribe and Function bindings — retrieve current naming rules before relying on a specific depth limit.** |
+| `PUBNUB_PUBLISH` | Publishes a message to a PubNub channel (requires valid pub + sub key in template). **Channel name must follow PubNub naming rules: avoid invalid characters; `.` is reserved for Wildcard Subscribe and Function bindings — retrieve current naming rules before relying on a specific depth limit.**
 | `WEBHOOK_EXECUTION` | POSTs a payload to an external URL |
 | `APPCONTEXT_SET_USER_METADATA` | Sets custom fields on a user object |
 | `APPCONTEXT_SET_CHANNEL_METADATA` | Sets custom fields on a channel object |
 | `APPCONTEXT_SET_MEMBERSHIP_METADATA` | Sets custom fields on a user-channel membership |
 
-For App Context action targets, see [pubnub-app-context/references/users.md](../../pubnub-app-context/references/users.md). For PUBNUB_PUBLISH, the messages flow through the standard [publish/subscribe pipeline](../../pubnub-app-developer/references/publish-subscribe.md) (which also explains [`userId` / UUID](../../pubnub-app-developer/references/sdk-patterns.md) semantics). For richer event-driven action targets like webhook/Lambda/Kafka/SQS, prefer [pubnub-events-and-actions](../../pubnub-events-and-actions/references/event-types.md) instead of WEBHOOK_EXECUTION when no threshold logic is needed.
+For App Context action targets, see [pubnub-app-context/references/users.md](../../pubnub-app-context/references/users.md). For PUBNUB_PUBLISH, the messages flow through the standard [publish/subscribe pipeline](../../pubnub-app-developer/SKILL.md) (which also explains [`userId` / UUID](../../pubnub-app-developer/SKILL.md) semantics). For richer event-driven action targets like webhook/Lambda/Kafka/SQS, prefer [pubnub-events-and-actions](../../pubnub-events-and-actions/references/event-types.md) instead of WEBHOOK_EXECUTION when no threshold logic is needed.
 
 **Critical naming**: action objects use `"actionType"` (not `"type"`). `outputFields` use `"variable"` and `"name"` (not `"type"`).
 
