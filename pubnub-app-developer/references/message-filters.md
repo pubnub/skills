@@ -1,8 +1,3 @@
-<!-- canonical-for: MESSAGE_FILTERS -->
-<!-- used-by: pubnub-reliability -->
-
-> **Cross-references:** Filter scoping for [Access Manager](../../pubnub-security/references/access-manager.md)-protected channels. Filtering reduces [transaction count / billing metrics](../../pubnub-observability/references/usage-metrics.md).
-
 # Message Filters — Decisions and Tradeoffs
 
 

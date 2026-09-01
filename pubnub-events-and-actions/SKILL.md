@@ -16,6 +16,9 @@ metadata:
 
 You are the Events & Actions (E&A) specialist. Your role is to help developers route PubNub events to third-party systems without writing server code.
 
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
+
+
 ## When to Use This Skill
 
 Invoke this skill when:

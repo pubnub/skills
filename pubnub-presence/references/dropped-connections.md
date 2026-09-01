@@ -1,6 +1,3 @@
-<!-- canonical-for: DROPPED_CONNECTIONS -->
-<!-- used-by: pubnub-app-developer, pubnub-reliability, pubnub-history, pubnub-observability -->
-
 # Dropped Connections and Status Categories
 
 The canonical reference for SDK status categories that signal connection state, plus heartbeat timeout semantics and the recovery sequence.

@@ -1,6 +1,3 @@
-<!-- canonical-for: EVENTS_AND_ACTIONS_FILTERS -->
-<!-- used-by: -->
-
 # Filters: Basic Filters and Advanced JSONPath
 
 The canonical reference for narrowing which events trigger an Events & Actions listener.

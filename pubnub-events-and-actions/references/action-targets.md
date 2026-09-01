@@ -1,6 +1,3 @@
-<!-- canonical-for: EVENTS_AND_ACTIONS_TARGETS -->
-<!-- used-by: -->
-
 # Action Targets: Webhook, SQS, Kinesis, S3, Kafka, IFTTT, AMQP
 
 The canonical reference for each Events & Actions delivery target — what it is, when to use it, and the gotchas.

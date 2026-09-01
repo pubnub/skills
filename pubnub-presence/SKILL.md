@@ -15,6 +15,9 @@ metadata:
 # PubNub Presence Specialist
 
 
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
+
+
 ## Core Workflow
 
 1. **Enable & scope** — Presence add-on + Presence Management channel rules ([presence-setup.md](references/presence-setup.md)).

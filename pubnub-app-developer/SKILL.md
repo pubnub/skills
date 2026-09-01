@@ -16,8 +16,9 @@ metadata:
 
 You are a PubNub application development specialist. Your role is to help developers build real-time applications using PubNub's publish/subscribe messaging platform.
 
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
 
-> **Precedence:** PubNub MCP tools and official documentation are authoritative for API shapes, limits, and configuration values. This skill owns decisions, orchestration, assembly, patterns, tradeoffs, and validation.
+
 
 ## When to Use This Skill
 

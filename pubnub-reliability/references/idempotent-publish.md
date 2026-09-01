@@ -1,6 +1,3 @@
-<!-- canonical-for: IDEMPOTENT_PUBLISH -->
-<!-- used-by: pubnub-app-developer, pubnub-history, pubnub-functions, pubnub-observability -->
-
 # Idempotent Publish
 
 The canonical reference for client-generated message IDs that make `publish()` retries safe.

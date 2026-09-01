@@ -1,7 +1,3 @@
-<!-- canonical-for: APPS_AND_KEYSETS -->
-<!-- canonical-for: ENVIRONMENT_SEPARATION -->
-<!-- used-by: pubnub-choose-docs-path, pubnub-security, pubnub-observability -->
-
 # Apps, Keysets, and Environment Separation
 
 The canonical reference for the PubNub app/keyset hierarchy and how to lay out dev/staging/prod isolation.

@@ -1,6 +1,3 @@
-<!-- canonical-for: APP_CONTEXT_FILTERING -->
-<!-- used-by: -->
-
 # App Context: Filtering, Sorting, Pagination, and Change Events
 
 The canonical reference for efficient querying of App Context objects and reacting to metadata changes in real time.

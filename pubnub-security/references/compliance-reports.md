@@ -1,8 +1,3 @@
-<!-- canonical-for: COMPLIANCE_REPORTS -->
-<!-- used-by: -->
-
-> **Cross-references:** Compliance posture builds on [Access Manager](access-manager.md) (auth/authz), [encryption](encryption.md) (confidentiality), [keyset hygiene](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md) (key management), and [usage metrics](../../pubnub-observability/references/usage-metrics.md) (audit). User identifiers in audit logs use the [SDK userId/UUID](../../pubnub-app-developer/references/sdk-patterns.md) convention. [Functions On Request endpoints](../../pubnub-functions/references/functions-basics.md) sometimes back compliance APIs.
-
 # Compliance Reports
 
 PubNub maintains the following compliance attestations / certifications. Use this page to (a) understand what's available, (b) request the right document, and (c) know your shared-responsibility cut line.

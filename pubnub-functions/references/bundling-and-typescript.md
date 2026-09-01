@@ -1,8 +1,3 @@
-<!-- canonical-for: FUNCTION_BUNDLING -->
-<!-- used-by: -->
-
-> **Cross-references:** [Handler shapes and async/await](functions-basics.md). [Handler-scoped `require`](db-triggers-and-runtime-quirks.md#quirk-8-require-is-handler-scoped). [3-call XHR/PubNub cap](db-triggers-and-runtime-quirks.md#quirk-2-3-call-cap-on-xhr--pubnub-api-calls) and [10-call vault cap](functions-modules.md#vault-module) constrain what the bundled handler can do at runtime. For pub/sub semantics inside the bundled handler, see the [pub/sub canonical owner](../../pubnub-app-developer/references/publish-subscribe.md). This document is **build-system-specific**: the constraints from §3 onward apply only when you bundle/transpile code (esbuild, Rollup, webpack, tsc) before uploading. If you author directly in the PubNub Admin Portal, you can skip them.
-
 # Bundling and TypeScript for PubNub Functions
 
 PubNub Functions accept JavaScript modules with an `export default` handler. Anything you bundle, transpile, or minify before uploading must end up looking like that handler — and several toolchain defaults break the contract. This reference covers what to do and what to avoid.

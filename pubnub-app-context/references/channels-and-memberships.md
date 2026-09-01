@@ -1,6 +1,3 @@
-<!-- canonical-for: APP_CONTEXT_CHANNELS_AND_MEMBERSHIPS -->
-<!-- used-by: pubnub-chat -->
-
 # App Context: Channels and Memberships
 
 The canonical reference for storing channel metadata and tracking user-channel relationships in PubNub App Context.

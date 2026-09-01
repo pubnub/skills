@@ -1,8 +1,3 @@
-<!-- canonical-for: FUNCTION_BASICS -->
-<!-- used-by: -->
-
-> **Cross-references:** Built on [pub/sub semantics](../../pubnub-app-developer/references/publish-subscribe.md) and [SDK initialization including userId/UUID](../../pubnub-app-developer/references/sdk-patterns.md). For [chained Functions](functions-chaining.md) and [DB-trigger patterns + runtime quirks](db-triggers-and-runtime-quirks.md). For non-transform routing prefer [Events & Actions](../../pubnub-events-and-actions/SKILL.md).
-
 # PubNub Functions 2.0 Basics
 
 ## Function type selection

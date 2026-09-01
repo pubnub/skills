@@ -1,8 +1,3 @@
-<!-- canonical-for: LARGE_EVENTS -->
-<!-- used-by: -->
-
-> **Cross-references:** Builds on [scaling-patterns](scaling-patterns.md) (sharding, channel groups, wildcards) and [performance](performance.md) (signal vs publish, batching). Pair with [presence heartbeat tuning + presence event semantics](../../pubnub-presence/references/presence-events.md) (and [setup](../../pubnub-presence/references/presence-setup.md)), [reliability backoff and jitter](../../pubnub-reliability/references/backoff-and-jitter.md), and [usage-metrics monitoring](../../pubnub-observability/references/usage-metrics.md). For [DoS / abuse hardening during the event](../../pubnub-security/references/dos-mitigation.md) see the security owner. SDK setup uses [`pubnub.subscribe(` and listener wiring](../../pubnub-app-developer/references/publish-subscribe.md) plus [userId/UUID](../../pubnub-app-developer/references/sdk-patterns.md). Stage-tier fan-out commonly uses [Functions After Publish](../../pubnub-functions/references/functions-basics.md).
-
 # Large-Event Playbook (10K+ Concurrent Users)
 
 This page is the engagement model for live events: sports broadcasts, product launches, large-scale auctions, voting, anything that pushes a single sub-key into the tens of thousands of concurrent connections.

@@ -1,6 +1,3 @@
-<!-- canonical-for: DOCS_ROUTING -->
-<!-- used-by: -->
-
 # Intent to Tool Mapping
 
 The canonical decision tree from a user's stated intent to (specialist skill, MCP tool on `user-pubnub`, PubNub docs surface). Every other skill that mentions docs routing or MCP tool selection must link here.

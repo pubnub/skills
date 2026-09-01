@@ -1,6 +1,3 @@
-<!-- canonical-for: INCIDENT_RUNBOOK -->
-<!-- used-by: pubnub-keyset-management, pubnub-history, pubnub-reliability, pubnub-security, pubnub-choose-docs-path -->
-
 # Incident Runbook
 
 The canonical reference for triaging the most common PubNub-related production incidents.

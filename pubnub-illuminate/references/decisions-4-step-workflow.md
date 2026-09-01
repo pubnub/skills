@@ -1,6 +1,3 @@
-<!-- canonical-for: ILLUMINATE_DECISIONS -->
-<!-- used-by: -->
-
 # Illuminate Decisions: The 4-Step Workflow
 
 The canonical reference for Illuminate Decisions, **the most error-prone Illuminate API**. This document captures every gotcha so the agent does not hit the same 500 errors twice.

@@ -1,6 +1,3 @@
-<!-- canonical-for: OFFLINE_CATCH_UP -->
-<!-- used-by: pubnub-choose-docs-path, pubnub-presence -->
-
 # Offline Catch-up Flow
 
 The canonical reference for catching a client up on missed messages after disconnect, with `restore`, last-seen-timetoken persistence, and merge-with-live semantics.

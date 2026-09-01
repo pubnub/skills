@@ -1,8 +1,3 @@
-<!-- canonical-for: THREADING -->
-<!-- used-by: -->
-
-> **Cross-references:** Threads are implemented as separate channels under the hood — see [channel naming](../../pubnub-app-developer/references/channels.md). Built on [pub/sub basics](../../pubnub-app-developer/references/publish-subscribe.md). Thread channels carry their own [App Context channel metadata and memberships](../../pubnub-app-context/references/channels-and-memberships.md) (see also [App Context overview](../../pubnub-app-context/references/users.md)). Reactions inside threads use [Message Actions](message-actions.md). For [Message Persistence retention so threads can be scrolled back](../../pubnub-history/references/pagination-and-ordering.md) and [retention configuration](../../pubnub-history/references/retention-and-storage.md) see `pubnub-history`.
-
 # Threaded Messages
 
 A thread is a side conversation attached to a parent message. In PubNub Chat SDK, each thread is implemented as its own channel, deterministically named from the parent message's timetoken.

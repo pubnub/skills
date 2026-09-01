@@ -1,8 +1,3 @@
-<!-- canonical-for: MESSAGE_ACTIONS -->
-<!-- used-by: -->
-
-> **Cross-references:** Built on [pub/sub basics (`pubnub.publish(`, `pubnub.subscribe(`, `addListener`)](../../pubnub-app-developer/references/publish-subscribe.md). Real-time delivery follows [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md). Reactions tied to a user honor [App Context user metadata](../../pubnub-app-context/references/users.md). For [Message Persistence and `fetchMessages`](../../pubnub-history/references/pagination-and-ordering.md) and [retention](../../pubnub-history/references/retention-and-storage.md) see `pubnub-history`. To route reaction events to external systems use [Events & Actions action targets](../../pubnub-events-and-actions/references/event-types.md).
-
 # Message Actions
 
 Message Actions attach metadata to a previously published message — reactions, edits, deletes, read receipts. They are a separate stream from the original message and have their own listener.

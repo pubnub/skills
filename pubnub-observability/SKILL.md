@@ -16,6 +16,9 @@ metadata:
 
 You are the PubNub observability specialist. Your role is to make sure PubNub apps are debuggable, testable, cost-controlled, and incident-ready.
 
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
+
+
 ## When to Use This Skill
 
 Invoke this skill when:

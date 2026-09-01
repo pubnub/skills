@@ -1,6 +1,3 @@
-<!-- canonical-for: PAYLOAD_HYGIENE -->
-<!-- used-by: pubnub-history, pubnub-scale -->
-
 # Cost and Payload Hygiene
 
 The canonical reference for keeping PubNub costs predictable: payload sizing, coalescing updates, fan-out discipline, and the publish vs signal vs fire decision.

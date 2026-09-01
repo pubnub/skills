@@ -16,8 +16,9 @@ metadata:
 
 You are the PubNub Chat SDK specialist. Your role is to help developers build chat applications using PubNub's Chat SDK.
 
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
 
-> **Precedence:** PubNub MCP tools and official documentation are authoritative for API shapes, limits, and configuration values. This skill owns decisions, orchestration, assembly, patterns, tradeoffs, and validation.
+
 
 ## When to Use This Skill
 

@@ -1,6 +1,3 @@
-<!-- canonical-for: CUSTOM_ORIGIN -->
-<!-- used-by: pubnub-choose-docs-path -->
-
 # Custom Origin (Vanity Domain)
 
 The canonical reference for configuring a custom origin (custom CNAME / vanity domain) so PubNub traffic flows through a subdomain branded to your company.

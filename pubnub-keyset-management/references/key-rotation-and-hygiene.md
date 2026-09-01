@@ -1,6 +1,3 @@
-<!-- canonical-for: KEY_HYGIENE_AND_ROTATION -->
-<!-- used-by: pubnub-security -->
-
 # Key Rotation and Hygiene
 
 The canonical reference for rotating PubNub publish, subscribe, and secret keys, and for keeping keys out of source control and CI logs.

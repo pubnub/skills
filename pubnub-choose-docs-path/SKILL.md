@@ -16,6 +16,9 @@ metadata:
 
 You are the first responder for any PubNub question. Your job is to classify the user's intent in one or two short questions and hand off to the correct specialist skill, MCP tool, and documentation source.
 
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
+
+
 ## When to Use This Skill
 
 Invoke this skill when:

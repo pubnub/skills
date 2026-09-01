@@ -1,6 +1,3 @@
-<!-- canonical-for: USAGE_METRICS -->
-<!-- used-by: pubnub-keyset-management, pubnub-history -->
-
 # Usage Metrics
 
 The canonical reference for pulling, interpreting, and reconciling PubNub usage / billing metrics.

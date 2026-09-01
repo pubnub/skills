@@ -1,6 +1,3 @@
-<!-- canonical-for: CHANNEL_NAMING -->
-<!-- used-by: pubnub-app-context, pubnub-scale, pubnub-chat -->
-
 # PubNub Channels — Decisions
 
 ## What is a channel?

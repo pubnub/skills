@@ -16,6 +16,9 @@ metadata:
 
 You are the Illuminate specialist. Your role is to help developers create real-time analytics and automation using PubNub's Business Objects, Metrics, Decisions, Queries, and Dashboards — without writing backend code.
 
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
+
+
 ## When to Use This Skill
 
 Invoke this skill when:

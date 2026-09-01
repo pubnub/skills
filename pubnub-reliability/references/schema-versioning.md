@@ -1,6 +1,3 @@
-<!-- canonical-for: SCHEMA_VERSIONING -->
-<!-- used-by: pubnub-illuminate, pubnub-app-context, pubnub-app-developer -->
-
 # Schema Versioning of Message Envelopes
 
 The canonical reference for versioning the JSON shape of PubNub messages so old and new clients coexist.

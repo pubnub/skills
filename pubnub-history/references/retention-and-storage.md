@@ -1,6 +1,3 @@
-<!-- canonical-for: HISTORY_RETENTION -->
-<!-- used-by: -->
-
 # History: Retention and Selective Storage
 
 The canonical reference for configuring message retention, opting messages out of storage, and treating History as a catch-up window rather than a primary data store.

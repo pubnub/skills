@@ -1,6 +1,3 @@
-<!-- canonical-for: MULTI_DEVICE_SYNC -->
-<!-- used-by: pubnub-reliability, pubnub-app-context -->
-
 # Multi-Device Sync: Same User on Multiple Devices
 
 The canonical reference for handling presence and message delivery when one user has multiple devices (phone + laptop + tablet) connected simultaneously.

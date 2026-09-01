@@ -1,8 +1,3 @@
-<!-- canonical-for: FUNCTION_MODULES -->
-<!-- used-by: -->
-
-> **Cross-references:** [Vault for secrets / secret-key handling](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md). [Crypto module is a Function-side option for the same end-to-end message encryption](../../pubnub-security/references/encryption.md). The PubNub module's [`pubnub.publish(`](../../pubnub-app-developer/references/publish-subscribe.md) call from inside a Function uses the same [SDK userId/UUID semantics](../../pubnub-app-developer/references/sdk-patterns.md) and is subject to the [3-chain rule](functions-chaining.md).
-
 # PubNub Functions 2.0 Modules
 
 ## Module selection

@@ -1,6 +1,3 @@
-<!-- canonical-for: EVENTS_AND_ACTIONS_DELIVERY -->
-<!-- used-by: -->
-
 # Retries, Envelopes, and Batching
 
 The canonical reference for E&A delivery configuration: retry policy, envelope versions, and batching for high-volume targets.

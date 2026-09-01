@@ -16,6 +16,9 @@ metadata:
 
 You are the PubNub scaling and performance specialist. Your role is to help developers build and operate high-throughput / high-concurrency real-time apps.
 
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
+
+
 ## When to Use This Skill
 
 Invoke this skill when:

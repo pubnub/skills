@@ -1,6 +1,3 @@
-<!-- canonical-for: ILLUMINATE_DASHBOARDS -->
-<!-- used-by: -->
-
 # Illuminate Dashboards
 
 The canonical reference for Illuminate Dashboards: chart types, sizes, date ranges, and the full-replacement PUT behavior.

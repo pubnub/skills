@@ -1,8 +1,3 @@
-<!-- canonical-for: IP_WHITELISTING -->
-<!-- used-by: -->
-
-> **Cross-references:** Configured per [keyset](../../pubnub-keyset-management/references/keysets-and-environments.md). Pair with [Access Manager grants](access-manager.md) for layered defense. For [event delivery to your services](../../pubnub-events-and-actions/SKILL.md), allowlist PubNub's outbound IPs on your side. SDKs identify with [userId/UUID](../../pubnub-app-developer/references/sdk-patterns.md). Verification uses the [REST API surface (`https://ps.pndsn.com`)](../../pubnub-app-developer/references/rest-api.md).
-
 # IP Allowlisting (IP Whitelisting)
 
 PubNub supports restricting traffic on a sub-key by source IP address. This is a **defense-in-depth** layer; it does not replace [Access Manager](access-manager.md).

@@ -1,6 +1,3 @@
-<!-- canonical-for: EVENTS_AND_ACTIONS -->
-<!-- used-by: pubnub-choose-docs-path, pubnub-illuminate, pubnub-presence, pubnub-app-context -->
-
 # Events & Actions: Event Catalog
 
 The canonical reference for all event sources, event types, and payload schemas exposed by PubNub Events & Actions.

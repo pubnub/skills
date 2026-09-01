@@ -1,8 +1,3 @@
-<!-- canonical-for: FUNCTION_DB_TRIGGERS, FUNCTION_RUNTIME_QUIRKS -->
-<!-- used-by: -->
-
-> **Cross-references:** For pure routing to external systems prefer [Events & Actions action targets](../../pubnub-events-and-actions/references/event-types.md) (see also [the action-targets reference](../../pubnub-events-and-actions/references/action-targets.md)). For [retry/backoff and queue-and-retry](../../pubnub-reliability/references/queue-and-retry.md) outside the Function. [Vault for credentials](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md). [Logging correlation fields](../../pubnub-observability/references/logging-correlation.md).
-
 # DB Triggers and Runtime Quirks
 
 This document covers two related topics:

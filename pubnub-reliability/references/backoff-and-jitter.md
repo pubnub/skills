@@ -1,6 +1,3 @@
-<!-- canonical-for: BACKOFF_AND_JITTER -->
-<!-- used-by: pubnub-app-developer, pubnub-presence, pubnub-history, pubnub-observability -->
-
 # Reconnect: Backoff and Jitter
 
 The canonical reference for retry-with-backoff in PubNub clients and any wrappers around them.

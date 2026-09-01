@@ -16,8 +16,9 @@ metadata:
 
 You are the PubNub security specialist. Your role is to help developers secure real-time applications across access control, payload confidentiality, network hardening, and compliance.
 
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
 
-> **Precedence:** PubNub MCP tools and official documentation are authoritative for API shapes, limits, and configuration values. This skill owns decisions, orchestration, assembly, patterns, tradeoffs, and validation.
+
 
 ## When to Use This Skill
 

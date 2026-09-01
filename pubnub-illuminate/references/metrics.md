@@ -1,6 +1,3 @@
-<!-- canonical-for: ILLUMINATE_METRICS -->
-<!-- used-by: -->
-
 # Illuminate Metrics
 
 The canonical reference for Illuminate Metrics: aggregations, evaluation windows, dimensions vs measures, filter scoping.

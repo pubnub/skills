@@ -1,7 +1,3 @@
-<!-- canonical-for: HISTORY_AND_PLAYBACK -->
-<!-- canonical-for: TIMETOKEN_PAGINATION -->
-<!-- used-by: pubnub-choose-docs-path, pubnub-keyset-management, pubnub-chat, pubnub-scale, pubnub-reliability -->
-
 # History Pagination — Patterns and Pitfalls
 
 

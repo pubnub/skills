@@ -1,6 +1,3 @@
-<!-- canonical-for: DEDUP_ON_MERGE -->
-<!-- used-by: pubnub-history, pubnub-illuminate, pubnub-observability -->
-
 # Dedup on Merge
 
 The canonical reference for deduplicating messages when combining live subscription with historical fetch, or when the same message could arrive twice via the network.

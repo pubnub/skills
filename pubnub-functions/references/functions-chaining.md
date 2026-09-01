@@ -1,8 +1,3 @@
-<!-- canonical-for: FUNCTION_CHAINING -->
-<!-- used-by: -->
-
-> **Cross-references:** Functions chaining is the *only* PubNub mechanism for transforming a message and then routing the result. For pure routing (no transform), prefer [Events & Actions](../../pubnub-events-and-actions/SKILL.md). For pub/sub semantics see the [publish-subscribe owner](../../pubnub-app-developer/references/publish-subscribe.md).
-
 # Function Chaining
 
 PubNub Functions can trigger one another by republishing on a channel that another Function watches. This is **chaining**.

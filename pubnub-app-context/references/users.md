@@ -1,6 +1,3 @@
-<!-- canonical-for: APP_CONTEXT -->
-<!-- used-by: pubnub-choose-docs-path, pubnub-keyset-management, pubnub-chat, pubnub-illuminate -->
-
 # App Context: Users (UUID Metadata)
 
 The canonical reference for storing, querying, and managing user profile data in PubNub App Context.

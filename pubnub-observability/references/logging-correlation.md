@@ -1,6 +1,3 @@
-<!-- canonical-for: LOGGING_CORRELATION -->
-<!-- used-by: pubnub-reliability, pubnub-history -->
-
 # Logging Correlation
 
 The canonical reference for what every PubNub send and receive code path must log so that incidents are diagnosable.

@@ -1,8 +1,3 @@
-<!-- canonical-for: SDK_VERSION_UPGRADES -->
-<!-- used-by: pubnub-observability -->
-
-> **Cross-references:** For [Access Manager](../../pubnub-security/references/access-manager.md), [PNNetworkDownCategory dropped-connection](../../pubnub-presence/references/dropped-connections.md), [App Context](../../pubnub-app-context/references/users.md), and the `get_sdk_documentation` MCP tool ([routing](../../pubnub-choose-docs-path/references/intent-to-tool.md)) see the canonical owners.
-
 # SDK Upgrades — Orchestration
 
 

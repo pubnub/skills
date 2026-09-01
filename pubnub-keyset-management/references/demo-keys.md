@@ -1,6 +1,3 @@
-<!-- canonical-for: DEMO_KEYS -->
-<!-- used-by: pubnub-choose-docs-path -->
-
 # Demo Keys
 
 The canonical reference for PubNub demo keys: when they are acceptable, when they are dangerous.

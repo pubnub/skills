@@ -1,6 +1,3 @@
-<!-- canonical-for: TEST_PYRAMID -->
-<!-- used-by: -->
-
 # Test Pyramid for Real-Time Apps
 
 The canonical reference for testing PubNub features at the right level: unit tests for pure logic, integration tests for round-trips, load tests for fan-out and concurrency.

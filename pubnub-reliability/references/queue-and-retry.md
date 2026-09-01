@@ -1,6 +1,3 @@
-<!-- canonical-for: QUEUE_AND_RETRY -->
-<!-- used-by: pubnub-app-developer, pubnub-presence -->
-
 # Queue and Retry: Offline Publish Buffer
 
 The canonical reference for buffering publishes when offline and draining them on reconnect, without losing or duplicating.

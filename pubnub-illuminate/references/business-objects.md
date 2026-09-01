@@ -1,6 +1,3 @@
-<!-- canonical-for: ILLUMINATE_BUSINESS_OBJECTS -->
-<!-- used-by: -->
-
 # Illuminate Business Objects
 
 The canonical reference for Illuminate Business Objects: schema, field types, JSONPath rules, and the activation sequence.

@@ -1,8 +1,3 @@
-<!-- canonical-for: REST_API -->
-<!-- used-by: -->
-
-> **Cross-references:** For [secret key, subscribe key, publish key](../../pubnub-keyset-management/references/keysets-and-environments.md) handling see the canonical owner.
-
 # PubNub REST API: When to Use vs SDK
 
 The canonical reference for the raw PubNub REST API — what it is, when you actually want it, and what to know if you do.
