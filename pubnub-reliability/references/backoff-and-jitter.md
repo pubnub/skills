@@ -1,5 +1,7 @@
 # Reconnect: Backoff and Jitter
 
+**Canonical owner (S3):** PubNub client reconnect strategy with exponential backoff, jitter, and status-category wiring. Vertical setup guides should link here instead of duplicating status switch blocks.
+
 The canonical reference for retry-with-backoff in PubNub clients and any wrappers around them.
 
 ## Why Backoff + Jitter

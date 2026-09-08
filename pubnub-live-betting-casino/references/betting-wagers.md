@@ -75,64 +75,23 @@ class BetSlip {
 
 ## Server-Side Validation with PubNub Functions
 
-### Before Publish Handler
+Use the [server-authoritative Before-Publish pattern](../../pubnub-functions/references/functions-patterns.md) for wager submission validation. **Betting-specific checks on `wagers.submit`:**
 
-```javascript
-// PubNub Function: Before Publish on 'wagers.submit'
-export default (request) => {
-  const message = request.message;
+- Required fields: `betId`, `userId`, `selections`, `stake`
+- Stake range and max selections per slip (jurisdiction-specific)
+- Stamp `serverTimestamp` and `status: 'pending'` on accept
 
-  if (!message.betId || !message.userId || !message.selections || !message.stake) {
-    request.message = { type: 'bet_rejected', betId: message.betId, reason: 'Missing required fields', code: 'INVALID_PAYLOAD' };
-    return request.abort();
-  }
+Odds verification and balance reservation run in separate After-Publish or downstream Functions — see sections below.
 
-  if (message.stake < 0.50 || message.stake > 10000) {
-    request.message = { type: 'bet_rejected', betId: message.betId, reason: 'Stake out of range', code: 'INVALID_STAKE' };
-    return request.abort();
-  }
+### Odds Verification (After Publish)
 
-  if (message.selections.length > 20) {
-    request.message = { type: 'bet_rejected', betId: message.betId, reason: 'Maximum 20 selections', code: 'TOO_MANY_SELECTIONS' };
-    return request.abort();
-  }
+| Check | Betting rule |
+|-------|--------------|
+| Market exists | `odds:<eventId>:<marketId>:<selectionId>` in KV Store |
+| Drift | Reject or prompt if stored decimal drifts beyond jurisdiction threshold vs `oddsAtSelection` |
+| Accept | Publish `bet_accepted` to `wagers.<userId>.status` |
 
-  message.serverTimestamp = Date.now();
-  message.status = 'pending';
-  return request.ok();
-};
-```
-
-### Odds Verification Function
-
-```javascript
-// PubNub Function: After Publish on 'wagers.submit'
-const db = require('kvstore');
-const pubnub = require('pubnub');
-
-export default async (request) => {
-  const bet = request.message;
-  const DRIFT_THRESHOLD = 0.05;
-
-  for (const selection of bet.selections) {
-    const storedOdds = await db.get(`odds:${selection.eventId}:${selection.marketId}:${selection.selectionId}`);
-
-    if (!storedOdds) {
-      await pubnub.publish({ channel: `wagers.${bet.userId}.status`, message: { type: 'bet_rejected', betId: bet.betId, reason: 'Market not available', code: 'MARKET_NOT_FOUND' } });
-      return request.ok();
-    }
-
-    const drift = Math.abs(parseFloat(storedOdds.decimal) - selection.oddsAtSelection) / selection.oddsAtSelection;
-    if (drift > DRIFT_THRESHOLD) {
-      await pubnub.publish({ channel: `wagers.${bet.userId}.status`, message: { type: 'odds_changed', betId: bet.betId, selection: selection.selectionId, submittedOdds: selection.oddsAtSelection, currentOdds: parseFloat(storedOdds.decimal), code: 'ODDS_DRIFT' } });
-      return request.ok();
-    }
-  }
-
-  await pubnub.publish({ channel: `wagers.${bet.userId}.status`, message: { type: 'bet_accepted', betId: bet.betId, selections: bet.selections, stake: bet.stake, potentialReturn: bet.potentialReturn, timestamp: Date.now() } });
-  return request.ok();
-};
-```
+After-Publish wiring follows [functions-patterns After Publish](../../pubnub-functions/references/functions-patterns.md) — do not paste a full odds Function here unless deployable code is requested.
 
 ## Balance Management
 

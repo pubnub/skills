@@ -15,50 +15,23 @@ Participant --> publish vote --> [Before Publish Function] --> KV Store (dedupe 
                                    return error            publish to results channel
 ```
 
-## Before Publish Function for Vote Validation
+## Before-Publish vote pipeline
 
-This function intercepts every vote before it reaches subscribers. It validates the vote, checks for duplicates, increments the tally, and publishes updated results.
+Use the canonical [server-authoritative Before-Publish counter pattern](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter) for dedupe + atomic tally. Vote-specific behavior in this Function:
 
-```javascript
-// PubNub Function: Before Publish on poll.*.votes
-export default (request) => {
-  const kvstore = require('kvstore');
-  const pubnub = require('pubnub');
-  const { pollId, optionId, voterId } = request.message;
+| Step | Vote domain rule |
+|------|-------------------|
+| Validate payload | Require `pollId`, `optionId`, `voterId` |
+| Check poll open | Read `poll:<pollId>:status` from KV Store |
+| Dedupe voter | Key `poll:<pollId>:voter:<voterId>` — reject `DUPLICATE_VOTE` |
+| Tally | `incrCounter` on `poll:<pollId>:tally:<optionId>` and `poll:<pollId>:total` (see [functions-modules](../../pubnub-functions/references/functions-modules.md)) |
+| Broadcast | Publish consolidated results to the results channel |
 
-  if (!pollId || !optionId || !voterId) {
-    request.message = { error: 'INVALID_VOTE', detail: 'Missing required fields' };
-    return request.abort();
-  }
-
-  return kvstore.get(`poll:${pollId}:status`).then((status) => {
-    if (status !== 'open') {
-      request.message = { error: 'POLL_NOT_OPEN', detail: `Poll is ${status || 'unknown'}` };
-      return request.abort();
-    }
-
-    const voterKey = `poll:${pollId}:voter:${voterId}`;
-    return kvstore.get(voterKey).then((existingVote) => {
-      if (existingVote) {
-        request.message = { error: 'DUPLICATE_VOTE', detail: 'Already voted' };
-        return request.abort();
-      }
-
-      return kvstore.set(voterKey, optionId)
-        .then(() => kvstore.incrCounter(`poll:${pollId}:tally:${optionId}`, 1))
-        .then(() => kvstore.incrCounter(`poll:${pollId}:total`, 1))
-        .then(() => broadcastTally(pubnub, kvstore, pollId))
-        .then(() => request.ok());
-    });
-  });
-};
-```
+For atomic counter mechanics and rate-limit counters, see [Pattern 1](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter) and [Pattern 7: Rate Limiting](../../pubnub-functions/references/functions-patterns.md#pattern-7-rate-limiting).
 
 ## Duplicate Vote Prevention
 
-Duplicate prevention is enforced server-side using KV Store. Each voter's choice is stored with a key combining poll ID and voter ID.
-
-### KV Store Key Schema
+Duplicate prevention is enforced server-side using KV Store (see Before-Publish vote pipeline above).
 
 | Key Pattern | Value | Purpose |
 |-------------|-------|---------|
@@ -92,150 +65,35 @@ function handleVoteChange(kvstore, pollId, voterId, newOptionId) {
 }
 ```
 
-## Atomic Counters with incrCounter
-
-The `kvstore.incrCounter()` method provides atomic increment/decrement operations, preventing race conditions when thousands of votes arrive simultaneously.
-
-```javascript
-kvstore.incrCounter('poll:abc:tally:opt-a', 1);    // Increment by 1
-kvstore.incrCounter('poll:abc:tally:opt-a', -1);   // Decrement by 1
-kvstore.getCounter('poll:abc:tally:opt-a');          // Read current value
-```
-
-| Operation | Method | Atomicity | Notes |
-|-----------|--------|-----------|-------|
-| Increment | `incrCounter(key, n)` | Atomic | Safe for concurrent access |
-| Decrement | `incrCounter(key, -n)` | Atomic | Counter can go below zero |
-| Read | `getCounter(key)` | Eventually consistent | May lag slightly behind writes |
-| Reset | `setCounter(key, 0)` | Atomic | Use when resetting polls |
-
 ## Broadcasting Tally Updates
 
-After each valid vote, the Function fetches all option tallies and publishes a consolidated result.
+After each valid vote, publish `tally_update` to `poll.<pollId>.results` with consolidated counts from KV Store counters.
 
-```javascript
-function broadcastTally(pubnub, kvstore, pollId) {
-  return kvstore.get(`poll:${pollId}:options`).then((optionsJson) => {
-    const options = JSON.parse(optionsJson || '[]');
+| Concern | Vote-specific rule |
+|---------|-------------------|
+| High throughput | Throttle broadcasts (~1/s) using `poll:<pollId>:lastBroadcast` in KV Store |
+| Client UX | Subscribers listen on results channel only — not raw votes |
 
-    const counterPromises = options.map((optId) =>
-      kvstore.getCounter(`poll:${pollId}:tally:${optId}`).then((count) =>
-        ({ optionId: optId, count: count || 0 })
-      )
-    );
-
-    return Promise.all(counterPromises).then((tallies) =>
-      kvstore.getCounter(`poll:${pollId}:total`).then((totalVotes) => {
-        const counts = {};
-        tallies.forEach((t) => { counts[t.optionId] = t.count; });
-
-        return pubnub.publish({
-          channel: `poll.${pollId}.results`,
-          message: {
-            type: 'tally_update', pollId,
-            counts, totalVotes: totalVotes || 0, updatedAt: Date.now()
-          }
-        });
-      })
-    );
-  });
-}
-```
-
-### Throttled Broadcasting
-
-For high-throughput polls, broadcast at most once per second to avoid overwhelming clients.
-
-```javascript
-function throttledBroadcast(pubnub, kvstore, pollId) {
-  const throttleKey = `poll:${pollId}:lastBroadcast`;
-  return kvstore.get(throttleKey).then((lastTime) => {
-    const now = Date.now();
-    if (lastTime && (now - parseInt(lastTime, 10)) < 1000) return Promise.resolve();
-    return kvstore.set(throttleKey, now.toString())
-      .then(() => broadcastTally(pubnub, kvstore, pollId));
-  });
-}
-```
+Counter reads/writes follow [Pattern 1](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter) — do not re-implement the generic counter loop here.
 
 ## Vote Validation Rules
 
-### Option Validation
-
-```javascript
-function validateOption(kvstore, pollId, optionId) {
-  return kvstore.get(`poll:${pollId}:options`).then((optionsJson) => {
-    const validOptions = JSON.parse(optionsJson || '[]');
-    if (!validOptions.includes(optionId)) {
-      throw new Error(`INVALID_OPTION: ${optionId} is not valid for poll ${pollId}`);
-    }
-    return true;
-  });
-}
-```
-
-### Time-Based Validation
-
-```javascript
-function validatePollTiming(kvstore, pollId) {
-  return kvstore.get(`poll:${pollId}:closesAt`).then((closesAt) => {
-    if (closesAt && Date.now() > parseInt(closesAt, 10)) {
-      return kvstore.set(`poll:${pollId}:status`, 'closed').then(() => {
-        throw new Error('POLL_EXPIRED: Poll has passed its close time');
-      });
-    }
-    return true;
-  });
-}
-```
-
-### Multiple Choice Validation
-
-```javascript
-function validateMultipleChoice(kvstore, pollId, selectedOptions) {
-  return kvstore.get(`poll:${pollId}:maxSelections`).then((maxStr) => {
-    const max = parseInt(maxStr, 10) || 1;
-    if (!Array.isArray(selectedOptions)) throw new Error('INVALID_FORMAT: Must be an array');
-    if (selectedOptions.length > max) throw new Error(`TOO_MANY_SELECTIONS: Max ${max}`);
-    if (selectedOptions.length === 0) throw new Error('EMPTY_VOTE: Select at least one');
-    return true;
-  });
-}
-```
+| Rule | Vote-specific check |
+|------|---------------------|
+| Option | `optionId` ∈ `poll:<pollId>:options` |
+| Timing | Reject if past `poll:<pollId>:closesAt`; may auto-close poll |
+| Multi-choice | Respect `poll:<pollId>:maxSelections` |
+| Vote change | If allowed: decrement old option counter, increment new (see pipeline table above) |
 
 ## Fraud Detection Patterns
 
-### Rate Limiting per Voter
-
-```javascript
-function checkRateLimit(kvstore, voterId) {
-  const rateKey = `ratelimit:${voterId}`;
-  return kvstore.getCounter(rateKey).then((attempts) => {
-    if (attempts && attempts > 10) throw new Error('RATE_LIMITED: Too many attempts');
-    return kvstore.incrCounter(rateKey, 1);
-  });
-}
-```
-
-### Session Fingerprint Detection
-
-```javascript
-function checkSessionFingerprint(kvstore, pollId, fingerprint) {
-  const fpKey = `poll:${pollId}:fp:${fingerprint}`;
-  return kvstore.getCounter(fpKey).then((count) => {
-    if (count && count >= 3) throw new Error('SUSPICIOUS_ACTIVITY: Multiple votes from session');
-    return kvstore.incrCounter(fpKey, 1);
-  });
-}
-```
-
-### Fraud Detection Summary
+Use [Pattern 1](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter) / [Pattern 7](../../pubnub-functions/references/functions-patterns.md#pattern-7-rate-limiting) for rate and fingerprint counters — do not paste generic `incrCounter` loops here.
 
 | Pattern | Detection Method | Action |
 |---------|-----------------|--------|
 | Duplicate votes | KV Store voter key lookup | Reject with DUPLICATE_VOTE |
-| Rapid-fire attempts | Rate counter per voter | Reject after threshold |
-| Session stuffing | Fingerprint counter | Reject after 3 per fingerprint |
+| Rapid-fire attempts | Rate counter per voter (`ratelimit:<voterId>`) | Reject after threshold |
+| Session stuffing | Fingerprint counter (`poll:<pollId>:fp:<fp>`) | Reject after 3 per fingerprint |
 | Late votes | Timestamp comparison | Reject and auto-close poll |
 | Invalid options | Option list lookup | Reject with INVALID_OPTION |
 
@@ -263,14 +121,7 @@ async function initializePollState(kvstore, poll) {
 
 ## Error Handling
 
-### Centralized Error Handler
-
-```javascript
-function handleVoteError(request, errorCode, detail) {
-  request.message = { error: errorCode, detail, timestamp: Date.now() };
-  return request.abort();
-}
-```
+On reject, set `request.message` to `{ error, detail, timestamp }` and call `request.abort()`. See [Pattern 1](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter).
 
 ### Error Codes Reference
 
@@ -296,23 +147,14 @@ function handleVoteError(request, errorCode, detail) {
 | Running average | Maintain sum and count | Star ratings, NPS | Medium |
 | Approval count | Increment for each selected option | Multi-select polls | Low |
 
-### Weighted Tally Example
+### Weighted tally
 
-```javascript
-function handleWeightedVote(kvstore, pollId, optionId, voterId, weight) {
-  const voterKey = `poll:${pollId}:voter:${voterId}`;
-  return kvstore.get(voterKey).then((existing) => {
-    if (existing) throw new Error('DUPLICATE_VOTE');
-    return kvstore.set(voterKey, optionId);
-  }).then(() => kvstore.incrCounter(`poll:${pollId}:tally:${optionId}`, weight))
-    .then(() => kvstore.incrCounter(`poll:${pollId}:total`, weight));
-}
-```
+Use `incrCounter(..., weight)` on option and total counters after duplicate-voter check — same [Pattern 1](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter) pipeline with a non-1 increment.
 
 ## Best Practices
 
 - **Always validate server-side**: Client-side validation is for UX only. The Before Publish Function is the source of truth for vote acceptance.
-- **Use atomic counters for all tallies**: Never use `get` then `set` to update counts. The `incrCounter` method prevents race conditions under concurrent load.
+- **Use atomic counters for all tallies**: Use `incrCounter` via the canonical [Before-Publish counter pattern](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter) — never `get` then `set` for counts.
 - **Initialize KV Store before opening polls**: Ensure all option counters, status, and configuration are set before transitioning to the open state.
 - **Keep KV Store keys small**: Use short, predictable key patterns. Retrieve current KV Store key/value size limits via **`how_to`** (`understand-pubnub-functions-limits-and-constraints`) or Functions docs.
 - **Throttle result broadcasts for high-volume polls**: For polls expecting thousands of votes per second, broadcast on a time interval rather than after every vote.

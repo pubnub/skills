@@ -440,69 +440,16 @@ function lerp(a, b, t) {
 
 ## Anti-Cheat Validation via PubNub Functions
 
-### Before Publish Trigger for Move Validation
+Use [Pattern 1 Before Publish](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter) on `game.*.state` channels. **Game-specific checks only:**
 
-```javascript
-// PubNub Function: Before Publish on game.*.state channels
-export default (request) => {
-  const message = request.message;
+| Input | Rule |
+|-------|------|
+| `player-input` move | Max speed / distance per tick |
+| `state-delta` health | Cap decrement magnitude |
+| Timestamp | Reject if >5s in the future |
+| On fail | `request.abort()` or replace with `action-rejected` |
 
-  if (message.type === 'player-input' || message.type === 'state-delta') {
-    const validation = validateGameAction(message);
-
-    if (!validation.valid) {
-      // Option 1: Block the message entirely
-      // return request.abort('Cheat detected');
-
-      // Option 2: Replace with a rejection message
-      request.message = {
-        type: 'action-rejected',
-        originalType: message.type,
-        playerId: message.playerId,
-        reason: validation.reason,
-        timestamp: Date.now()
-      };
-    }
-  }
-
-  return request.ok();
-};
-
-function validateGameAction(message) {
-  // Validate movement speed
-  if (message.input?.type === 'move') {
-    const dx = Math.abs(message.input.dx || 0);
-    const dy = Math.abs(message.input.dy || 0);
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    const MAX_SPEED = 10; // units per tick
-
-    if (distance > MAX_SPEED) {
-      return { valid: false, reason: 'Movement speed exceeded' };
-    }
-  }
-
-  // Validate damage values
-  if (message.delta) {
-    for (const [path, value] of Object.entries(message.delta)) {
-      if (path.includes('.health') && typeof value === 'object') {
-        if (value.operation === 'decrement' && value.value > 100) {
-          return { valid: false, reason: 'Damage value out of range' };
-        }
-      }
-    }
-  }
-
-  // Validate message frequency (rate limiting)
-  if (message.timestamp) {
-    const now = Date.now();
-    if (message.timestamp > now + 5000) {
-      return { valid: false, reason: 'Timestamp in the future' };
-    }
-  }
-
-  return { valid: true };
-}
-```
+Full deployable handler: start from the functions owner; apply rules from [gaming-state-sync.md](gaming-state-sync.md).
 
 ### Server-Side Score Validation
 

@@ -73,7 +73,7 @@ Retrieve publish/subscribe API details from **`get_sdk_documentation`** — do n
 ## userId rules (critical)
 
 - Required on every client — retrieve exact parameter name per SDK version from docs.
-- Must be **persistent** across sessions for the same user/device.
+- Must be **persistent** across sessions for the same logical user — see [multi-device userId tradeoff (S8)](../pubnub-presence/references/multi-device-sync.md) when one user has phone + web.
 - **Never** generate a random UUID on every page load — breaks presence, billing, and history continuity.
 - Prefer authenticated user id from your auth system; for IoT use stable device id.
 

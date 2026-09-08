@@ -153,37 +153,11 @@ async function assignVoterWeights(kvstore, pollId, voterWeights) {
 
 ### Anonymous Voting Implementation
 
-```javascript
-function processAnonymousVote(kvstore, pollId, voterId, optionId) {
-  const crypto = require('crypto');
-  const hashedId = crypto.createHash('sha256')
-    .update(`${pollId}:${voterId}:anonymous-salt-value`)
-    .digest('hex').substring(0, 32);
-
-  const voterKey = `poll:${pollId}:anon:${hashedId}`;
-  return kvstore.get(voterKey).then((existing) => {
-    if (existing) throw new Error('DUPLICATE_VOTE');
-    return kvstore.set(voterKey, 'voted');
-  }).then(() => kvstore.incrCounter(`poll:${pollId}:tally:${optionId}`, 1))
-    .then(() => kvstore.incrCounter(`poll:${pollId}:total`, 1));
-}
-```
+Hash the voter ID for privacy, then apply the canonical [Before-Publish counter pattern](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter) with key prefix `poll:<pollId>:anon:<hashedId>` instead of `poll:<pollId>:voter:<voterId>`.
 
 ### Identified Voting with Audit Trail
 
-```javascript
-function processIdentifiedVote(kvstore, pubnub, pollId, voterId, optionId) {
-  const voterKey = `poll:${pollId}:voter:${voterId}`;
-  return kvstore.get(voterKey).then((existing) => {
-    if (existing) throw new Error('DUPLICATE_VOTE');
-    return kvstore.set(voterKey, optionId);
-  }).then(() => pubnub.publish({
-    channel: `poll.${pollId}.audit`,
-    message: { event: 'vote_recorded', voterId, optionId, timestamp: Date.now() }
-  })).then(() => kvstore.incrCounter(`poll:${pollId}:tally:${optionId}`, 1))
-    .then(() => kvstore.incrCounter(`poll:${pollId}:total`, 1));
-}
-```
+Use the same canonical counter pattern with identified voter keys. **Vote-specific delta:** publish an audit event to `poll.<pollId>.audit` after a successful tally so compliance can trace who voted (without re-implementing dedupe/tally logic here).
 
 ## Poll Templates and Reuse
 

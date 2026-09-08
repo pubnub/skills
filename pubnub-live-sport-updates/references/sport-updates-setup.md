@@ -296,11 +296,8 @@ function subscribeToGame(pubnub, league, gameId, handlers) {
         case 'game_status': handlers.onStatusChange?.(event.message); break;
       }
     },
-    status: (event) => {
-      if (event.category === 'PNReconnectedCategory') {
-        fetchMissedUpdates(pubnub, channels, handlers);
-      }
-    }
+    // Reconnect: wire status per [S3 backoff-and-jitter](../../pubnub-reliability/references/backoff-and-jitter.md);
+    // on reconnect run [S2 offline catch-up](../../pubnub-history/references/offline-catch-up.md) — see Reconnection section below.
   };
 
   pubnub.addListener(listener);
@@ -315,23 +312,7 @@ function subscribeToGame(pubnub, league, gameId, handlers) {
 
 ### Reconnection and Catch-Up
 
-```javascript
-async function fetchMissedUpdates(pubnub, channels, handlers) {
-  for (const channel of channels) {
-    try {
-      const response = await pubnub.fetchMessages({ channels: [channel], count: 25 });
-      const messages = response.channels[channel] || [];
-      for (const entry of messages) {
-        if (entry.message.type === 'score_update') {
-          handlers.onScoreUpdate?.(entry.message);
-        }
-      }
-    } catch (error) {
-      console.error(`Failed to fetch missed updates for ${channel}:`, error);
-    }
-  }
-}
-```
+Follow [offline catch-up](../../pubnub-history/references/offline-catch-up.md) with [dedup-on-merge](../../pubnub-reliability/references/dedup-on-merge.md). **Sport-specific:** after reconnect, fetch missed messages for the game channels and dispatch `score_update` / `play_by_play` / `game_status` to the same handlers — dedupe by `gameId + sequence`.
 
 ## Mobile SDK Initialization
 
@@ -374,7 +355,7 @@ pubnub.subscribe(channels = listOf("sports.nfl.*"))
 1. **Channel granularity** - Use separate channels for scores, play-by-play, and fan engagement so clients subscribe only to what they render
 2. **Compact payloads** - Keep real-time messages under 2 KB; use abbreviations and codes rather than full names
 3. **Sequence numbers** - Always include a per-game monotonic sequence so clients detect gaps and request backfill
-4. **Reconnection** - Enable `restore: true` and `autoNetworkDetection: true`; fetch missed messages on reconnect
+4. **Reconnection** — Enable `restore: true` and `autoNetworkDetection: true`; on `PNReconnectedCategory` run [offline catch-up](../../pubnub-history/references/offline-catch-up.md) (see Reconnection section above)
 5. **Wildcard subscriptions** - Design channel names to support wildcards at meaningful boundaries (league, team, game)
 6. **Access control** - Use Access Manager to restrict publish rights to your ingestion service; clients should be subscribe-only
 7. **Idempotent processing** - Clients should deduplicate by gameId + sequence to handle redelivery gracefully

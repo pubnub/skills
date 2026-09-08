@@ -335,29 +335,7 @@ pubnub.addListener(object : SubscribeCallback() {
 
 ## Error Handling
 
-```javascript
-pubnub.addListener({
-  status: (statusEvent) => {
-    switch (statusEvent.category) {
-      case 'PNConnectedCategory':
-        console.log('Connected to betting channels');
-        break;
-      case 'PNAccessDeniedCategory':
-        console.error('Access denied - refresh auth token');
-        refreshAuthToken();
-        break;
-      case 'PNNetworkIssuesCategory':
-        console.warn('Network issue - odds may be stale');
-        showStaleOddsWarning();
-        break;
-      case 'PNReconnectedCategory':
-        console.log('Reconnected - refreshing odds');
-        refreshAllOdds();
-        break;
-    }
-  }
-});
-```
+Wire status categories per [dropped-connections](../../pubnub-presence/references/dropped-connections.md) and [backoff-and-jitter](../../pubnub-reliability/references/backoff-and-jitter.md). **Betting-specific on reconnect:** refresh auth token on `PNAccessDeniedCategory`; refresh all odds on `PNReconnectedCategory`; show stale-odds warning on `PNNetworkIssuesCategory`.
 
 ## Best Practices
 

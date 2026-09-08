@@ -40,6 +40,7 @@ class MultiSportDashboard {
   }
 
   handleStatus(event) {
+    // S3 owner: backoff-and-jitter; S2 owner: offline-catch-up — refresh all leagues after reconnect
     if (event.category === 'PNReconnectedCategory') this.refreshAllGames();
   }
 
@@ -350,42 +351,7 @@ export default (request) => {
 
 ### Delta Compression for High-Frequency Updates
 
-```javascript
-class DeltaCompressor {
-  constructor() { this.lastPublished = new Map(); }
-
-  computeDelta(gameId, fullState) {
-    const previous = this.lastPublished.get(gameId);
-    if (!previous) { this.lastPublished.set(gameId, { ...fullState }); return { type: 'full_state', ...fullState }; }
-
-    const delta = { type: 'delta', gameId, sequence: fullState.sequence, changes: {} };
-    let hasChanges = false;
-    for (const key of Object.keys(fullState)) {
-      if (JSON.stringify(fullState[key]) !== JSON.stringify(previous[key])) {
-        delta.changes[key] = fullState[key];
-        hasChanges = true;
-      }
-    }
-    if (hasChanges) { this.lastPublished.set(gameId, { ...fullState }); return delta; }
-    return null;
-  }
-}
-
-class DeltaApplier {
-  constructor() { this.gameStates = new Map(); }
-
-  apply(message) {
-    if (message.type === 'full_state') { this.gameStates.set(message.gameId, message); return message; }
-    if (message.type === 'delta') {
-      const current = this.gameStates.get(message.gameId) || {};
-      const updated = { ...current, ...message.changes, sequence: message.sequence };
-      this.gameStates.set(message.gameId, updated);
-      return updated;
-    }
-    return message;
-  }
-}
-```
+Use the canonical [delta / sequence state-sync pattern](../../pubnub-multiplayer-gaming/references/gaming-state-sync.md#delta-updates) for compute-and-apply deltas. **Sport-specific:** compress scoreboard fields (team scores, clock, period) and tag each publish with a per-game monotonic `sequence` for gap detection.
 
 ## Historical Data and Replay
 
@@ -435,39 +401,7 @@ async function buildGameSummary(pubnub, league, gameId) {
 
 ### Graceful Degradation
 
-```javascript
-class ResilientSportsClient {
-  constructor(pubnub) {
-    this.pubnub = pubnub;
-    this.isConnected = false;
-    this.reconnectAttempts = 0;
-
-    this.pubnub.addListener({
-      status: (event) => {
-        switch (event.category) {
-          case 'PNConnectedCategory':
-            this.isConnected = true;
-            this.reconnectAttempts = 0;
-            break;
-          case 'PNNetworkDownCategory':
-            this.isConnected = false;
-            break;
-          case 'PNReconnectedCategory':
-            this.isConnected = true;
-            this.reconnectAttempts = 0;
-            break;
-          case 'PNNetworkIssuesCategory':
-            this.reconnectAttempts++;
-            if (this.reconnectAttempts >= 10) {
-              console.warn('Unable to connect. Scores may be delayed.');
-            }
-            break;
-        }
-      }
-    });
-  }
-}
-```
+Wire status categories per [backoff-and-jitter (S3)](../../pubnub-reliability/references/backoff-and-jitter.md) and [dropped-connections](../../pubnub-presence/references/dropped-connections.md). **Sport-specific:** track `isConnected` / reconnect attempts; after repeated `PNNetworkIssuesCategory`, show “Scores may be delayed” instead of a hard error.
 
 ## Best Practices
 

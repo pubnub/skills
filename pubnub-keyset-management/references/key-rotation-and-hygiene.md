@@ -1,5 +1,7 @@
 # Key Rotation and Hygiene
 
+**Canonical owner (S6):** Subscribe-key rotation as keyset migration workflow (not an isolated rotate primitive).
+
 The canonical reference for rotating PubNub publish, subscribe, and secret keys, and for keeping keys out of source control and CI logs.
 
 ## Why Rotate

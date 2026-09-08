@@ -300,9 +300,10 @@ function initQuoteSubscriber(pubnub, symbols, callbacks) {
       callbacks.onTick(symbol, event.message.p, event.message.t);
     },
     status: (event) => {
-      if (event.category === 'PNConnectedCategory') callbacks.onConnected();
+      // Status wiring: pubnub-reliability (dropped-connections). On reconnect, resubscribe or refresh quote state.
       if (event.category === 'PNReconnectedCategory') callbacks.onReconnected();
       if (event.category === 'PNNetworkDownCategory') callbacks.onDisconnected();
+      if (event.category === 'PNConnectedCategory') callbacks.onConnected();
     }
   });
 

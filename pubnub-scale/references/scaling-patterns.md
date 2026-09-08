@@ -137,43 +137,11 @@ pubnub.addListener({
 
 ## High Concurrency Guidelines
 
+For large live audiences, channel sharding, PubNub Support engagement, and the pre-event checklist, use the canonical [large-events playbook](large-events.md) — do not duplicate sharding code here.
+
 ### Contact PubNub When
 
-- **1,000+ concurrent users** regularly - discuss Pro plan
-- **10,000+ concurrent users** for events - submit Virtual Event Form
-- Need **architecture review** for scale
-- Require **live event support**
-
-### Chat Room Scaling
-
-```javascript
-// For < 10,000 users in a room: Single channel works well
-'chat-room-main'
-
-// For > 10,000 users: Consider sharding
-function getShardedChannel(roomId, userId) {
-  const shardCount = 10;
-  const shardId = hashCode(userId) % shardCount;
-  return `chat-room-${roomId}-shard-${shardId}`;
-}
-
-// Users subscribe to their shard
-const myChannel = getShardedChannel('main', currentUserId);
-pubnub.subscribe({ channels: [myChannel] });
-
-// Broadcast messages to all shards
-async function broadcastToRoom(roomId, message) {
-  const shardCount = 10;
-  const publishes = [];
-  for (let i = 0; i < shardCount; i++) {
-    publishes.push(pubnub.publish({
-      channel: `chat-room-${roomId}-shard-${i}`,
-      message
-    }));
-  }
-  await Promise.all(publishes);
-}
-```
+See [large-events.md — Triggering Threshold](large-events.md#triggering-threshold).
 
 ### Presence at Scale
 

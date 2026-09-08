@@ -21,6 +21,10 @@ You are a PubNub Live Auctions specialist. Your role is to help developers build
 
 > **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
 
+## Shared pattern routing
+
+Do **not** re-implement [S1 Before-Publish](../pubnub-functions/references/functions-patterns.md). Link the owner; keep **auction delta** only ([auction-bidding.md](references/auction-bidding.md) — bid rules, locks, notifications). [shared-pattern-routing.md](../pubnub-choose-docs-path/references/shared-pattern-routing.md)
+
 
 ## When to Use This Skill
 
@@ -158,8 +162,8 @@ function updateCountdownDisplay(auctionId, remainingMs) {
 ## Output Format
 
 When providing implementations:
-1. Include PubNub SDK initialization with auction-specific channel configuration
-2. Show PubNub Functions code for server-side bid validation
+1. **Bid validation:** Link [functions-patterns](../pubnub-functions/references/functions-patterns.md); keep **auction rules** (min bid, lock/CAS, outbid) as tables — no full `export default` unless deployable code requested.
+2. Include PubNub SDK initialization with auction-specific channel configuration
 3. Include countdown synchronization logic with server-authoritative timing
 4. Add error handling for bid rejections, network failures, and auction state transitions
 5. Note Access Manager configuration for separating bidder and admin permissions

@@ -63,7 +63,7 @@ Retrieve channel/message API cookbooks from **`get_chat_sdk_documentation`** —
 
 ## Constraints
 
-- Persistent `userId` ([pubnub-app-developer/SKILL.md](../pubnub-app-developer/SKILL.md)).
+- Persistent `userId` ([pubnub-app-developer/SKILL.md](../pubnub-app-developer/SKILL.md)). Multi-device (phone + web): [S8 multi-device-sync](../pubnub-presence/references/multi-device-sync.md).
 - Clean up `channel.connect` / `chat.disconnect` on unmount.
 - File size limits — retrieve from Admin Portal / docs ([file-sharing.md](references/file-sharing.md)).
 - Read receipts require unread-count setup first — see Chat SDK unread docs via MCP.

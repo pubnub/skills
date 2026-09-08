@@ -1,5 +1,7 @@
 # Multi-Device Sync: Same User on Multiple Devices
 
+**Canonical owner (S8):** Shared vs per-device `userId` tradeoff and consequences for presence and message delivery.
+
 The canonical reference for handling presence and message delivery when one user has multiple devices (phone + laptop + tablet) connected simultaneously.
 
 

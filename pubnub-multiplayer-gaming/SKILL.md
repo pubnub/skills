@@ -1,6 +1,6 @@
 ---
 name: pubnub-multiplayer-gaming
-description: Build real-time multiplayer games with PubNub game state sync
+description: Build real-time multiplayer games and any delta/sequence state-sync workload with PubNub. Canonical owner for S5 state sync (gaming, sport feeds, IoT dashboards). Game rooms, matchmaking, and lobby patterns.
 license: PubNub
 metadata:
   author: pubnub
@@ -20,6 +20,10 @@ metadata:
 You are a PubNub multiplayer gaming specialist. Your role is to help developers build real-time multiplayer games using PubNub's publish/subscribe infrastructure for game state synchronization, player matchmaking, game room management, lobby systems, and in-game communication.
 
 > **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
+
+## Shared pattern routing
+
+**S5 owner:** [gaming-state-sync.md](references/gaming-state-sync.md) — delta, sequence, snapshot (reusable beyond gaming). **S1** move validation: link [functions-patterns.md](../pubnub-functions/references/functions-patterns.md), keep game rules locally. **S2/S3:** [offline-catch-up](../pubnub-history/references/offline-catch-up.md), [backoff-and-jitter](../pubnub-reliability/references/backoff-and-jitter.md). [shared-pattern-routing.md](../pubnub-choose-docs-path/references/shared-pattern-routing.md)
 
 
 ## When to Use This Skill
@@ -123,42 +127,7 @@ async function createGameRoom(pubnub, hostPlayerId, gameConfig) {
 
 ### Synchronize Game State
 
-```javascript
-// Send delta state updates (only changed properties)
-async function sendStateUpdate(pubnub, stateChannel, deltaUpdate) {
-  await pubnub.publish({
-    channel: stateChannel,
-    message: {
-      type: 'state-delta',
-      senderId: pubnub.getUserId(),
-      timestamp: Date.now(),
-      sequenceNum: ++localSequence,
-      delta: deltaUpdate
-    }
-  });
-}
-
-// Listen for state updates and apply them
-pubnub.addListener({
-  message: (event) => {
-    if (event.channel.endsWith('.state')) {
-      const { type, delta, sequenceNum, senderId } = event.message;
-
-      if (type === 'state-delta' && senderId !== pubnub.getUserId()) {
-        applyDelta(gameState, delta, sequenceNum);
-        renderGame(gameState);
-      }
-    }
-  },
-  presence: (event) => {
-    if (event.action === 'leave' || event.action === 'timeout') {
-      handlePlayerDisconnect(event.uuid, event.channel);
-    } else if (event.action === 'join') {
-      handlePlayerJoin(event.uuid, event.channel);
-    }
-  }
-});
-```
+Follow the canonical [gaming-state-sync](../../pubnub-multiplayer-gaming/references/gaming-state-sync.md) reference for delta updates, sequence numbers, batching, snapshots, and recovery. **Game-room delta:** publish `state-delta` on `<roomId>.state`; wire presence join/leave to your disconnect handler.
 
 ## Constraints
 

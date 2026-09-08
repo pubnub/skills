@@ -125,6 +125,8 @@ custom: {
 
 ## Concurrency: Use eTag
 
+**Canonical owner (S7):** App Context optimistic concurrency via `eTag` / `ifMatchesEtag`.
+
 When two clients update the same user simultaneously, the second write can clobber the first. Pass the `eTag` from your read into your set to opt into optimistic concurrency:
 
 ```javascript

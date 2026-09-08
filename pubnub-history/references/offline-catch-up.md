@@ -1,5 +1,7 @@
 # Offline Catch-up Flow
 
+**Canonical owner (S2):** Live stream + persisted history merge with dedup at the boundary. Other skills should link here for catch-up mechanics and keep only use-case-specific recovery semantics.
+
 The canonical reference for catching a client up on missed messages after disconnect, with `restore`, last-seen-timetoken persistence, and merge-with-live semantics.
 
 ## The Two Catch-up Tiers

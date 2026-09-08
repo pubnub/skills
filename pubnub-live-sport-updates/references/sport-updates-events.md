@@ -315,60 +315,7 @@ function getOrCreate(table, team, name) {
 
 ### Client-Side Timeline Builder
 
-```javascript
-class PlayByPlayTimeline {
-  constructor() {
-    this.events = [];
-    this.lastSequence = 0;
-    this.pendingOutOfOrder = [];
-  }
-
-  addEvent(event) {
-    if (event.sequence <= this.lastSequence) {
-      if (this.events.some(e => e.sequence === event.sequence)) return;
-      this.insertSorted(event);
-      return;
-    }
-    if (event.sequence > this.lastSequence + 1) {
-      this.pendingOutOfOrder.push(event);
-      this.requestBackfill(this.lastSequence + 1, event.sequence - 1);
-      return;
-    }
-    this.events.push(event);
-    this.lastSequence = event.sequence;
-    this.processPending();
-  }
-
-  insertSorted(event) {
-    const index = this.events.findIndex(e => e.sequence > event.sequence);
-    if (index === -1) this.events.push(event);
-    else this.events.splice(index, 0, event);
-  }
-
-  processPending() {
-    this.pendingOutOfOrder.sort((a, b) => a.sequence - b.sequence);
-    while (this.pendingOutOfOrder.length > 0 && this.pendingOutOfOrder[0].sequence === this.lastSequence + 1) {
-      const next = this.pendingOutOfOrder.shift();
-      this.events.push(next);
-      this.lastSequence = next.sequence;
-    }
-  }
-
-  requestBackfill(fromSeq, toSeq) {
-    console.warn(`Gap detected: requesting events ${fromSeq}-${toSeq}`);
-  }
-
-  getScoringSummary() {
-    const scoringTypes = {
-      nfl: ['touchdown', 'field_goal', 'safety'],
-      nba: ['basket', 'three_pointer', 'free_throw', 'dunk'],
-      epl: ['goal'],
-      mlb: ['run_scored', 'home_run']
-    };
-    return this.events.filter(e => (scoringTypes[e.sport] || []).includes(e.type));
-  }
-}
-```
+Use [delta / sequence state synchronization](../../pubnub-multiplayer-gaming/references/gaming-state-sync.md) for monotonic sequence tracking, gap detection, and backfill. **Sport-specific delta:** maintain a play-by-play timeline sorted by `sequence`; on gap, request backfill for the missing range; filter scoring events by sport-specific play types (`touchdown`, `goal`, etc.).
 
 ## Period and Clock Tracking
 

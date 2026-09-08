@@ -1,5 +1,7 @@
 # PubNub Game State Synchronization
 
+**Canonical owner (S5):** Delta updates, sequence/version ordering, snapshots/resync, and stale-state protection — **reusable beyond gaming** (sport scoreboards, IoT telemetry, live dashboards). Vertical skills link here; keep domain state models locally.
+
 ## Overview
 
 Game state synchronization is the core challenge of multiplayer game networking. PubNub's publish/subscribe model provides reliable, ordered message delivery per channel, making it well suited for both authoritative and peer-to-peer state models. This guide covers delta updates, conflict resolution, latency compensation, and state recovery patterns.
@@ -17,45 +19,7 @@ Game state synchronization is the core challenge of multiplayer game networking.
 
 ### Authoritative Server with PubNub Functions
 
-```javascript
-// PubNub Function (Before Publish handler) acts as authoritative server
-// This runs on PubNub's edge network before the message is delivered
-export default (request) => {
-  const message = request.message;
-
-  if (message.type === 'player-action') {
-    // Validate the action server-side
-    const validation = validateAction(message.action, message.playerId);
-
-    if (!validation.valid) {
-      // Reject the message - it will not be published
-      request.message = {
-        type: 'action-rejected',
-        playerId: message.playerId,
-        reason: validation.reason
-      };
-    } else {
-      // Apply the action and compute new state
-      request.message = {
-        type: 'state-update',
-        action: message.action,
-        result: validation.result,
-        serverTimestamp: Date.now()
-      };
-    }
-  }
-
-  return request.ok();
-};
-
-function validateAction(action, playerId) {
-  // Server-side validation logic
-  if (action.type === 'move' && action.distance > MAX_MOVE_DISTANCE) {
-    return { valid: false, reason: 'Invalid move distance' };
-  }
-  return { valid: true, result: computeResult(action) };
-}
-```
+Use the [server-authoritative Before-Publish pattern](../../pubnub-functions/references/functions-patterns.md) to validate `player-action` messages before delivery. **Game-specific delta:** validate move distance, cooldowns, and game rules in `validateAction`; transform accepted actions into `state-update` payloads with `serverTimestamp`.
 
 ### Host-Authoritative Model
 
@@ -487,29 +451,9 @@ function applySnapshot(msg, localState) {
 }
 ```
 
-### Using Message Persistence for Recovery
+### Recovery after disconnect
 
-```javascript
-// Fetch missed messages from PubNub history
-async function recoverMissedUpdates(pubnub, stateChannel, lastKnownTimetoken) {
-  const result = await pubnub.fetchMessages({
-    channels: [stateChannel],
-    start: lastKnownTimetoken,
-    count: 100
-  });
-
-  const messages = result.channels[stateChannel] || [];
-
-  // Apply missed deltas in order
-  for (const msg of messages) {
-    if (msg.message.type === 'state-delta') {
-      applyDelta(gameState, msg.message.delta);
-    }
-  }
-
-  return messages.length;
-}
-```
+Follow the canonical [offline catch-up flow](../../pubnub-history/references/offline-catch-up.md) with [dedup-on-merge](../../pubnub-reliability/references/dedup-on-merge.md). **Game-specific delta:** when replaying history, apply only `state-delta` messages to `gameState` in timetoken order; request a full snapshot if sequence gaps remain (see State Snapshot section above).
 
 ## Handling Player Disconnections Mid-Game
 
@@ -665,7 +609,7 @@ function decodePositions(encoded, playerIds) {
 
 5. **Choose the right sync model for your game type** -- turn-based games work well with lockstep, casual games with peer-to-peer, competitive games with server-authoritative.
 
-6. **Use Message Persistence for recovery** -- enable message storage so reconnecting clients can fetch missed updates from PubNub history.
+6. **Use Message Persistence for recovery** — follow [offline catch-up](../../pubnub-history/references/offline-catch-up.md); apply game deltas after merge with dedup.
 
 7. **Keep state messages within PubNub's message size limit** — retrieve the current cap via **`how_to`**. If your full state exceeds it, use delta updates or split into multiple messages.
 

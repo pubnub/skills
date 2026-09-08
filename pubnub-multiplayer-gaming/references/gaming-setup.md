@@ -534,47 +534,7 @@ class PlayerConnectionManager {
 
 ## Error Handling
 
-```javascript
-pubnub.addListener({
-  status: (statusEvent) => {
-    switch (statusEvent.category) {
-      case 'PNConnectedCategory':
-        console.log('Connected to PubNub');
-        break;
-
-      case 'PNReconnectedCategory':
-        console.log('Reconnected - requesting state recovery');
-        requestStateSnapshot();
-        break;
-
-      case 'PNDisconnectedCategory':
-        console.warn('Disconnected from PubNub');
-        showReconnectingUI();
-        break;
-
-      case 'PNAccessDeniedCategory':
-        console.error('Access denied - refresh auth token');
-        refreshAuthToken();
-        break;
-
-      case 'PNNetworkIssuesCategory':
-        console.warn('Network issues detected');
-        break;
-    }
-  }
-});
-
-function requestStateSnapshot() {
-  pubnub.publish({
-    channel: `game.${currentRoomId}.state`,
-    message: {
-      type: 'state-request',
-      requesterId: pubnub.getUserId(),
-      timestamp: Date.now()
-    }
-  });
-}
-```
+Wire PubNub status categories per [backoff-and-jitter](../../pubnub-reliability/references/backoff-and-jitter.md) and [dropped-connections](../../pubnub-presence/references/dropped-connections.md). **Game-specific on `PNReconnectedCategory`:** request a state snapshot on the room's `.state` channel (see [gaming-state-sync — snapshots](../../pubnub-multiplayer-gaming/references/gaming-state-sync.md)).
 
 ## Best Practices
 

@@ -98,9 +98,12 @@ For **limits, chain depth, and runtime constraints**, call **`how_to`** (`unders
 ## Output Format
 
 When providing implementations:
-1. Include complete, working function code.
-2. Show proper async/await with try/catch.
-3. Explain module usage and imports.
-4. Note channel pattern configuration.
-5. Include deployment instructions.
-6. State the function type at the top of every snippet.
+1. Include complete, working function code **from this skill's patterns** when the user asks for deployable Functions code.
+2. When the user asks from a **vertical context** (voting, auctions, betting, gaming), **link Pattern 1 here** and describe only the vertical delta — do not duplicate the canonical handler in the vertical skill's voice.
+3. Show proper async/await with try/catch.
+4. Explain module usage and imports.
+5. Note channel pattern configuration.
+6. Include deployment instructions (`manage_functions` when relevant).
+7. State the function type at the top of every snippet.
+
+Shared pattern routing for all skills: [shared-pattern-routing.md](../pubnub-choose-docs-path/references/shared-pattern-routing.md).

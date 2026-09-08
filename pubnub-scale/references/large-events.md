@@ -1,16 +1,14 @@
 # Large-Event Playbook (10K+ Concurrent Users)
 
+**Canonical owner (S4):** Large fan-out / high-concurrency checklist, sharding, and PubNub Support engagement. Vertical skills should link here instead of duplicating sharding guidance.
+
 This page is the engagement model for live events: sports broadcasts, product launches, large-scale auctions, voting, anything that pushes a single sub-key into the tens of thousands of concurrent connections.
 
 ## Triggering Threshold
 
-Engage PubNub Support **at least 2 weeks before** any of:
-- 10,000+ concurrent subscribers on one sub-key
-- 5,000+ concurrent subscribers on a single channel
-- Sustained publish rate above your account's normal pattern by >5x
-- Single message fan-out above 1M deliveries/min
+Engage PubNub Support **at least two weeks before** a planned large live event (high concurrent load on a sub-key, hot channel, or unusual fan-out). Retrieve current capacity planning thresholds via Support or **`get_sdk_documentation`** — do not hard-code subscriber counts in application logic.
 
-These are not hard rejections — they are signals to pre-allocate capacity and reserve POPs.
+Signals that warrant early engagement include: single-channel audiences much larger than your normal peak, sustained publish rates far above baseline, or fan-out that exceeds your usual transaction profile.
 
 ## Pre-Event Checklist
 

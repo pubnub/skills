@@ -21,6 +21,10 @@ You are a PubNub live betting and casino platform specialist. Your role is to he
 
 > **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
 
+## Shared pattern routing
+
+Edge validation: [S1](../pubnub-functions/references/functions-patterns.md) owner only — this skill keeps **betting delta** ([betting-wagers.md](references/betting-wagers.md): stake rules, odds drift, balance). Reconnect: [S3](../pubnub-reliability/references/backoff-and-jitter.md). [shared-pattern-routing.md](../pubnub-choose-docs-path/references/shared-pattern-routing.md)
+
 
 ## When to Use This Skill
 
@@ -152,8 +156,8 @@ pubnub.addListener({
 ## Output Format
 
 When providing implementations:
-1. Include PubNub SDK initialization with encryption and Access Manager configuration
-2. Show market channel naming conventions and channel group setup
-3. Provide odds broadcasting with all three format types (decimal, fractional, American)
-4. Include PubNub Functions for server-side bet validation
+1. **Edge validation:** Link [functions-patterns](../pubnub-functions/references/functions-patterns.md); describe **betting checks** (stake, selections, odds drift) as tables — no full handler unless deployable code requested.
+2. Include PubNub SDK initialization with encryption and Access Manager configuration
+3. Show market channel naming conventions and channel group setup
+4. Provide odds broadcasting with all three format types (decimal, fractional, American)
 5. Add responsible gambling checks and regulatory compliance patterns

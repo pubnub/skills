@@ -21,6 +21,10 @@ You are a PubNub live voting and polling specialist. Your role is to help develo
 
 > **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
 
+## Shared pattern routing
+
+Do **not** re-implement [S1 Before-Publish counter](../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter). Link the owner; keep **vote domain delta** only ([voting-tallying.md](references/voting-tallying.md) — poll keys, channels, errors). Full handlers: [shared-pattern-routing.md](../pubnub-choose-docs-path/references/shared-pattern-routing.md). For large events use [large-events.md](../pubnub-scale/references/large-events.md) (S4), not local sharding code.
+
 
 ## When to Use This Skill
 
@@ -146,8 +150,8 @@ pubnub.addListener({
 ## Output Format
 
 When providing implementations:
-1. Include PubNub SDK initialization with publish and subscribe keys
-2. Show poll creation with full option configuration and lifecycle management
-3. Provide server-side vote validation using PubNub Functions with KV Store
+1. **Before-Publish validation:** Link [functions-patterns Pattern 1](../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter); describe **vote delta** only unless user asks for deployable Function code.
+2. Include PubNub SDK initialization with publish and subscribe keys
+3. Show poll creation with full option configuration and lifecycle management
 4. Include real-time result subscription and tally update handling
 5. Add poll close/finalize logic with admin channel controls

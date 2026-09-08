@@ -1,5 +1,9 @@
 # PubNub Functions 2.0 Common Patterns
 
+**Canonical owner (S1):** Server-authoritative Before-Publish validation, mutation, and counter patterns live here. Vertical skills (voting, auctions, betting, gaming) must **link here** and keep **domain delta only** — see [shared-pattern-routing.md](../../pubnub-choose-docs-path/references/shared-pattern-routing.md).
+
+**When answering from a vertical skill:** route to Pattern 1 (or Pattern 7 for rate limits); do **not** paste a second full Before-Publish handler unless the user explicitly asks for deployable code.
+
 ## Pattern 1: Distributed Counter
 
 Perfect for voting, likes, view tracking.

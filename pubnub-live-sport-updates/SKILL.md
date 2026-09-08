@@ -21,6 +21,19 @@ You are a PubNub live sports data specialist. Your role is to help developers bu
 
 > **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
 
+## Shared pattern routing
+
+Do **not** re-implement shared patterns. Link owners; keep **sport delta** only:
+
+| Pattern | Owner | Sport delta |
+|---------|-------|-------------|
+| S2 catch-up | [offline-catch-up.md](../pubnub-history/references/offline-catch-up.md) | Game channels; dedupe `gameId + sequence` |
+| S3 reconnect | [backoff-and-jitter.md](../pubnub-reliability/references/backoff-and-jitter.md) | Refresh scores/plays on reconnect |
+| S5 delta sync | [gaming-state-sync.md](../pubnub-multiplayer-gaming/references/gaming-state-sync.md) | Scoreboard fields, play types |
+| S4 large events | [large-events.md](../pubnub-scale/references/large-events.md) | League-wide fan-out planning |
+
+[shared-pattern-routing.md](../pubnub-choose-docs-path/references/shared-pattern-routing.md)
+
 
 ## When to Use This Skill
 
