@@ -42,40 +42,17 @@ async function publishBlackjackState(pubnub, tableId, gameState) {
 
 ### Blackjack PubNub Function (Game Logic)
 
-```javascript
-// PubNub Function: On Publish to 'casino.blackjack.*.action'
-const db = require('kvstore');
-const pubnub = require('pubnub');
+Use the canonical [server-authoritative Before-Publish pattern (S1)](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter). **Blackjack-specific behavior:**
 
-export default async (request) => {
-  const action = request.message;
-  const gameState = await db.get(`blackjack:${action.tableId}`);
-  if (!gameState) return request.ok();
+| Step | Blackjack delta |
+|------|-----------------|
+| Validate action | Reject if player not `active` or game not found |
+| Mutate state | Apply hit / stand / double rules to player cards + total |
+| Bust check | If `total > 21` after hit/double → `status = 'bust'` |
+| Persist | `db.set(blackjack:{tableId}, gameState)` atomically before publish |
+| Broadcast | `pubnub.publish` updated `game_state` on `casino.blackjack.{tableId}` |
 
-  const player = gameState.players.find(p => p.userId === action.userId);
-  if (!player || player.status !== 'active') return request.ok();
-
-  switch (action.action) {
-    case 'hit':
-      player.cards.push(drawCard(gameState.deck));
-      player.total = calculateTotal(player.cards);
-      if (player.total > 21) player.status = 'bust';
-      break;
-    case 'stand': player.status = 'stand'; break;
-    case 'double':
-      if (player.cards.length !== 2) break;
-      player.bet *= 2;
-      player.cards.push(drawCard(gameState.deck));
-      player.total = calculateTotal(player.cards);
-      player.status = player.total > 21 ? 'bust' : 'stand';
-      break;
-  }
-
-  await db.set(`blackjack:${action.tableId}`, gameState);
-  await pubnub.publish({ channel: `casino.blackjack.${action.tableId}`, message: { type: 'game_state', ...gameState, timestamp: Date.now() } });
-  return request.ok();
-};
-```
+Channel: `casino.blackjack.{tableId}.action` (On Publish). Deployable handler: start from [Pattern 1](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter) and apply the table above.
 
 ### Roulette Spin Sequence
 
@@ -196,19 +173,16 @@ class SessionTracker {
 
 ### Self-Exclusion
 
-```javascript
-// PubNub Function: Check self-exclusion before granting access
-const db = require('kvstore');
+Use the canonical [server-authoritative Before-Publish pattern (S1)](../../pubnub-functions/references/functions-patterns.md). **Self-exclusion delta:**
 
-export default async (request) => {
-  const exclusion = await db.get(`exclusion:${request.message.userId}`);
-  if (exclusion && exclusion.active && Date.now() < exclusion.expiresAt) {
-    request.message = { type: 'access_denied', reason: 'self_excluded', expiresAt: exclusion.expiresAt };
-    return request.abort();
-  }
-  return request.ok();
-};
-```
+| Check | Rule |
+|-------|------|
+| KV key | `exclusion:{userId}` — read with `db.get` |
+| Active guard | If `exclusion.active && Date.now() < exclusion.expiresAt` → abort |
+| Abort payload | `{ type: 'access_denied', reason: 'self_excluded', expiresAt }` |
+| Pass-through | If no exclusion record or expired → `request.ok()` |
+
+Apply to any channel where wagers or access tokens are submitted.
 
 ## Regulatory Compliance
 
@@ -231,25 +205,17 @@ async function verifyGeolocation(pubnub, userId) {
 
 ### Geo-Fence PubNub Function
 
-```javascript
-const db = require('kvstore');
-const xhr = require('xhr');
+Use the canonical [server-authoritative Before-Publish pattern (S1)](../../pubnub-functions/references/functions-patterns.md) — XHR module for the geocoding call, KV Store for result caching. **Geo-fence delta:**
 
-export default async (request) => {
-  const { userId, latitude, longitude } = request.message;
-  const response = await xhr.fetch(`https://api.geocoding-service.com/reverse?lat=${latitude}&lon=${longitude}`);
-  const location = JSON.parse(response.body);
-  const ALLOWED = ['GB', 'MT', 'GI', 'IE', 'SE', 'DK'];
+| Step | Betting-specific rule |
+|------|-----------------------|
+| Extract coords | `{ userId, latitude, longitude }` from `request.message` |
+| XHR lookup | Reverse geocode to `countryCode` via external API (`xhr.fetch`) |
+| Allowlist | Validate `countryCode` against jurisdiction-approved list (operator-configured) |
+| KV cache | Store `{ allowed, country, verifiedAt, expiresAt }` under `geo:{userId}` — re-verify every 30 minutes |
+| Abort | `{ type: 'geo_blocked', country }` if not allowed |
 
-  if (!ALLOWED.includes(location.countryCode)) {
-    await db.set(`geo:${userId}`, { allowed: false, country: location.countryCode });
-    return request.abort();
-  }
-
-  await db.set(`geo:${userId}`, { allowed: true, country: location.countryCode, verifiedAt: Date.now(), expiresAt: Date.now() + 1800000 });
-  return request.ok();
-};
-```
+Counts **1 XHR op** per execution — stay within budget; cache geo result to avoid repeated lookups (see [S1 budget guidance](../../pubnub-functions/references/functions-patterns.md)).
 
 ## Multi-Table Tournament Support
 

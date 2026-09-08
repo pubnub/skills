@@ -177,7 +177,7 @@ export default (request) => {
 
 ## See Also
 
-- **[pubnub-functions](../pubnub-functions/SKILL.md)** — [Before/After Publish](../pubnub-functions/references/functions-basics.md) for server-side alert evaluation, [`require('kvstore')`](../pubnub-functions/references/functions-modules.md) for last-known-price; mind the [3-op cap and chaining](../pubnub-functions/references/functions-chaining.md)
+- **[pubnub-functions](../pubnub-functions/SKILL.md)** — [Before/After Publish](../pubnub-functions/references/functions-basics.md) for server-side alert evaluation, [`require('kvstore')`](../pubnub-functions/references/functions-modules.md) for last-known-price; mind the [per-module execution budgets and chain depth](../pubnub-functions/references/functions-chaining.md)
 - **[pubnub-scale](../pubnub-scale/SKILL.md)** — [channel groups for watchlists and wildcard subscribes](../pubnub-scale/references/scaling-patterns.md); use `signal` (cheaper than `publish`) for high-frequency ticks per [payload hygiene](../pubnub-observability/references/cost-and-payload-hygiene.md)
 - **[pubnub-security](../pubnub-security/SKILL.md)** — [Access Manager grants](../pubnub-security/references/access-manager.md) for per-tier market-data entitlements; [IP allowlisting](../pubnub-security/references/ip-whitelisting.md) for server-side feed publishers; [compliance](../pubnub-security/references/compliance-reports.md)
 - **[pubnub-reliability](../pubnub-reliability/SKILL.md)** — [schema versioning](../pubnub-reliability/references/schema-versioning.md) for evolving tick payloads; [backoff and jitter](../pubnub-reliability/references/backoff-and-jitter.md) at market open

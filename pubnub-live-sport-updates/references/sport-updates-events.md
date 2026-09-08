@@ -359,6 +359,8 @@ function getOrdinalSuffix(n) {
 
 ### Out-of-Order Event Recovery
 
+The backfill inside this handler applies the canonical [offline catch-up pattern (S2)](../../pubnub-reliability/references/offline-catch-up.md). **Sport-specific delta:** target the single game channel (`sports.{league}.{gameId}`), merge via `timeline.addEvent`, and retry with [exponential backoff (S3)](../../pubnub-reliability/references/backoff-and-jitter.md) on history failure.
+
 ```javascript
 async function handleEventWithRecovery(pubnub, event, timeline, gameChannel) {
   try {

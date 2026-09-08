@@ -355,6 +355,8 @@ Use the canonical [delta / sequence state-sync pattern](../../pubnub-multiplayer
 
 ## Historical Data and Replay
 
+Both patterns below use the canonical [offline catch-up pattern (S2)](../../pubnub-reliability/references/offline-catch-up.md) — `fetchMessages` for the game channel, sorted by sequence, with sport-specific replay / aggregation logic as the delta.
+
 ### Game Replay from History
 
 ```javascript

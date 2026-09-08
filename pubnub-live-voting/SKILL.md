@@ -137,7 +137,7 @@ pubnub.addListener({
 
 ## See Also
 
-- **[pubnub-functions](../pubnub-functions/SKILL.md)** — [Before Publish](../pubnub-functions/references/functions-basics.md) for vote validation; [`require('kvstore')`](../pubnub-functions/references/functions-modules.md) for atomic counters; mind the [3-op cap](../pubnub-functions/references/db-triggers-and-runtime-quirks.md) at high vote rate
+- **[pubnub-functions](../pubnub-functions/SKILL.md)** — [Before Publish](../pubnub-functions/references/functions-basics.md) for vote validation; [`require('kvstore')`](../pubnub-functions/references/functions-modules.md) for atomic counters; mind the [per-module execution budget](../pubnub-functions/references/db-triggers-and-runtime-quirks.md) at high vote rate
 - **[pubnub-security](../pubnub-security/SKILL.md)** — [Access Manager](../pubnub-security/references/access-manager.md) for voter vs admin grants; [DoS mitigation](../pubnub-security/references/dos-mitigation.md) for vote-bot abuse
 - **[pubnub-reliability](../pubnub-reliability/SKILL.md)** — [idempotent publish with a per-voter id](../pubnub-reliability/references/idempotent-publish.md) so retries don't double-count; [dedup-on-merge](../pubnub-reliability/references/dedup-on-merge.md) on tally reload
 - **[pubnub-illuminate](../pubnub-illuminate/SKILL.md)** — [Metrics](../pubnub-illuminate/references/metrics.md) for live tally aggregation; [Decisions](../pubnub-illuminate/references/decisions-4-step-workflow.md) for trigger-on-threshold reveals
