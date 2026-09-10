@@ -127,7 +127,7 @@ async function createGameRoom(pubnub, hostPlayerId, gameConfig) {
 
 ### Synchronize Game State
 
-Follow the canonical [gaming-state-sync](../../pubnub-multiplayer-gaming/references/gaming-state-sync.md) reference for delta updates, sequence numbers, batching, snapshots, and recovery. **Game-room delta:** publish `state-delta` on `<roomId>.state`; wire presence join/leave to your disconnect handler.
+Follow the canonical [gaming-state-sync](references/gaming-state-sync.md) reference for delta updates, sequence numbers, batching, snapshots, and recovery. **Game-room delta:** publish `state-delta` on `<roomId>.state`; wire presence join/leave to your disconnect handler.
 
 ## Constraints
 

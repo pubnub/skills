@@ -534,7 +534,7 @@ class PlayerConnectionManager {
 
 ## Error Handling
 
-Wire PubNub status categories per [backoff-and-jitter](../../pubnub-reliability/references/backoff-and-jitter.md) and [dropped-connections](../../pubnub-presence/references/dropped-connections.md). **Game-specific on `PNReconnectedCategory`:** request a state snapshot on the room's `.state` channel (see [gaming-state-sync — snapshots](../../pubnub-multiplayer-gaming/references/gaming-state-sync.md)).
+Wire PubNub status categories per [backoff-and-jitter](../../pubnub-reliability/references/backoff-and-jitter.md) and [dropped-connections](../../pubnub-presence/references/dropped-connections.md). **Game-specific on `PNReconnectedCategory`:** request a state snapshot on the room's `.state` channel (see [gaming-state-sync — snapshots](gaming-state-sync.md)).
 
 ## Best Practices
 

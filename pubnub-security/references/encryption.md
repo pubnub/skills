@@ -46,4 +46,4 @@ Encrypted messages in Persistence remain encrypted at rest. Fetching history wit
 1. Choose cipher scope (global vs per-channel vs per-user keysets).
 2. Retrieve current SDK CryptoModule API for the target language.
 3. Configure on client init; verify round-trip publish/subscribe and `fetchMessages` playback.
-4. For HIPAA/regulated payloads, pair with [Access Manager](../access-manager.md) and [compliance posture](compliance-reports.md).
+4. For HIPAA/regulated payloads, pair with [Access Manager](access-manager.md) and [compliance posture](compliance-reports.md).
