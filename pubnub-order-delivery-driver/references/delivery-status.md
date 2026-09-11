@@ -157,7 +157,7 @@ Use a PubNub Function (Before Publish or Fire) on order status channels to valid
 
 ```javascript
 // PubNub Function: Before Publish on order.*.status
-export default (request) => {
+export default async (request) => {
   const message = request.message;
   const kvstore = require('kvstore');
 
@@ -174,28 +174,23 @@ export default (request) => {
     'failed': ['dispatched']
   };
 
-  return kvstore.get(`order-status-${message.orderId}`).then((currentStatus) => {
-    // First status for a new order
-    if (!currentStatus && message.status === 'placed') {
-      return kvstore.set(`order-status-${message.orderId}`, 'placed').then(() => {
-        return request.ok();
-      });
-    }
+  const currentStatus = await kvstore.get(`order-status-${message.orderId}`);
+  if (!currentStatus && message.status === 'placed') {
+    await kvstore.set(`order-status-${message.orderId}`, 'placed');
+    return request.ok();
+  }
 
-    const allowed = validTransitions[currentStatus];
-    if (!allowed || !allowed.includes(message.status)) {
-      console.log(
-        `Blocked invalid transition: ${currentStatus} -> ${message.status} ` +
-        `for order ${message.orderId}`
-      );
-      return request.abort(`Invalid transition from ${currentStatus} to ${message.status}`);
-    }
+  const allowed = validTransitions[currentStatus];
+  if (!allowed || !allowed.includes(message.status)) {
+    console.log(
+      `Blocked invalid transition: ${currentStatus} -> ${message.status} ` +
+      `for order ${message.orderId}`
+    );
+    return request.abort(`Invalid transition from ${currentStatus} to ${message.status}`);
+  }
 
-    // Update stored state and allow the publish
-    return kvstore.set(`order-status-${message.orderId}`, message.status).then(() => {
-      return request.ok();
-    });
-  });
+  await kvstore.set(`order-status-${message.orderId}`, message.status);
+  return request.ok();
 };
 ```
 
@@ -305,15 +300,13 @@ Use geofence checks to automatically trigger status transitions when a driver en
 
 ```javascript
 // PubNub Function: After Publish on driver.*.location
-export default (request) => {
+export default async (request) => {
   const kvstore = require('kvstore');
   const pubnub = require('pubnub');
   const message = request.message;
-
   const driverId = message.driverId;
-
-  return kvstore.get(`driver-delivery-${driverId}`).then((delivery) => {
-    if (!delivery) return request.ok();
+  const delivery = await kvstore.get(`driver-delivery-${driverId}`);
+  if (!delivery) return request.ok();
 
     const distToPickup = haversine(
       message.lat, message.lng,
@@ -326,26 +319,19 @@ export default (request) => {
 
     // Driver arrived at pickup location
     if (delivery.status === 'dispatched' && distToPickup < 50) {
-      return publishStatusChange(
-        pubnub, delivery.orderId, 'driver-arrived-pickup', driverId
-      ).then(() => {
-        delivery.status = 'driver-arrived-pickup';
-        return kvstore.set(`driver-delivery-${driverId}`, delivery);
-      });
+      await publishStatusChange(pubnub, delivery.orderId, 'driver-arrived-pickup', driverId);
+      delivery.status = 'driver-arrived-pickup';
+      await kvstore.set(`driver-delivery-${driverId}`, delivery);
     }
 
-    // Driver is nearby the customer
     if (delivery.status === 'en-route' && distToDropoff < 200) {
-      return publishStatusChange(
-        pubnub, delivery.orderId, 'driver-nearby', driverId
-      ).then(() => {
-        delivery.status = 'driver-nearby';
-        return kvstore.set(`driver-delivery-${driverId}`, delivery);
-      });
+      await publishStatusChange(pubnub, delivery.orderId, 'driver-nearby', driverId);
+      delivery.status = 'driver-nearby';
+      await kvstore.set(`driver-delivery-${driverId}`, delivery);
     }
 
     return request.ok();
-  });
+};
 
   function haversine(lat1, lng1, lat2, lng2) {
     const R = 6371e3;

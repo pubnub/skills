@@ -30,9 +30,11 @@ const pubnub = new PubNub({
   publishKey: 'pub-c-...',
   subscribeKey: 'sub-c-...',
   userId: 'betting-client-001',
-  cipherKey: 'your-encryption-key',
-  authKey: 'auth-token-from-server'
+  cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({
+    cipherKey: 'your-encryption-key'
+  })
 });
+pubnub.setToken('auth-token-from-server');
 ```
 
 ## Configuration Options
@@ -43,9 +45,10 @@ const pubnub = new PubNub({
   subscribeKey: 'sub-c-...',
   userId: 'betting-client-001',
 
-  // Security
-  cipherKey: 'aes-256-encryption-key',   // Encrypt all messages
-  authKey: 'access-manager-auth-token',  // Access Manager token
+  // Security — CryptoModule for AES-256-CBC; setToken() for Access Manager
+  cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({
+    cipherKey: 'your-encryption-key'
+  }),
 
   // Connection
   ssl: true,                              // Always use TLS
@@ -186,32 +189,32 @@ async function resumeMarket(eventId, market) {
 ### Access Manager Configuration
 
 ```javascript
-// Server-side: Grant permissions
+// Server-side: Grant permissions with grantToken (not legacy grant)
 // Odds engine gets publish access to market channels
-await pubnub.grant({
-  channels: ['event.football.*.market.*'],
-  authKeys: ['odds-engine-auth'],
-  read: false,
-  write: true,
-  ttl: 60  // Minutes
+const oddsToken = await pubnub.grantToken({
+  ttl: 60,
+  authorized_uuid: 'odds-engine',
+  patterns: {
+    channels: {
+      '^event\\.football\\..*\\.market\\..*$': { write: true }
+    }
+  }
 });
 
-// Users get read-only access to market channels
-await pubnub.grant({
-  channels: ['event.football.*.market.*'],
-  authKeys: ['user-auth-token'],
-  read: true,
-  write: false,
-  ttl: 1440  // 24 hours
-});
-
-// Users get write access to wager submission only
-await pubnub.grant({
-  channels: ['wagers.submit'],
-  authKeys: ['user-auth-token'],
-  read: false,
-  write: true,
-  ttl: 1440
+// Users get read-only access to market channels + write on wager submit
+const userToken = await pubnub.grantToken({
+  ttl: 1440,
+  authorized_uuid: userId,
+  resources: {
+    channels: {
+      'wagers.submit': { write: true }
+    }
+  },
+  patterns: {
+    channels: {
+      '^event\\.football\\..*\\.market\\..*$': { read: true }
+    }
+  }
 });
 ```
 
@@ -253,7 +256,9 @@ const pubnub = new PubNub({
   publishKey: 'pub-c-...',
   subscribeKey: 'sub-c-...',
   userId: 'betting-client-001',
-  cipherKey: 'your-256-bit-encryption-key'
+  cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({
+    cipherKey: 'your-encryption-key'
+  })
 });
 ```
 
@@ -279,12 +284,11 @@ import PubNub
 let config = PubNubConfiguration(
   publishKey: "pub-c-...",
   subscribeKey: "sub-c-...",
-  userId: "ios-user-123"
+  userId: "ios-user-123",
+  cryptoModule: CryptoModule.aesCbcCryptoModule(with: "encryption-key")
 )
-config.cipherKey = Crypto(key: "encryption-key")
-config.authKey = "auth-token-from-server"
-
 let pubnub = PubNub(configuration: config)
+pubnub.setToken("auth-token-from-server")
 
 pubnub.subscribe(to: ["event.football.12345.market.match-winner"])
 
@@ -305,11 +309,12 @@ import com.pubnub.api.PubNub
 import com.pubnub.api.PNConfiguration
 import com.pubnub.api.UserId
 
+import com.pubnub.api.crypto.CryptoModule
+
 val config = PNConfiguration(userId = UserId("android-user-456")).apply {
     publishKey = "pub-c-..."
     subscribeKey = "sub-c-..."
-    cipherKey = "encryption-key"
-    authKey = "auth-token-from-server"
+    cryptoModule = CryptoModule.createAesCbcCryptoModule("encryption-key")
     secure = true
 }
 

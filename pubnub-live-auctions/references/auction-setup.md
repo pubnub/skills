@@ -33,13 +33,13 @@ const pubnub = new PubNub({
   publishKey: 'pub-c-...',
   subscribeKey: 'sub-c-...',
   userId: 'bidder-alice-001',
-  authKey: 'bidder-auth-token',   // For Access Manager
   restore: true,                   // Reconnect and catch up on missed messages
   retryConfiguration: PubNub.LinearRetryPolicy({
     delay: 2,
     maximumRetry: 5
   })
 });
+pubnub.setToken('bidder-auth-token');
 ```
 
 ### Server-Side (Auction Admin)
@@ -441,40 +441,31 @@ function updateBidderCount(channel, occupancy) {
 ```javascript
 // Server-side: grant bidder access to auction channels
 async function grantBidderAccess(pubnub, userId, auctionId) {
-  await pubnub.grant({
-    channels: [
-      `auction.${auctionId}`,
-      `auction.${auctionId}.activity`
-    ],
-    uuids: [userId],
-    read: true,
-    write: true,     // Allow publishing bids
-    ttl: 60          // Minutes
-  });
-
-  // Personal notification channel
-  await pubnub.grant({
-    channels: [`user.${userId}.notifications`],
-    uuids: [userId],
-    read: true,
-    write: false,    // Only server can write notifications
-    ttl: 1440        // 24 hours
+  return pubnub.grantToken({
+    ttl: 60,
+    authorized_uuid: userId,
+    resources: {
+      channels: {
+        [`auction.${auctionId}`]: { read: true, write: true },
+        [`auction.${auctionId}.activity`]: { read: true, write: true },
+        [`user.${userId}.notifications`]: { read: true }
+      }
+    }
   });
 }
 
 // Grant admin full access
 async function grantAdminAccess(pubnub, adminId, auctionId) {
-  await pubnub.grant({
-    channels: [
-      `auction.${auctionId}`,
-      `auction.${auctionId}.activity`,
-      `auction.${auctionId}.admin`
-    ],
-    uuids: [adminId],
-    read: true,
-    write: true,
-    manage: true,
-    ttl: 1440
+  return pubnub.grantToken({
+    ttl: 1440,
+    authorized_uuid: adminId,
+    resources: {
+      channels: {
+        [`auction.${auctionId}`]: { read: true, write: true, manage: true },
+        [`auction.${auctionId}.activity`]: { read: true, write: true, manage: true },
+        [`auction.${auctionId}.admin`]: { read: true, write: true, manage: true }
+      }
+    }
   });
 }
 ```

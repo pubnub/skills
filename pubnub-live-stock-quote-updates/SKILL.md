@@ -119,15 +119,16 @@ pubnub.addListener({
 
 ```javascript
 // PubNub Function: Before Publish or Fire handler
-export default (request) => {
+export default async (request) => {
   const quote = request.message;
   const alertsDb = require('kvstore');
+  const pubnub = require('pubnub');
 
-  return alertsDb.get(`alerts_${quote.symbol}`).then((alerts) => {
-    if (!alerts) return request.ok();
+  const alerts = await alertsDb.get(`alerts_${quote.symbol}`);
+  if (!alerts) return request.ok();
 
-    const parsed = JSON.parse(alerts);
-    parsed.forEach((alert) => {
+  const parsed = JSON.parse(alerts);
+  parsed.forEach((alert) => {
       if (alert.direction === 'above' && quote.price >= alert.target) {
         pubnub.fire({
           channel: `alerts.${alert.userId}`,
@@ -155,7 +156,6 @@ export default (request) => {
     });
 
     return request.ok();
-  });
 };
 ```
 

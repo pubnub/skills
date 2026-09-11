@@ -24,7 +24,7 @@
     },
     {
       "name": "Fetches last location on init",
-      "description": "On initialization, fetches the most recent driver location from PubNub message history (e.g., history with count: 1) so the map is populated immediately",
+      "description": "On initialization, fetches the most recent driver location with fetchMessages (count: 1) so the map is populated immediately",
       "max_score": 10
     },
     {

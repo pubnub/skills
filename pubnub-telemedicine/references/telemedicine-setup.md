@@ -353,23 +353,22 @@ Audit logs should be persisted to durable storage beyond PubNub's message retent
 ```javascript
 // PubNub Function to persist audit logs to external storage
 // Deploy as an After-Publish event handler on audit.* channels
-export default (event) => {
+export default async (event) => {
   const message = event.message;
   const xhr = require('xhr');
 
-  return xhr.fetch('https://your-audit-api.example.com/audit-events', {
+  const response = await xhr.fetch('https://your-audit-api.example.com/audit-events', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${vault.get('AUDIT_API_KEY')}`
     },
     body: JSON.stringify(message)
-  }).then((response) => {
-    if (response.status !== 201) {
-      console.log('Audit persistence failed:', response.status);
-    }
-    return event;
   });
+  if (response.status !== 201) {
+    console.log('Audit persistence failed:', response.status);
+  }
+  return event;
 };
 ```
 

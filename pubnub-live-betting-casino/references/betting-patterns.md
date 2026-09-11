@@ -308,7 +308,8 @@ class BlackjackActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val config = PNConfiguration(userId = UserId("android-player-456")).apply {
-            subscribeKey = "sub-c-..."; publishKey = "pub-c-..."; cipherKey = "encryption-key"
+            subscribeKey = "sub-c-..."; publishKey = "pub-c-..."
+            cryptoModule = CryptoModule.createAesCbcCryptoModule("encryption-key")
         }
         pubnub = PubNub.create(config)
         pubnub.subscribe(channels = listOf("casino.blackjack.table-01"))
@@ -332,7 +333,10 @@ class BlackjackActivity : AppCompatActivity() {
 pubnub.addListener({
   status: (statusEvent) => {
     if (statusEvent.category === 'PNReconnectedCategory') {
-      fetchCurrentGameState(currentTableId).then(state => updateGameUI(state));
+      void (async () => {
+        const state = await fetchCurrentGameState(currentTableId);
+        updateGameUI(state);
+      })();
     }
     if (statusEvent.category === 'PNNetworkIssuesCategory') {
       showOverlay('Connection lost. Reconnecting...');

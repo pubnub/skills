@@ -19,10 +19,10 @@ const pubnub = new PubNub({
 const pubnub = new PubNub({
   publishKey: 'pub-c-...',
   subscribeKey: 'sub-c-...',
-  userId: 'user-123',
-  authKey: 'token-from-server'
+  userId: 'user-123'
   // NO secretKey here
 });
+pubnub.setToken('token-from-server');
 ```
 
 ### Store Keys Securely
@@ -62,21 +62,15 @@ Development:
 
 ```javascript
 // Grant minimum required permissions
-await pubnub.grant({
-  channels: ['user-feed'],
-  authKeys: [userAuthKey],
-  read: true,    // Can subscribe
-  write: false,  // Cannot publish
-  ttl: 60
-});
-
-// Only grant write for specific channels
-await pubnub.grant({
-  channels: ['user-posts'],
-  authKeys: [userAuthKey],
-  read: false,
-  write: true,
-  ttl: 60
+const token = await pubnub.grantToken({
+  ttl: 60,
+  authorized_uuid: userId,
+  resources: {
+    channels: {
+      'user-feed': { read: true },
+      'user-posts': { write: true }
+    }
+  }
 });
 ```
 
@@ -101,40 +95,22 @@ await pubnub.grant({
 ### Role-Based Access
 
 ```javascript
-async function grantRoleAccess(userId, role, authKey) {
+async function grantRoleAccess(userId, role) {
   const rolePermissions = {
-    viewer: {
-      channels: ['public-*'],
-      read: true,
-      write: false
-    },
-    member: {
-      channels: ['public-*', 'chat-*'],
-      read: true,
-      write: true
-    },
+    viewer: { '^public-.*$': { read: true } },
+    member: { '^public-.*$': { read: true, write: true }, '^chat-.*$': { read: true, write: true } },
     moderator: {
-      channels: ['public-*', 'chat-*', 'mod-*'],
-      read: true,
-      write: true,
-      manage: true
+      '^public-.*$': { read: true, write: true },
+      '^chat-.*$': { read: true, write: true },
+      '^mod-.*$': { read: true, write: true, manage: true }
     },
-    admin: {
-      channels: ['*'],
-      read: true,
-      write: true,
-      manage: true
-    }
+    admin: { '^.*$': { read: true, write: true, manage: true } }
   };
 
-  const perms = rolePermissions[role];
-  await pubnub.grant({
-    channels: perms.channels,
-    authKeys: [authKey],
-    read: perms.read,
-    write: perms.write,
-    manage: perms.manage || false,
-    ttl: 1440  // 24 hours
+  return pubnub.grantToken({
+    ttl: 1440,
+    authorized_uuid: userId,
+    patterns: { channels: rolePermissions[role] }
   });
 }
 ```
@@ -145,20 +121,21 @@ async function grantRoleAccess(userId, role, authKey) {
 
 ```javascript
 // Sensitive operations: short TTL
-await pubnub.grant({
-  channels: ['financial-data'],
-  authKeys: [authKey],
-  read: true,
-  ttl: 15  // 15 minutes
+const sensitiveToken = await pubnub.grantToken({
+  ttl: 15,
+  authorized_uuid: userId,
+  resources: {
+    channels: { 'financial-data': { read: true } }
+  }
 });
 
 // Regular operations: moderate TTL
-await pubnub.grant({
-  channels: ['chat-room'],
-  authKeys: [authKey],
-  read: true,
-  write: true,
-  ttl: 60  // 1 hour
+const sessionToken = await pubnub.grantToken({
+  ttl: 60,
+  authorized_uuid: userId,
+  resources: {
+    channels: { 'chat-room': { read: true, write: true } }
+  }
 });
 ```
 
@@ -191,9 +168,9 @@ class PubNubAuthManager {
     this.pubnub = new PubNub({
       subscribeKey: credentials.subscribeKey,
       publishKey: credentials.publishKey,
-      userId: credentials.userId,
-      authKey: credentials.authKey
+      userId: credentials.userId
     });
+    this.pubnub.setToken(credentials.token);
   }
 
   scheduleRefresh(expiresAt) {
@@ -203,7 +180,7 @@ class PubNubAuthManager {
 
   async refresh() {
     const credentials = await this.fetchCredentials();
-    this.pubnub.setAuthKey(credentials.authKey);
+    this.pubnub.setToken(credentials.token);
     this.scheduleRefresh(credentials.expiresAt);
   }
 }
@@ -220,11 +197,12 @@ pubnub.addListener({
         console.error('Channels:', statusEvent.affectedChannels);
 
         // Option 1: Refresh token and retry
-        refreshAuthToken().then(() => {
+        void (async () => {
+          await refreshAuthToken();
           pubnub.subscribe({
             channels: statusEvent.affectedChannels
           });
-        });
+        })();
 
         // Option 2: Redirect to login
         // window.location.href = '/login';
@@ -303,13 +281,17 @@ const publicPubnub = new PubNub({
 const privatePubnub = new PubNub({
   subscribeKey: 'sub-c-...',
   userId: 'user-123',
-  cipherKey: 'private-conversations-key'
+  cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({
+    cipherKey: 'private-conversations-key'
+  })
 });
 
 const financialPubnub = new PubNub({
   subscribeKey: 'sub-c-...',
   userId: 'user-123',
-  cipherKey: 'financial-data-key'  // Different key for sensitive data
+  cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({
+    cipherKey: 'financial-data-key'
+  })
 });
 ```
 
@@ -345,7 +327,7 @@ await pubnub.publish({
 
 - [ ] Access Manager enabled in Admin Portal
 - [ ] Secret Key stored securely, never in client code
-- [ ] Using `authKey` (not `token`) in client configuration
+- [ ] Using `setToken()` (not constructor `authKey`) for Access Manager tokens
 - [ ] Short TTLs for sensitive operations
 - [ ] Token refresh implemented before expiry
 - [ ] Access denied handler implemented

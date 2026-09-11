@@ -44,7 +44,7 @@
     },
     {
       "name": "Encryption configured",
-      "description": "PubNub initialization includes a cipherKey parameter for AES encryption",
+      "description": "PubNub initialization uses CryptoModule.aesCbcCryptoModule (not a top-level cipherKey) for AES-256 encryption",
       "max_score": 8
     },
     {

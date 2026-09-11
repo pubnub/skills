@@ -269,6 +269,7 @@ pubnub.addListener({
 ```python
 from pubnub.pn_configuration import PNConfiguration
 from pubnub.pubnub import PubNub
+from pubnub.crypto import AesCbcCryptoModule
 import time
 
 config = PNConfiguration()
@@ -276,6 +277,7 @@ config.subscribe_key = "sub-c-..."
 config.publish_key = "pub-c-..."
 config.user_id = "settlement-engine"
 config.cipher_key = "encryption-key"
+config.crypto_module = AesCbcCryptoModule(config)
 pubnub = PubNub(config)
 
 def settle_single_bet(bet, result):

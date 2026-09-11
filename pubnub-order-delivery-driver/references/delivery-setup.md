@@ -291,13 +291,14 @@ class DeliveryTracker {
   }
 
   async fetchLastLocation() {
-    const response = await this.pubnub.history({
-      channel: `driver.${this.driverId}.location`,
+    const channel = `driver.${this.driverId}.location`;
+    const response = await this.pubnub.fetchMessages({
+      channels: [channel],
       count: 1
     });
-
-    if (response.messages.length > 0) {
-      this.updateDriverPosition(response.messages[0].entry);
+    const messages = response.channels[channel] ?? [];
+    if (messages.length > 0) {
+      this.updateDriverPosition(messages[0].message);
     }
   }
 

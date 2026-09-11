@@ -64,11 +64,11 @@ const pubnub = new PubNub({
     maximumRetry: 10            // Retry up to 10 times
   }),
 
-  // Optional: Access Manager
-  authKey: 'auth-token-from-server',
-
+  // Optional: Access Manager — call setToken(token) after init (not authKey)
   // Optional: message encryption
-  cipherKey: 'shared-game-secret'
+  cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({
+    cipherKey: 'shared-game-secret'
+  })
 });
 ```
 

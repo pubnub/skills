@@ -46,22 +46,18 @@ Duplicate prevention is enforced server-side using KV Store (see Before-Publish 
 If the poll allows voters to change their vote, decrement the old option and increment the new one.
 
 ```javascript
-function handleVoteChange(kvstore, pollId, voterId, newOptionId) {
+async function handleVoteChange(kvstore, pollId, voterId, newOptionId) {
   const voterKey = `poll:${pollId}:voter:${voterId}`;
+  const previousOptionId = await kvstore.get(voterKey);
+  if (previousOptionId === newOptionId) return 'NO_CHANGE';
 
-  return kvstore.get(voterKey).then((previousOptionId) => {
-    if (previousOptionId === newOptionId) return Promise.resolve('NO_CHANGE');
-
-    const ops = [];
-    if (previousOptionId) {
-      ops.push(kvstore.incrCounter(`poll:${pollId}:tally:${previousOptionId}`, -1));
-    } else {
-      ops.push(kvstore.incrCounter(`poll:${pollId}:total`, 1));
-    }
-    ops.push(kvstore.incrCounter(`poll:${pollId}:tally:${newOptionId}`, 1));
-    ops.push(kvstore.set(voterKey, newOptionId));
-    return Promise.all(ops);
-  });
+  if (previousOptionId) {
+    await kvstore.incrCounter(`poll:${pollId}:tally:${previousOptionId}`, -1);
+  } else {
+    await kvstore.incrCounter(`poll:${pollId}:total`, 1);
+  }
+  await kvstore.incrCounter(`poll:${pollId}:tally:${newOptionId}`, 1);
+  await kvstore.set(voterKey, newOptionId);
 }
 ```
 

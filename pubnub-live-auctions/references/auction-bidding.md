@@ -303,10 +303,12 @@ function BidHistory({ pubnub, auctionId }) {
   const [bids, setBids] = useState([]);
 
   useEffect(() => {
-    // Load historical bids
-    getBidHistory(pubnub, auctionId).then(setBids);
+    let cancelled = false;
+    void (async () => {
+      const history = await getBidHistory(pubnub, auctionId);
+      if (!cancelled) setBids(history);
+    })();
 
-    // Listen for new bids
     const listener = {
       message: (event) => {
         if (event.channel === `auction.${auctionId}` &&
@@ -322,7 +324,10 @@ function BidHistory({ pubnub, auctionId }) {
     };
 
     pubnub.addListener(listener);
-    return () => pubnub.removeListener(listener);
+    return () => {
+      cancelled = true;
+      pubnub.removeListener(listener);
+    };
   }, [pubnub, auctionId]);
 
   return (

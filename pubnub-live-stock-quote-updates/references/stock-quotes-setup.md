@@ -85,13 +85,13 @@ const pubnub = new PubNub({
   subscribeKey: 'sub-c-...',
   userId: `client-${userId}`,
   ssl: true,
-  authKey: authTokenFromServer,  // For Access Manager gated data tiers
   restore: true,                 // Auto-reconnect and catch up on missed messages
   retryConfiguration: PubNub.LinearRetryPolicy({
     delay: 3,
     maximumRetry: 10
   })
 });
+pubnub.setToken(authTokenFromServer);
 ```
 
 ### Python Publisher (Alternative Backend)

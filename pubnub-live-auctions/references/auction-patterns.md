@@ -343,43 +343,34 @@ A bidder sets a maximum amount. The system automatically places the minimum nece
 
 ```javascript
 // PubNub Function: process proxy bids after a new bid is accepted
-function processProxyBids(kvstore, pubnub, auctionId, newBidAmount) {
+async function processProxyBids(kvstore, pubnub, auctionId, newBidAmount) {
   const proxyKey = `proxy:${auctionId}`;
+  const proxyBids = await kvstore.get(proxyKey);
+  if (!proxyBids || !proxyBids.bids || proxyBids.bids.length === 0) return;
 
-  return kvstore.get(proxyKey).then((proxyBids) => {
-    if (!proxyBids || !proxyBids.bids || proxyBids.bids.length === 0) {
-      return Promise.resolve();
+  const eligibleProxies = proxyBids.bids
+    .filter(p => p.maxAmount > newBidAmount && p.active)
+    .sort((a, b) => b.maxAmount - a.maxAmount);
+
+  if (eligibleProxies.length === 0) return;
+
+  const topProxy = eligibleProxies[0];
+  const auctionState = await kvstore.get(`auction:${auctionId}`);
+  const autoBidAmount = Math.min(
+    newBidAmount + auctionState.minimumIncrement,
+    topProxy.maxAmount
+  );
+
+  return pubnub.publish({
+    channel: `auction.${auctionId}`,
+    message: {
+      type: 'bid',
+      bidderId: topProxy.bidderId,
+      auctionId: auctionId,
+      amount: autoBidAmount,
+      isProxyBid: true,
+      timestamp: Date.now()
     }
-
-    // Find proxy bids that can counter
-    const eligibleProxies = proxyBids.bids
-      .filter(p => p.maxAmount > newBidAmount && p.active)
-      .sort((a, b) => b.maxAmount - a.maxAmount);
-
-    if (eligibleProxies.length === 0) return Promise.resolve();
-
-    const topProxy = eligibleProxies[0];
-
-    return kvstore.get(`auction:${auctionId}`).then((auctionState) => {
-      const minimumIncrement = auctionState.minimumIncrement;
-      const autoBidAmount = Math.min(
-        newBidAmount + minimumIncrement,
-        topProxy.maxAmount
-      );
-
-      // Place the proxy bid
-      return pubnub.publish({
-        channel: `auction.${auctionId}`,
-        message: {
-          type: 'bid',
-          bidderId: topProxy.bidderId,
-          auctionId: auctionId,
-          amount: autoBidAmount,
-          isProxyBid: true,
-          timestamp: Date.now()
-        }
-      });
-    });
   });
 }
 ```
@@ -536,39 +527,35 @@ class AuctionNotificationService : FirebaseMessagingService() {
 
 ```javascript
 // PubNub Function: After Publish handler for analytics
-export default (request) => {
+export default async (request) => {
   const kvstore = require('kvstore');
   const message = request.message;
 
   if (message.type === 'bid_accepted') {
     const analyticsKey = `analytics:${message.auctionId}`;
+    let stats = await kvstore.get(analyticsKey);
+    if (!stats) {
+      stats = {
+        totalBids: 0,
+        uniqueBidders: [],
+        bidAmounts: [],
+        firstBidTime: null,
+        lastBidTime: null,
+        peakBiddingRate: 0
+      };
+    }
 
-    return kvstore.get(analyticsKey).then((stats) => {
-      if (!stats) {
-        stats = {
-          totalBids: 0,
-          uniqueBidders: [],
-          bidAmounts: [],
-          firstBidTime: null,
-          lastBidTime: null,
-          peakBiddingRate: 0
-        };
-      }
+    stats.totalBids += 1;
+    stats.lastBidTime = Date.now();
+    stats.firstBidTime = stats.firstBidTime || Date.now();
 
-      stats.totalBids += 1;
-      stats.lastBidTime = Date.now();
-      stats.firstBidTime = stats.firstBidTime || Date.now();
+    if (!stats.uniqueBidders.includes(message.bidderId)) {
+      stats.uniqueBidders.push(message.bidderId);
+    }
 
-      if (!stats.uniqueBidders.includes(message.bidderId)) {
-        stats.uniqueBidders.push(message.bidderId);
-      }
-
-      stats.bidAmounts.push(message.amount);
-
-      return kvstore.set(analyticsKey, stats);
-    }).then(() => request.ok());
+    stats.bidAmounts.push(message.amount);
+    await kvstore.set(analyticsKey, stats);
   }
-
   return request.ok();
 };
 ```

@@ -14,9 +14,9 @@ import PubNub from 'pubnub';
 const pubnub = new PubNub({
   publishKey: 'pub-c-...',
   subscribeKey: 'sub-c-...',
-  userId: 'admin-001',
-  authKey: 'admin-auth-token'
+  userId: 'admin-001'
 });
+pubnub.setToken('admin-auth-token');
 ```
 
 ### Participant Client
@@ -25,9 +25,9 @@ const pubnub = new PubNub({
 const pubnub = new PubNub({
   publishKey: 'pub-c-...',
   subscribeKey: 'sub-c-...',
-  userId: 'user-5432',
-  authKey: 'participant-auth-token'
+  userId: 'user-5432'
 });
+pubnub.setToken('participant-auth-token');
 ```
 
 ### Python Initialization
@@ -40,9 +40,9 @@ config = PNConfiguration()
 config.publish_key = "pub-c-..."
 config.subscribe_key = "sub-c-..."
 config.user_id = "admin-001"
-config.auth_key = "admin-auth-token"
 
 pubnub = PubNub(config)
+pubnub.set_token("admin-auth-token")
 ```
 
 ## Channel Design for Voting
@@ -211,27 +211,31 @@ function setupAdminDashboard(pubnub, pollId) {
 
 ```javascript
 // Grant admin full access
-await pubnub.grant({
-  channels: [
-    `poll.${pollId}.admin`, `poll.${pollId}.results`,
-    `poll.${pollId}.votes`, `poll.${pollId}.meta`
-  ],
-  authKeys: ['admin-auth-token'],
-  read: true, write: true, ttl: 60
+await pubnub.grantToken({
+  ttl: 60,
+  authorized_uuid: adminId,
+  resources: {
+    channels: {
+      [`poll.${pollId}.admin`]: { read: true, write: true },
+      [`poll.${pollId}.results`]: { read: true, write: true },
+      [`poll.${pollId}.votes`]: { read: true, write: true },
+      [`poll.${pollId}.meta`]: { read: true, write: true }
+    }
+  }
 });
 
-// Grant participants vote-only access
-await pubnub.grant({
-  channels: [`poll.${pollId}.votes`],
-  authKeys: ['participant-group-token'],
-  read: false, write: true, ttl: 60
-});
-
-// Grant participants read-only on results/admin/meta
-await pubnub.grant({
-  channels: [`poll.${pollId}.results`, `poll.${pollId}.admin`, `poll.${pollId}.meta`],
-  authKeys: ['participant-group-token'],
-  read: true, write: false, ttl: 60
+// Grant participants vote write + results/admin/meta read
+await pubnub.grantToken({
+  ttl: 60,
+  authorized_uuid: participantId,
+  resources: {
+    channels: {
+      [`poll.${pollId}.votes`]: { write: true },
+      [`poll.${pollId}.results`]: { read: true },
+      [`poll.${pollId}.admin`]: { read: true },
+      [`poll.${pollId}.meta`]: { read: true }
+    }
+  }
 });
 ```
 

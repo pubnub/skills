@@ -166,26 +166,21 @@ async function claimOrder(pubnub, orderId, driverId) {
 
 // PubNub Function: Resolve conflicting claims (first-write-wins)
 // Deployed as After Publish on dispatch.order-claims
-// export default (request) => {
+// export default async (request) => {
 //   const kvstore = require('kvstore');
 //   const pubnub = require('pubnub');
 //   const msg = request.message;
-//
-//   return kvstore.get(`order-claim-${msg.orderId}`).then((existing) => {
-//     if (existing) {
-//       // Already claimed, notify this driver they lost
-//       return pubnub.publish({
-//         channel: `driver.${msg.driverId}.commands`,
-//         message: { type: 'claim-rejected', orderId: msg.orderId }
-//       });
-//     }
-//     // First claim wins
-//     return kvstore.set(`order-claim-${msg.orderId}`, msg.driverId).then(() => {
-//       return pubnub.publish({
-//         channel: `driver.${msg.driverId}.commands`,
-//         message: { type: 'claim-accepted', orderId: msg.orderId }
-//       });
+//   const existing = await kvstore.get(`order-claim-${msg.orderId}`);
+//   if (existing) {
+//     return pubnub.publish({
+//       channel: `driver.${msg.driverId}.commands`,
+//       message: { type: 'claim-rejected', orderId: msg.orderId }
 //     });
+//   }
+//   await kvstore.set(`order-claim-${msg.orderId}`, msg.driverId);
+//   return pubnub.publish({
+//     channel: `driver.${msg.driverId}.commands`,
+//     message: { type: 'claim-accepted', orderId: msg.orderId }
 //   });
 // };
 ```
@@ -226,16 +221,16 @@ class DeliveryChat {
   }
 
   async loadHistory(onMessageReceived) {
-    const response = await this.pubnub.history({
-      channel: this.channel,
+    const response = await this.pubnub.fetchMessages({
+      channels: [this.channel],
       count: 50
     });
-
-    response.messages.forEach((msg) => {
+    const messages = response.channels[this.channel] ?? [];
+    messages.forEach((msg) => {
       onMessageReceived({
-        text: msg.entry.text,
-        sender: msg.entry.senderRole,
-        timestamp: msg.entry.timestamp,
+        text: msg.message.text,
+        sender: msg.message.senderRole,
+        timestamp: msg.message.timestamp,
         isHistory: true
       });
     });
@@ -408,13 +403,12 @@ Customers should not see the driver's exact location at all times. Implement pri
 ```javascript
 // PubNub Function: After Publish on driver.*.location
 // Republishes a sanitized location to a customer-facing channel
-export default (request) => {
+export default async (request) => {
   const kvstore = require('kvstore');
   const pubnub = require('pubnub');
   const message = request.message;
   const driverId = message.driverId;
-
-  return kvstore.get(`driver-delivery-${driverId}`).then((delivery) => {
+  const delivery = await kvstore.get(`driver-delivery-${driverId}`);
     if (!delivery) return request.ok();
 
     const distToCustomer = haversine(
@@ -456,7 +450,7 @@ export default (request) => {
         driverId: driverId
       }
     });
-  });
+};
 
   function haversine(lat1, lng1, lat2, lng2) {
     const R = 6371e3;

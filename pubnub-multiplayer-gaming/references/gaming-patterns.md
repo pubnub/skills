@@ -74,15 +74,13 @@ class RandomMatchmaker {
 ```javascript
 // PubNub Function: On Request handler for matchmaking
 // Endpoint: POST /matchmake
-export default (request, response) => {
+export default async (request, response) => {
   const db = require('kvstore');
   const body = JSON.parse(request.body);
   const { playerId, rating, gameType } = body;
 
   const queueKey = `queue_${gameType}`;
-
-  return db.get(queueKey).then((queue) => {
-    queue = queue || [];
+  let queue = (await db.get(queueKey)) || [];
 
     // Find a suitable opponent within rating range
     const RATING_RANGE = 200;
@@ -131,7 +129,6 @@ export default (request, response) => {
       response.status = 200;
       return response.send({ matched: false, position: queue.length });
     }
-  });
 };
 ```
 
@@ -456,7 +453,7 @@ Full deployable handler: start from the functions owner; apply rules from [gamin
 ```javascript
 // PubNub Function: On Request handler for score submission
 // Endpoint: POST /submit-score
-export default (request, response) => {
+export default async (request, response) => {
   const db = require('kvstore');
   const body = JSON.parse(request.body);
   const { playerId, roomId, score, gameEvents } = body;
@@ -483,24 +480,20 @@ export default (request, response) => {
   }
 
   // Store verified score
-  return db.get(`leaderboard`).then((leaderboard) => {
-    leaderboard = leaderboard || [];
-    leaderboard.push({
-      playerId,
-      score: calculatedScore,
-      roomId,
-      timestamp: Date.now()
-    });
-
-    // Sort and keep top 100
-    leaderboard.sort((a, b) => b.score - a.score);
-    leaderboard = leaderboard.slice(0, 100);
-
-    return db.set('leaderboard', leaderboard).then(() => {
-      response.status = 200;
-      return response.send({ verified: true, score: calculatedScore });
-    });
+  let leaderboard = (await db.get('leaderboard')) || [];
+  leaderboard.push({
+    playerId,
+    score: calculatedScore,
+    roomId,
+    timestamp: Date.now()
   });
+
+  leaderboard.sort((a, b) => b.score - a.score);
+  leaderboard = leaderboard.slice(0, 100);
+
+  await db.set('leaderboard', leaderboard);
+  response.status = 200;
+  return response.send({ verified: true, score: calculatedScore });
 };
 ```
 

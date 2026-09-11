@@ -1,5 +1,5 @@
 {
-  "context": "Tests whether the agent applies mobile battery optimization configuration, background/foreground subscription management, cipherKey-based encryption, efficient listener patterns, and proper initialization with history fetch before subscribe.",
+  "context": "Tests whether the agent applies mobile battery optimization configuration, background/foreground subscription management, CryptoModule-based encryption, efficient listener patterns, and proper initialization with history fetch before subscribe.",
   "type": "weighted_checklist",
   "checklist": [
     {
@@ -28,8 +28,8 @@
       "max_score": 8
     },
     {
-      "name": "cipherKey for encryption",
-      "description": "The PubNub instance is configured with a cipherKey parameter for end-to-end message encryption",
+      "name": "CryptoModule for encryption",
+      "description": "The PubNub instance is configured with cryptoModule (aesCbcCryptoModule), not a top-level cipherKey, for end-to-end message encryption",
       "max_score": 10
     },
     {
@@ -54,7 +54,7 @@
     },
     {
       "name": "Encryption storage note",
-      "description": "The design notes mention that encrypted messages are stored encrypted and automatically decrypted on retrieval when using the same cipherKey",
+      "description": "The design notes mention that encrypted messages are stored encrypted and automatically decrypted on retrieval when using the same CryptoModule key",
       "max_score": 8
     }
   ]

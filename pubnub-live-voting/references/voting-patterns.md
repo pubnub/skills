@@ -118,18 +118,15 @@ Weighted voting assigns different voting power to different participants. Common
 ### Server-Side Weighted Vote Processing
 
 ```javascript
-function processWeightedVote(kvstore, pollId, voterId, optionId) {
+async function processWeightedVote(kvstore, pollId, voterId, optionId) {
   const weightKey = `poll:${pollId}:weight:${voterId}`;
-
-  return kvstore.get(weightKey).then((weightStr) => {
-    const weight = parseInt(weightStr, 10) || 1;
-    const voterKey = `poll:${pollId}:voter:${voterId}`;
-    return kvstore.get(voterKey).then((existing) => {
-      if (existing) throw new Error('DUPLICATE_VOTE');
-      return kvstore.set(voterKey, optionId);
-    }).then(() => kvstore.incrCounter(`poll:${pollId}:tally:${optionId}`, weight))
-      .then(() => kvstore.incrCounter(`poll:${pollId}:total`, weight));
-  });
+  const weight = parseInt(await kvstore.get(weightKey), 10) || 1;
+  const voterKey = `poll:${pollId}:voter:${voterId}`;
+  const existing = await kvstore.get(voterKey);
+  if (existing) throw new Error('DUPLICATE_VOTE');
+  await kvstore.set(voterKey, optionId);
+  await kvstore.incrCounter(`poll:${pollId}:tally:${optionId}`, weight);
+  await kvstore.incrCounter(`poll:${pollId}:total`, weight);
 }
 
 // Admin pre-loads voter weights before the poll opens

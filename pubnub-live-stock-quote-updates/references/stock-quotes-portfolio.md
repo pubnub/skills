@@ -248,45 +248,43 @@ class AlertManager {
 
 ```javascript
 // PubNub Function: After Publish on quotes.* channels
-export default (request) => {
+export default async (request) => {
   const kvstore = require('kvstore');
+  const pubnub = require('pubnub');
   const quote = request.message;
+  const data = await kvstore.get(`alerts_${quote.symbol}`);
+  if (!data) return request.ok();
+  const alerts = JSON.parse(data);
+  const triggered = [];
 
-  return kvstore.get(`alerts_${quote.symbol}`).then((data) => {
-    if (!data) return request.ok();
-    const alerts = JSON.parse(data);
-    const triggered = [];
+  alerts.forEach((alert) => {
+    if (alert.triggered) return;
+    let shouldFire = false;
 
-    alerts.forEach((alert) => {
-      if (alert.triggered) return;
-      let shouldFire = false;
+    if (alert.type === 'price_above') shouldFire = quote.price >= alert.target;
+    if (alert.type === 'price_below') shouldFire = quote.price <= alert.target;
+    if (alert.type === 'pct_change_up') shouldFire = quote.changePct >= alert.target;
+    if (alert.type === 'pct_change_down') shouldFire = quote.changePct <= -alert.target;
+    if (alert.type === 'volume_spike') shouldFire = quote.volume >= alert.target;
 
-      if (alert.type === 'price_above') shouldFire = quote.price >= alert.target;
-      if (alert.type === 'price_below') shouldFire = quote.price <= alert.target;
-      if (alert.type === 'pct_change_up') shouldFire = quote.changePct >= alert.target;
-      if (alert.type === 'pct_change_down') shouldFire = quote.changePct <= -alert.target;
-      if (alert.type === 'volume_spike') shouldFire = quote.volume >= alert.target;
-
-      if (shouldFire) {
-        alert.triggered = true;
-        triggered.push(alert);
-        pubnub.fire({
-          channel: `alerts.${alert.userId}`,
-          message: {
-            alertId: alert.id, symbol: quote.symbol,
-            type: alert.type, target: alert.target,
-            actual: quote.price, triggeredAt: Date.now()
-          }
-        });
-      }
-    });
-
-    if (triggered.length > 0) {
-      return kvstore.set(`alerts_${quote.symbol}`, JSON.stringify(alerts))
-        .then(() => request.ok());
+    if (shouldFire) {
+      alert.triggered = true;
+      triggered.push(alert);
+      pubnub.fire({
+        channel: `alerts.${alert.userId}`,
+        message: {
+          alertId: alert.id, symbol: quote.symbol,
+          type: alert.type, target: alert.target,
+          actual: quote.price, triggeredAt: Date.now()
+        }
+      });
     }
-    return request.ok();
   });
+
+  if (triggered.length > 0) {
+    await kvstore.set(`alerts_${quote.symbol}`, JSON.stringify(alerts));
+  }
+  return request.ok();
 };
 ```
 
