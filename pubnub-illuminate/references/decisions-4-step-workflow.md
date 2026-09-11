@@ -1,6 +1,3 @@
-<!-- canonical-for: ILLUMINATE_DECISIONS -->
-<!-- used-by: -->
-
 # Illuminate Decisions: The 4-Step Workflow
 
 The canonical reference for Illuminate Decisions, **the most error-prone Illuminate API**. This document captures every gotcha so the agent does not hit the same 500 errors twice.
@@ -61,13 +58,13 @@ The following fields are **required** despite being documented as optional. Omit
 
 | `actionType` | What it does |
 |---|---|
-| `PUBNUB_PUBLISH` | Publishes a message to a PubNub channel (requires valid pub + sub key in template). **Channel name must follow PubNub naming rules: `.` is reserved, maximum 3 dot-separated levels (`a.b.c`). `a.b.c.d` is invalid and will silently fail.** |
+| `PUBNUB_PUBLISH` | Publishes a message to a PubNub channel (requires valid pub + sub key in template). **Channel name must follow PubNub naming rules: avoid invalid characters; `.` is reserved for Wildcard Subscribe and Function bindings — retrieve current naming rules before relying on a specific depth limit.**
 | `WEBHOOK_EXECUTION` | POSTs a payload to an external URL |
 | `APPCONTEXT_SET_USER_METADATA` | Sets custom fields on a user object |
 | `APPCONTEXT_SET_CHANNEL_METADATA` | Sets custom fields on a channel object |
 | `APPCONTEXT_SET_MEMBERSHIP_METADATA` | Sets custom fields on a user-channel membership |
 
-For App Context action targets, see [pubnub-app-context/references/users.md](../../pubnub-app-context/references/users.md). For PUBNUB_PUBLISH, the messages flow through the standard [publish/subscribe pipeline](../../pubnub-app-developer/references/publish-subscribe.md) (which also explains [`userId` / UUID](../../pubnub-app-developer/references/sdk-patterns.md) semantics). For richer event-driven action targets like webhook/Lambda/Kafka/SQS, prefer [pubnub-events-and-actions](../../pubnub-events-and-actions/references/event-types.md) instead of WEBHOOK_EXECUTION when no threshold logic is needed.
+For App Context action targets, see [pubnub-app-context/references/users.md](../../pubnub-app-context/references/users.md). For PUBNUB_PUBLISH, the messages flow through the standard [publish/subscribe pipeline](../../pubnub-app-developer/SKILL.md) (which also explains [`userId` / UUID](../../pubnub-app-developer/SKILL.md) semantics). For richer event-driven action targets like webhook/Lambda/Kafka/SQS, prefer [pubnub-events-and-actions](../../pubnub-events-and-actions/references/event-types.md) instead of WEBHOOK_EXECUTION when no threshold logic is needed.
 
 **Critical naming**: action objects use `"actionType"` (not `"type"`). `outputFields` use `"variable"` and `"name"` (not `"type"`).
 
@@ -234,13 +231,11 @@ PUT is always **full replacement** — include the complete body every time.
 
 ## Account Limits
 
-| Decision type | Limit | Error returned |
-|---|---|---|
-| `METRIC` decisions | 3 per account | `400: "A business object cannot have more than 3 associated decisions."` |
-| `QUERY` decisions | ~10–11 per account | `500 Internal Server Error` (no descriptive message) |
-| `BUSINESSOBJECT` decisions | No enforced limit | — |
+Illuminate enforces per-account caps on certain decision types. Retrieve current limits via **`manage_illuminate`** and Illuminate docs before creating METRIC or QUERY decisions.
 
-**Before creating a new METRIC or QUERY decision, list existing decisions of that type.** If at or near the limit, ask the user which existing decision to delete before retrying. **Never delete without explicit confirmation.**
+**Before creating a new METRIC or QUERY decision, list existing decisions of that type.** If at or near the documented limit, ask the user which existing decision to delete before retrying. **Never delete without explicit confirmation.**
+
+When limits are exceeded, the API returns a typed error — decode using Illuminate docs rather than hard-coded messages in Skills.
 
 ## Common Error Decoder Ring
 
@@ -254,7 +249,7 @@ PUT is always **full replacement** — include the complete body every time.
 | Output field rejected | Used `"type"` instead of `"variable"` | Use `variable` and `name` only |
 | `executionLimitType` rejected | Used `ONCE_PER_INTERVAL_PER_CONDITION` | Use `ONCE_PER_INTERVAL_PER_CONDITION_GROUP` |
 | `400: "A business object cannot have more than 3 associated decisions."` | Hit METRIC decision limit | Delete one (with user confirmation) and retry |
-| `PUBNUB_PUBLISH` action fires but no message is received | Channel name exceeds 3 dot-separated levels (e.g. `a.b.c.d`) | Redesign to `a.b.c` max — see [channel naming rules](../../pubnub-app-developer/references/channels.md) |
+| `PUBNUB_PUBLISH` action fires but no message is received | Invalid channel name (forbidden characters) or wrong keyset | Verify name against [channel naming rules](../../pubnub-app-developer/references/channels.md) — plain names are not capped at three segments; wildcard patterns have a separate depth limit |
 
 ## Related Reading
 

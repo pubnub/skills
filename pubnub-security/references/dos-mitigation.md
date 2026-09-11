@@ -1,8 +1,3 @@
-<!-- canonical-for: DOS_MITIGATION -->
-<!-- used-by: -->
-
-> **Cross-references:** Layered with [Access Manager grants](access-manager.md), [IP allowlisting](ip-whitelisting.md), and [client-side backoff and jitter](../../pubnub-reliability/references/backoff-and-jitter.md). For incident-time triage see the [observability runbook](../../pubnub-observability/references/incident-runbook.md). Sustained traffic spikes show up in [usage metrics](../../pubnub-observability/references/usage-metrics.md). Identifies abusers by `userId` — see [SDK userId/UUID](../../pubnub-app-developer/references/sdk-patterns.md). The Function rate-limit pattern uses [Before Publish, `request.ok()`/`request.abort()`](../../pubnub-functions/references/functions-basics.md) and [`require('kvstore')`](../../pubnub-functions/references/functions-modules.md).
-
 # DoS / DDoS Mitigation
 
 PubNub edge POPs absorb large traffic volumes by design. Most denial-of-service patterns relevant to your app are **abuse from authenticated users** or **runaway clients**, not network-layer floods.

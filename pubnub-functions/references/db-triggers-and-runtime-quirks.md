@@ -1,8 +1,3 @@
-<!-- canonical-for: FUNCTION_DB_TRIGGERS, FUNCTION_RUNTIME_QUIRKS -->
-<!-- used-by: -->
-
-> **Cross-references:** For pure routing to external systems prefer [Events & Actions action targets](../../pubnub-events-and-actions/references/event-types.md) (see also [the action-targets reference](../../pubnub-events-and-actions/references/action-targets.md)). For [retry/backoff and queue-and-retry](../../pubnub-reliability/references/queue-and-retry.md) outside the Function. [Vault for credentials](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md). [Logging correlation fields](../../pubnub-observability/references/logging-correlation.md).
-
 # DB Triggers and Runtime Quirks
 
 This document covers two related topics:
@@ -83,27 +78,25 @@ A Function that hasn't run in a while takes ~100–300ms longer on the first inv
 
 **Mitigation:** Set up an On Interval Function that pings the cold endpoint every 5 minutes, OR move the work to After Publish (delay isn't user-visible).
 
-### Quirk 2: 3-Call Cap on XHR + PubNub API Calls
+### Quirk 2: Per-Module Execution Limits
 
-A single Function execution is capped at **3 external calls** — counting **only `xhr.fetch(...)` and PubNub API invocations** from the `pubnub` module (`publish`, `signal`, `fire`, `grant`, etc.). The 4th call raises an `"execution calls exceeds"` error and aborts the handler.
+Each external module is metered **independently** per Function execution. Exceeding any one module's budget raises an `"execution calls exceeds"` error for that module — budgets do **not** share a common pool.
 
-**What counts toward the 3-call cap:**
-- `xhr.fetch(...)` — any HTTP request via the `xhr` module
-- `pubnub.publish(...)`, `pubnub.signal(...)`, `pubnub.fire(...)`
-- Other `pubnub` module API calls (grants, presence, etc.)
+Retrieve current default caps per module (XHR, KV Store, PubNub API, Vault) via **`how_to`** (`understand-pubnub-functions-limits-and-constraints`) or Functions docs — do not hard-code limit tables in application logic.
 
-**What does NOT count toward the 3-call cap:**
-- `kvstore.get(...)`, `kvstore.set(...)`, `kvstore.removeItem(...)`, `kvstore.incrCounter(...)` — all KVStore ops are local to the runtime and free of this cap.
-- `vault.get(...)` — vault is local; vault has its **own** 10-call-per-execution limit (see [Quirk 10](#quirk-10-vault-may-be-unavailable-or-return-not-found) and the [Vault Module section](functions-modules.md#vault-module)).
-- `console.log`, `console.error`.
-- Pure CPU helpers: `crypto`, `jwt`, `uuid`, `utils`, `advanced_math`, `jsonpath`, `codec/*`.
+**What does NOT consume another module's budget:**
+- `kvstore.*` operations (KV Store module budget only)
+- `vault.get(...)` (Vault module budget only)
+- `console.log`, `console.error`
+- Pure CPU helpers: `crypto`, `jwt`, `uuid`, `utils`, `advanced_math`, `jsonpath`, `codec/*`
 
-**Configurable.** The 3-call cap can be **raised by request via PubNub Support** if your application legitimately needs more external calls per invocation.
+**Configurable.** Per-module caps can be **raised by request via PubNub Support**.
 
 **Mitigation:**
-- For HTTP fan-out, replace N fetches with one fetch to a downstream service that fans out for you (a small Lambda / Cloud Function / SQS+worker).
-- For chain-level designs, prefer **3 hops × 3 calls = 9 calls** spread across the chain over jamming everything into one Function. See [Chaining vs Forking](functions-chaining.md).
-- Use the `pubnub` module's `fire(...)` for analytics side-effects rather than `publish(...)` — same 1-call cost, but `fire` skips subscriber delivery if all you want is to trigger another Function.
+- Batch KV reads/writes instead of fan-out loops that exhaust the KV Store budget
+- Replace N `xhr.fetch` calls with one downstream aggregator when approaching the XHR budget
+- For chain-level designs, each hop gets its own per-module budgets — see [Chaining vs Forking](functions-chaining.md)
+- Use `pubnub.fire(...)` for analytics side-effects when appropriate — still counts toward the PubNub API budget
 
 ### Quirk 3: No Top-Level `await`
 
@@ -242,7 +235,7 @@ const apiKey = await vault.get('API_KEY');
 
 **B. "Not Found" despite the key being visible in the Portal.** If `vault.get('API_KEY')` returns `"Not Found"` (or `null`) but the key clearly exists in the Admin Portal's Secrets section, the Portal entry almost certainly contains **hidden characters** — trailing whitespace, zero-width characters, or copy-paste residue from a rich-text source. Re-create the key by typing it directly into the Portal field.
 
-**Caching tip.** Cache `vault.get(...)` results on `globalThis` to stay under the 10-call execution limit:
+**Caching tip.** Cache `vault.get(...)` results on `globalThis` to stay under the Vault module's per-execution budget (retrieve current cap via **`how_to`**):
 
 ```javascript
 export default async (request) => {
@@ -256,7 +249,7 @@ export default async (request) => {
 };
 ```
 
-The cache survives across invocations on the same warm worker (see Quirk 3 for the same warm-worker behavior on KVStore reads). Combined with the per-execution 10-call ceiling, you rarely hit the limit in practice.
+The cache survives across invocations on the same warm worker (see Quirk 1 for warm-worker behavior on KVStore reads). Combined with a modest per-execution Vault budget, you rarely hit the limit in practice when secrets are cached.
 
 ### Quirk 11: `sendFile()` events: `request.message` may be undefined
 

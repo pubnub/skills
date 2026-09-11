@@ -1,6 +1,3 @@
-<!-- canonical-for: EVENTS_AND_ACTIONS_FILTERS -->
-<!-- used-by: -->
-
 # Filters: Basic Filters and Advanced JSONPath
 
 The canonical reference for narrowing which events trigger an Events & Actions listener.
@@ -48,7 +45,7 @@ JSONPath is evaluated against the entire event payload. Returns matches → acti
 }
 ```
 
-(`uuid` here is the [PubNub userId/UUID](../../pubnub-app-developer/references/sdk-patterns.md) of the publisher.)
+(`uuid` here is the [PubNub userId/UUID](../../pubnub-app-developer/SKILL.md) of the publisher.)
 
 JSONPath expressions reference these top-level fields.
 

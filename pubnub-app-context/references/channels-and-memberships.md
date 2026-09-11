@@ -1,6 +1,3 @@
-<!-- canonical-for: APP_CONTEXT_CHANNELS_AND_MEMBERSHIPS -->
-<!-- used-by: pubnub-chat -->
-
 # App Context: Channels and Memberships
 
 The canonical reference for storing channel metadata and tracking user-channel relationships in PubNub App Context.
@@ -97,7 +94,7 @@ await pubnub.objects.setMemberships({
 });
 ```
 
-If `uuid` is omitted, the SDK uses the current PubNub [`userId`](../../pubnub-app-developer/references/sdk-patterns.md).
+If `uuid` is omitted, the SDK uses the current PubNub [`userId`](../../pubnub-app-developer/SKILL.md).
 
 ### Get a User's Memberships
 
@@ -205,7 +202,7 @@ custom: { status: 'inactive', left_at: '2026-04-29T18:45:00Z' }
 
 ## Listening for Channel and Membership Changes
 
-For the underlying [`addListener` and `pubnub.subscribe` mechanics](../../pubnub-app-developer/references/publish-subscribe.md), see the canonical owner.
+For the underlying [`addListener` and `pubnub.subscribe` mechanics](../../pubnub-app-developer/SKILL.md), see the canonical owner.
 
 ```javascript
 pubnub.addListener({

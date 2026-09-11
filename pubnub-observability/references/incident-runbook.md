@@ -1,6 +1,3 @@
-<!-- canonical-for: INCIDENT_RUNBOOK -->
-<!-- used-by: pubnub-keyset-management, pubnub-history, pubnub-reliability, pubnub-security, pubnub-choose-docs-path -->
-
 # Incident Runbook
 
 The canonical reference for triaging the most common PubNub-related production incidents.
@@ -109,9 +106,9 @@ For **any** PubNub incident, run this sequence first:
 
 ### Triage
 
-1. **Check heartbeat configuration.** Default is 300s heartbeat; if this is too long, slow joins/leaves; too short, false flapping. See [pubnub-presence/references/presence-events.md](../../pubnub-presence/references/presence-events.md).
+1. **Check heartbeat configuration.** Default is 300s heartbeat; if this is too long, slow joins/leaves; too short, false flapping. See [pubnub-presence/SKILL.md](../../pubnub-presence/SKILL.md).
 
-2. **Check for duplicate [`userId`](../../pubnub-app-developer/references/sdk-patterns.md)s.** Two devices using the same `userId` (e.g., a logged-in user with two browser tabs) interact with presence in subtle ways. See [pubnub-presence/references/multi-device-sync.md](../../pubnub-presence/references/multi-device-sync.md).
+2. **Check for duplicate [`userId`](../../pubnub-app-developer/SKILL.md)s.** Two devices using the same `userId` (e.g., a logged-in user with two browser tabs) interact with presence in subtle ways. See [pubnub-presence/references/multi-device-sync.md](../../pubnub-presence/references/multi-device-sync.md).
 
 3. **Check `PNNetworkDownCategory` rate.** If many clients are flapping connections, presence will flap. See [pubnub-presence/references/dropped-connections.md](../../pubnub-presence/references/dropped-connections.md).
 
@@ -205,7 +202,7 @@ For **any** PubNub incident, run this sequence first:
 
 3. **Check for [schema_version](../../pubnub-reliability/references/schema-versioning.md) bumps.** Did the producer ship before receivers were updated to handle the new version?
 
-4. **Check [`userId`](../../pubnub-app-developer/references/sdk-patterns.md) changes.** If `userId` format changed (e.g., started using emails instead of UUIDs), App Context, Access Manager, and presence all get confused.
+4. **Check [`userId`](../../pubnub-app-developer/SKILL.md) changes.** If `userId` format changed (e.g., started using emails instead of UUIDs), App Context, Access Manager, and presence all get confused.
 
 5. **Check Access Manager token format.** Did the new code start passing `token` instead of `authKey`? See [pubnub-security/references/access-manager.md](../../pubnub-security/references/access-manager.md).
 

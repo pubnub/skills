@@ -1,6 +1,3 @@
-<!-- canonical-for: DOCS_ROUTING -->
-<!-- used-by: -->
-
 # Intent to Tool Mapping
 
 The canonical decision tree from a user's stated intent to (specialist skill, MCP tool on `user-pubnub`, PubNub docs surface). Every other skill that mentions docs routing or MCP tool selection must link here.
@@ -78,6 +75,8 @@ Is the user asking about chat / messaging features (DMs, group chat, typing, rea
 | Intent | Skill | MCP tool | Docs surface |
 |---|---|---|---|
 | Per-message transform, validate, enrich, moderate at the edge | `pubnub-functions` | `get_sdk_documentation` (Functions section) | Functions 2.0 docs |
+| Functions execution limits, chain depth, per-module budgets | `pubnub-functions` | `how_to` (`understand-pubnub-functions-limits-and-constraints`) | Functions 2.0 docs |
+| Create/deploy a Functions package or revision | `pubnub-functions` | `manage_functions` (`resource=package`, `operation=create`) | Functions 2.0 docs |
 | HTTP endpoint backed by PubNub | `pubnub-functions` | `get_sdk_documentation` | Functions 2.0 docs |
 | Scheduled task running every N minutes | `pubnub-functions` | `get_sdk_documentation` | Functions 2.0 docs |
 | Forward every message to webhook / Lambda / Kafka / SQS / EventBridge | `pubnub-events-and-actions` | `get_sdk_documentation` | Events & Actions docs |
@@ -119,6 +118,8 @@ Is the user asking about chat / messaging features (DMs, group chat, typing, rea
 | Intent | Skill | MCP tool | Docs surface |
 |---|---|---|---|
 | Channel groups, wildcard subscribe | `pubnub-scale` | `get_sdk_documentation` | Stream Controller docs |
+| Channel multiplexing / group numeric limits | `pubnub-scale` | `how_to` (`understand-channel-limits`, `use-channel-groups`) + `get_sdk_documentation` | Stream Controller docs |
+| Message payload size limits | `pubnub-observability` + `pubnub-scale` | `how_to` (`calculate-message-payload-size`) | Best-practices docs |
 | Throughput tuning, payload sizing | `pubnub-scale` + `pubnub-observability` | `get_sdk_documentation` | Best-practices docs |
 | Plan for 10k+ concurrent users / live event | `pubnub-scale` | `write_pubnub_app` | Best-practices docs |
 | Optimize mobile battery usage | `pubnub-scale` | `get_sdk_documentation` | Mobile docs |

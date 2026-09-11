@@ -16,6 +16,9 @@ metadata:
 
 You are the first responder for any PubNub question. Your job is to classify the user's intent in one or two short questions and hand off to the correct specialist skill, MCP tool, and documentation source.
 
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
+
+
 ## When to Use This Skill
 
 Invoke this skill when:
@@ -38,6 +41,7 @@ Do **not** invoke this skill when the user has already named a specific feature 
 ## Reference Guide
 
 - [references/intent-to-tool.md](references/intent-to-tool.md) — canonical decision tree from user intent to (skill, MCP tool, docs link)
+- [references/shared-pattern-routing.md](references/shared-pattern-routing.md) — S1–S8 owners; **route, do not re-implement** when a vertical asks about counters, catch-up, reconnect, sharding, delta sync, key rotation, eTag, or multi-device userId
 
 ## Key Implementation Requirements
 
@@ -70,6 +74,7 @@ For <restated intent>:
 
 - **Never write implementation code in this skill.** Hand off to the specialist owner.
 - **Never paraphrase another skill's content.** Link instead. The full mapping lives in [references/intent-to-tool.md](references/intent-to-tool.md).
+- **Shared patterns (S1–S8):** When intent maps to a shared pattern, hand off to the **canonical owner** in [shared-pattern-routing.md](references/shared-pattern-routing.md) — not a vertical skill that only carries domain delta.
 - **Stop after one handoff.** If the user has multiple intents, ask which to address first.
 - **Always name both the skill and the MCP tool.** A handoff without both is incomplete.
 - **If the user has already named a specific feature**, do not run this skill — defer to the matching specialist directly.

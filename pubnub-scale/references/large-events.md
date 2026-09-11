@@ -1,21 +1,14 @@
-<!-- canonical-for: LARGE_EVENTS -->
-<!-- used-by: -->
-
-> **Cross-references:** Builds on [scaling-patterns](scaling-patterns.md) (sharding, channel groups, wildcards) and [performance](performance.md) (signal vs publish, batching). Pair with [presence heartbeat tuning + presence event semantics](../../pubnub-presence/references/presence-events.md) (and [setup](../../pubnub-presence/references/presence-setup.md)), [reliability backoff and jitter](../../pubnub-reliability/references/backoff-and-jitter.md), and [usage-metrics monitoring](../../pubnub-observability/references/usage-metrics.md). For [DoS / abuse hardening during the event](../../pubnub-security/references/dos-mitigation.md) see the security owner. SDK setup uses [`pubnub.subscribe(` and listener wiring](../../pubnub-app-developer/references/publish-subscribe.md) plus [userId/UUID](../../pubnub-app-developer/references/sdk-patterns.md). Stage-tier fan-out commonly uses [Functions After Publish](../../pubnub-functions/references/functions-basics.md).
-
 # Large-Event Playbook (10K+ Concurrent Users)
+
+**Canonical owner (S4):** Large fan-out / high-concurrency checklist, sharding, and PubNub Support engagement. Vertical skills should link here instead of duplicating sharding guidance.
 
 This page is the engagement model for live events: sports broadcasts, product launches, large-scale auctions, voting, anything that pushes a single sub-key into the tens of thousands of concurrent connections.
 
 ## Triggering Threshold
 
-Engage PubNub Support **at least 2 weeks before** any of:
-- 10,000+ concurrent subscribers on one sub-key
-- 5,000+ concurrent subscribers on a single channel
-- Sustained publish rate above your account's normal pattern by >5x
-- Single message fan-out above 1M deliveries/min
+Engage PubNub Support **at least two weeks before** a planned large live event (high concurrent load on a sub-key, hot channel, or unusual fan-out). Retrieve current capacity planning thresholds via Support or **`get_sdk_documentation`** — do not hard-code subscriber counts in application logic.
 
-These are not hard rejections — they are signals to pre-allocate capacity and reserve POPs.
+Signals that warrant early engagement include: single-channel audiences much larger than your normal peak, sustained publish rates far above baseline, or fan-out that exceeds your usual transaction profile.
 
 ## Pre-Event Checklist
 
@@ -40,7 +33,7 @@ These are not hard rejections — they are signals to pre-allocate capacity and 
 ### T-0 (event live)
 - [ ] Watch transaction count, error rate, presence event volume in real time.
 - [ ] Be ready to revoke abusive `userId`s via [Access Manager](../../pubnub-security/references/access-manager.md).
-- [ ] If shed-load is needed, fall back to [signal vs publish](performance.md) for non-critical events.
+- [ ] If shed-load is needed, fall back to signal vs publish for non-critical events — see [cost-and-payload-hygiene.md](../../pubnub-observability/references/cost-and-payload-hygiene.md).
 
 ### T+1 day
 - [ ] Review [usage metrics](../../pubnub-observability/references/usage-metrics.md) for cost spikes.
@@ -79,7 +72,7 @@ This isolates publisher rate from subscriber count.
 | Single-channel hot spot | Shard channels |
 | Token refresh storm | Issue tokens with TTL > event duration |
 | Cost spike post-event | Pre-set alerts on [usage metrics](../../pubnub-observability/references/usage-metrics.md) |
-| Pause-the-world publishes from the publisher app | Use signal for non-critical telemetry; see [performance.md](performance.md) |
+| Pause-the-world publishes from the publisher app | Use signal for non-critical telemetry; see [cost-and-payload-hygiene.md](../../pubnub-observability/references/cost-and-payload-hygiene.md) |
 
 ## After-Action
 

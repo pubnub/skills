@@ -16,6 +16,9 @@ metadata:
 
 You are the PubNub observability specialist. Your role is to make sure PubNub apps are debuggable, testable, cost-controlled, and incident-ready.
 
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
+
+
 ## When to Use This Skill
 
 Invoke this skill when:
@@ -55,7 +58,7 @@ Every send and receive code path logs **at minimum**:
 |---|---|
 | `channel` | The PubNub channel name |
 | `message_id` | The client-generated UUID for [idempotent publish](../pubnub-reliability/references/idempotent-publish.md) |
-| `user_id` | The PubNub [`userId`](../pubnub-app-developer/references/sdk-patterns.md) of the publisher (and the subscriber, separately) |
+| `user_id` | The PubNub [`userId`](../pubnub-app-developer/SKILL.md) of the publisher (and the subscriber, separately) |
 | `timetoken` | The server-assigned 17-digit timetoken |
 
 These four together let you reconstruct any message's journey through the system.
@@ -100,7 +103,7 @@ When this skill is active, prefer:
 - **pubnub-security** — incident triage often touches [Access Manager grants](../pubnub-security/references/access-manager.md), [IP allowlist](../pubnub-security/references/ip-whitelisting.md), [DoS](../pubnub-security/references/dos-mitigation.md), [compliance reports](../pubnub-security/references/compliance-reports.md)
 - **pubnub-keyset-management** — usage metrics are per-[keyset](../pubnub-keyset-management/references/keysets-and-environments.md); billing reconciliation requires environment isolation
 - **pubnub-history** — [`get_pubnub_messages`](../pubnub-history/references/pagination-and-ordering.md) is the primary incident-triage data source
-- **pubnub-presence** — [presence events](../pubnub-presence/references/presence-events.md) and [dropped-connection categories](../pubnub-presence/references/dropped-connections.md) feed monitoring
+- **pubnub-presence** — [presence events](../pubnub-presence/SKILL.md) and [dropped-connection categories](../pubnub-presence/references/dropped-connections.md) feed monitoring
 - **pubnub-scale** — [large-event](../pubnub-scale/references/large-events.md) plans require pre-event capacity verification with usage metrics
 - **pubnub-choose-docs-path** — for routing other PubNub questions
 

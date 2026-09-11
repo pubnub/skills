@@ -1,6 +1,3 @@
-<!-- canonical-for: IDEMPOTENT_PUBLISH -->
-<!-- used-by: pubnub-app-developer, pubnub-history, pubnub-functions, pubnub-observability -->
-
 # Idempotent Publish
 
 The canonical reference for client-generated message IDs that make `publish()` retries safe.
@@ -58,7 +55,7 @@ For [backoff-and-jitter.md](backoff-and-jitter.md) details see the canonical own
 
 ### 3. Subscribers Dedup by `message_id`
 
-For [`addListener` and `pubnub.subscribe`/`pubnub.publish` basics](../../pubnub-app-developer/references/publish-subscribe.md) see the canonical owner.
+For [`addListener` and `pubnub.subscribe`/`pubnub.publish` basics](../../pubnub-app-developer/SKILL.md) see the canonical owner.
 
 ```javascript
 const seenIds = new LRU({ max: 10_000 });
@@ -81,7 +78,7 @@ For dedup mechanics in detail see [dedup-on-merge.md](dedup-on-merge.md).
 
 | ID source | Pros | Cons |
 |---|---|---|
-| `crypto.randomUUID()` v4 | Standard, collision-free, 16 bytes encoded as 36 chars (note: distinct from PubNub's [userId/UUID](../../pubnub-app-developer/references/sdk-patterns.md)) | A bit long |
+| `crypto.randomUUID()` v4 | Standard, collision-free, 16 bytes encoded as 36 chars (note: distinct from PubNub's [userId/UUID](../../pubnub-app-developer/SKILL.md)) | A bit long |
 | Snowflake-style (timestamp + node + counter) | Sortable, more compact | Needs node ID assignment |
 | Hash of (userId + timestamp + nonce) | Deterministic if you need the same id from another writer | Requires shared logic |
 | Sequential counter | Sortable, compact | Single-writer only; resets are dangerous |

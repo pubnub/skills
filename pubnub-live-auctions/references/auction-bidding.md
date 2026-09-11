@@ -1,8 +1,3 @@
-<!-- xrefs-injected -->
-
-> **Canonical owners (link-don't-copy):** This vertical relies on cross-cutting skills. Always link to the canonical owner instead of duplicating. Foundations: [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md), [pub/sub basics (`pubnub.publish(`, `pubnub.subscribe(`, `addListener`)](../../pubnub-app-developer/references/publish-subscribe.md), [channel naming](../../pubnub-app-developer/references/channels.md), [message filters](../../pubnub-app-developer/references/message-filters.md), [SDK upgrades](../../pubnub-app-developer/references/sdk-upgrades.md), [REST API](../../pubnub-app-developer/references/rest-api.md). Environment: [keysets, env separation, publish/subscribe/secret keys](../../pubnub-keyset-management/references/keysets-and-environments.md), [key rotation hygiene](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md), [demo keys](../../pubnub-keyset-management/references/demo-keys.md), [custom origin](../../pubnub-keyset-management/references/custom-origin.md). Security: [Access Manager / `grantToken`](../../pubnub-security/references/access-manager.md), [AES-256 / message encryption](../../pubnub-security/references/encryption.md), [IP allowlisting](../../pubnub-security/references/ip-whitelisting.md), [DoS mitigation](../../pubnub-security/references/dos-mitigation.md), [compliance / SOC 2 / HIPAA](../../pubnub-security/references/compliance-reports.md). Real-time features: [presence events / `withPresence`](../../pubnub-presence/references/presence-events.md), [presence setup / heartbeat](../../pubnub-presence/references/presence-setup.md), [dropped connections](../../pubnub-presence/references/dropped-connections.md), [multi-device sync](../../pubnub-presence/references/multi-device-sync.md). History: [Message Persistence and `fetchMessages`](../../pubnub-history/references/pagination-and-ordering.md), [offline catch-up](../../pubnub-history/references/offline-catch-up.md), [retention](../../pubnub-history/references/retention-and-storage.md). App Context: [users / user metadata](../../pubnub-app-context/references/users.md), [channels and memberships](../../pubnub-app-context/references/channels-and-memberships.md), [metadata and filtering](../../pubnub-app-context/references/metadata-and-filtering.md). Functions: [Before/After Publish, `request.ok()`/`request.abort()`](../../pubnub-functions/references/functions-basics.md), [`require('kvstore')`/`xhr`/`vault`](../../pubnub-functions/references/functions-modules.md), [chaining (3-hop limit)](../../pubnub-functions/references/functions-chaining.md), [DB triggers and runtime quirks](../../pubnub-functions/references/db-triggers-and-runtime-quirks.md), [common patterns](../../pubnub-functions/references/functions-patterns.md). Reliability: [exponential backoff and jitter](../../pubnub-reliability/references/backoff-and-jitter.md), [idempotent publish / message id](../../pubnub-reliability/references/idempotent-publish.md), [dedup on merge](../../pubnub-reliability/references/dedup-on-merge.md), [queue and retry](../../pubnub-reliability/references/queue-and-retry.md), [schema version](../../pubnub-reliability/references/schema-versioning.md). Scale: [channel groups, wildcard subscribe, Stream Controller](../../pubnub-scale/references/scaling-patterns.md), [performance tuning](../../pubnub-scale/references/performance.md), [10K+ live events](../../pubnub-scale/references/large-events.md). Observability: [logging correlation (channel + message_id + user_id + timetoken)](../../pubnub-observability/references/logging-correlation.md), [test pyramid](../../pubnub-observability/references/test-pyramid.md), [payload sizing / cost](../../pubnub-observability/references/cost-and-payload-hygiene.md), [incident triage runbook](../../pubnub-observability/references/incident-runbook.md), [usage metrics / transaction count](../../pubnub-observability/references/usage-metrics.md). Events & Actions: [event types](../../pubnub-events-and-actions/references/event-types.md), [action targets (webhook / SQS / Kafka / Lambda)](../../pubnub-events-and-actions/references/action-targets.md), [filters / JSONPath](../../pubnub-events-and-actions/references/filters-and-jsonpath.md). Illuminate: [Business Objects](../../pubnub-illuminate/references/business-objects.md), [Metrics](../../pubnub-illuminate/references/metrics.md), [Decisions (4-step workflow)](../../pubnub-illuminate/references/decisions-4-step-workflow.md), [Queries](../../pubnub-illuminate/references/queries-adhoc-vs-saved.md), [service integration auth](../../pubnub-illuminate/references/service-integration-auth.md). Chat: [Chat SDK setup](../../pubnub-chat/references/chat-setup.md), [message actions / reactions](../../pubnub-chat/references/message-actions.md), [file sharing / `sendFile`](../../pubnub-chat/references/file-sharing.md), [threading](../../pubnub-chat/references/threading.md). Routing: [intent-to-tool decision tree (`get_sdk_documentation`, `write_pubnub_app`, etc.)](../../pubnub-choose-docs-path/references/intent-to-tool.md).
-
-
 # PubNub Auction Bidding System
 
 ## Overview
@@ -54,115 +49,17 @@ This reference covers the core bidding mechanics for real-time auctions built on
 
 ## Server-Side Bid Validation with PubNub Functions
 
-### Before Publish Event Handler
+Use the standard [server-authoritative Before-Publish pattern](../../pubnub-functions/references/functions-patterns.md) for bid validation. **Auction-specific behavior:**
 
-PubNub Functions execute server-side on every publish, allowing you to validate bids before they reach other subscribers.
+| Check | Rule |
+|-------|------|
+| Message type | Only validate `type === 'bid'` |
+| Auction state | Reject if not `active` or `closing` |
+| Minimum bid | `amount >= currentBid + minimumIncrement` |
+| High bidder | Reject if bidder already holds high bid |
+| On accept | Update auction KV state, transform to `bid_accepted`, notify outbid user on `user.<id>.notifications` |
 
-```javascript
-// PubNub Function: Before Publish on auction.* channels
-export default (request) => {
-  const kvstore = require('kvstore');
-  const pubnub = require('pubnub');
-  const message = request.message;
-
-  // Only validate bid messages
-  if (message.type !== 'bid') {
-    return request.ok();
-  }
-
-  const auctionId = message.auctionId;
-  const auctionKey = `auction:${auctionId}`;
-
-  return kvstore.get(auctionKey).then((auctionState) => {
-    if (!auctionState) {
-      request.message = {
-        type: 'bid_rejected',
-        reason: 'Auction not found',
-        bidderId: message.bidderId,
-        auctionId: auctionId
-      };
-      return request.ok();
-    }
-
-    // Check auction is still active
-    if (auctionState.state !== 'active' && auctionState.state !== 'closing') {
-      request.message = {
-        type: 'bid_rejected',
-        reason: `Auction is ${auctionState.state}`,
-        bidderId: message.bidderId,
-        auctionId: auctionId
-      };
-      return request.ok();
-    }
-
-    // Check bid amount
-    const currentBid = auctionState.currentBid || auctionState.startingPrice;
-    const minimumBid = currentBid + auctionState.minimumIncrement;
-
-    if (message.amount < minimumBid) {
-      request.message = {
-        type: 'bid_rejected',
-        reason: `Bid must be at least ${minimumBid}`,
-        currentBid: currentBid,
-        minimumBid: minimumBid,
-        bidderId: message.bidderId,
-        auctionId: auctionId
-      };
-      return request.ok();
-    }
-
-    // Check bidder is not already the high bidder
-    if (auctionState.currentBidderId === message.bidderId) {
-      request.message = {
-        type: 'bid_rejected',
-        reason: 'You are already the high bidder',
-        bidderId: message.bidderId,
-        auctionId: auctionId
-      };
-      return request.ok();
-    }
-
-    // Bid is valid - update auction state
-    const previousBidderId = auctionState.currentBidderId;
-    const previousBid = auctionState.currentBid;
-
-    auctionState.currentBid = message.amount;
-    auctionState.currentBidderId = message.bidderId;
-    auctionState.bidCount = (auctionState.bidCount || 0) + 1;
-    auctionState.lastBidTime = Date.now();
-
-    return kvstore.set(auctionKey, auctionState).then(() => {
-      // Transform message into validated bid
-      request.message = {
-        type: 'bid_accepted',
-        bidderId: message.bidderId,
-        auctionId: auctionId,
-        amount: message.amount,
-        previousBid: previousBid,
-        previousBidderId: previousBidderId,
-        bidNumber: auctionState.bidCount,
-        validatedAt: Date.now()
-      };
-
-      // Send outbid notification to previous bidder
-      if (previousBidderId) {
-        pubnub.publish({
-          channel: `user.${previousBidderId}.notifications`,
-          message: {
-            type: 'bid_outbid',
-            auctionId: auctionId,
-            yourBid: previousBid,
-            newBid: message.amount,
-            newBidderId: message.bidderId
-          }
-        });
-      }
-
-      return request.ok();
-    });
-  });
-};
-```
+Race-condition handling below is auction-specific (compare-and-set, locking) — not part of the generic Functions counter pattern.
 
 ## Race Condition Handling
 
@@ -172,80 +69,15 @@ When two bidders submit bids at nearly the same time, both may read the same cur
 
 ### Solution: Atomic Compare-and-Set
 
-```javascript
-// PubNub Function with compare-and-set pattern
-export default (request) => {
-  const kvstore = require('kvstore');
-  const message = request.message;
+| Step | Auction-specific behavior |
+|------|---------------------------|
+| Lock | `lock:<auctionId>` with short TTL while processing |
+| Read | Current bid + minimum increment from `auction:<auctionId>` KV |
+| Reject | Below minimum → `bid_rejected` with updated `currentBid` |
+| Accept | Update KV, release lock, emit `bid_accepted` |
+| Notify | Publish outbid to `user.<previousBidderId>.notifications` |
 
-  if (message.type !== 'bid') {
-    return request.ok();
-  }
-
-  const auctionKey = `auction:${message.auctionId}`;
-  const lockKey = `lock:${message.auctionId}`;
-
-  // Acquire a simple lock using KV Store
-  return kvstore.get(lockKey).then((lock) => {
-    if (lock && lock.lockedUntil > Date.now()) {
-      // Another bid is being processed - reject with retry hint
-      request.message = {
-        type: 'bid_rejected',
-        reason: 'Bid processing in progress, please retry',
-        retryable: true,
-        bidderId: message.bidderId,
-        auctionId: message.auctionId
-      };
-      return request.ok();
-    }
-
-    // Set lock with 3-second TTL
-    return kvstore.set(lockKey, {
-      lockedUntil: Date.now() + 3000,
-      bidderId: message.bidderId
-    }).then(() => {
-      return kvstore.get(auctionKey);
-    }).then((auctionState) => {
-      const currentBid = auctionState.currentBid || auctionState.startingPrice;
-      const minimumBid = currentBid + auctionState.minimumIncrement;
-
-      if (message.amount < minimumBid) {
-        request.message = {
-          type: 'bid_rejected',
-          reason: `Bid must be at least ${minimumBid}. Current bid updated while you were bidding.`,
-          currentBid: currentBid,
-          minimumBid: minimumBid,
-          retryable: true,
-          bidderId: message.bidderId,
-          auctionId: message.auctionId
-        };
-        // Release lock
-        return kvstore.removeItem(lockKey).then(() => request.ok());
-      }
-
-      // Update state atomically
-      auctionState.currentBid = message.amount;
-      auctionState.currentBidderId = message.bidderId;
-      auctionState.bidCount = (auctionState.bidCount || 0) + 1;
-      auctionState.lastBidTime = Date.now();
-
-      return kvstore.set(auctionKey, auctionState).then(() => {
-        return kvstore.removeItem(lockKey);
-      }).then(() => {
-        request.message = {
-          type: 'bid_accepted',
-          bidderId: message.bidderId,
-          auctionId: message.auctionId,
-          amount: message.amount,
-          bidNumber: auctionState.bidCount,
-          validatedAt: Date.now()
-        };
-        return request.ok();
-      });
-    });
-  });
-};
-```
+Platform Before-Publish structure: [Pattern 1](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter). Deployable handler: start from that owner, apply the table above.
 
 ### Client-Side Retry Logic
 
@@ -311,38 +143,9 @@ class BidRejectedError extends Error {
 
 ## Idempotent Bid Processing
 
-Duplicate messages can arrive due to network retries. The PubNub Function must detect and ignore duplicate bids.
+Duplicate messages can arrive due to network retries. Store `idem:<idempotencyKey>` in KV Store with the prior result; on duplicate, return stored result without re-processing.
 
-```javascript
-// Inside PubNub Function: check idempotency key
-export default (request) => {
-  const kvstore = require('kvstore');
-  const message = request.message;
-
-  if (message.type !== 'bid') {
-    return request.ok();
-  }
-
-  const idempotencyKey = `idem:${message.idempotencyKey}`;
-
-  return kvstore.get(idempotencyKey).then((existing) => {
-    if (existing) {
-      // Duplicate bid - return the original result
-      request.message = existing;
-      return request.ok();
-    }
-
-    // Process the bid (validation logic here)
-    return processAndValidateBid(request, message).then((result) => {
-      // Store result with TTL for idempotency
-      return kvstore.set(idempotencyKey, result).then(() => {
-        request.message = result;
-        return request.ok();
-      });
-    });
-  });
-};
-```
+Platform idempotency shape: [Pattern 1](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter) + auction validation table above.
 
 ## Minimum Bid Increment Enforcement
 

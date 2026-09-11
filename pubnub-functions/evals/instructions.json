@@ -25,8 +25,8 @@
       "why_given": "preference"
     },
     {
-      "instruction": "Maximum 3 combined operations per execution (KV, XHR, publish)",
-      "original_snippets": "Maximum 3 combined operations per execution (KV + XHR + publish) ... check operation count stays within the 3-operation limit",
+      "instruction": "Respect per-module PubNub Functions execution limits (XHR, KV Store, PubNub API, and Vault each have independent budgets — not a combined pool)",
+      "original_snippets": "Each module has its own independent per-execution limit ... XHR calls per execution (xhr.fetch()) | 5 ... KV Store operations per execution (kvstore.*) | 10 ... PubNub API operations per execution (pubnub.*) | 10 ... Vault reads per execution (vault.get()) | 10",
       "relevant_when": "When designing function logic that involves multiple KV, XHR, or publish operations",
       "why_given": "new knowledge"
     },

@@ -1,6 +1,3 @@
-<!-- canonical-for: QUEUE_AND_RETRY -->
-<!-- used-by: pubnub-app-developer, pubnub-presence -->
-
 # Queue and Retry: Offline Publish Buffer
 
 The canonical reference for buffering publishes when offline and draining them on reconnect, without losing or duplicating.
@@ -48,7 +45,7 @@ If publish failures are tolerable (e.g., a live ticker where stale data isn't va
 ```javascript
 async function enqueue(channel, message) {
   const item = {
-    id: crypto.randomUUID(),       // queue-row UUID (separate from PubNub's [userId/UUID](../../pubnub-app-developer/references/sdk-patterns.md) and from message_id)
+    id: crypto.randomUUID(),       // queue-row UUID (separate from PubNub's [userId/UUID](../../pubnub-app-developer/SKILL.md) and from message_id)
     enqueued_at: Date.now(),
     channel,
     message,                       // includes its own message_id from createMessage()
@@ -82,7 +79,7 @@ async function drainOnce() {
 
 ## Drain Triggers
 
-For underlying [`addListener` and `pubnub.publish`](../../pubnub-app-developer/references/publish-subscribe.md) mechanics see the canonical owner.
+For underlying [`addListener` and `pubnub.publish`](../../pubnub-app-developer/SKILL.md) mechanics see the canonical owner.
 
 Drain on:
 

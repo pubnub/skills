@@ -1,9 +1,6 @@
-<!-- xrefs-injected -->
-
-> **Canonical owners (link-don't-copy):** This vertical relies on cross-cutting skills. Always link to the canonical owner instead of duplicating. Foundations: [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md), [pub/sub basics (`pubnub.publish(`, `pubnub.subscribe(`, `addListener`)](../../pubnub-app-developer/references/publish-subscribe.md), [channel naming](../../pubnub-app-developer/references/channels.md), [message filters](../../pubnub-app-developer/references/message-filters.md), [SDK upgrades](../../pubnub-app-developer/references/sdk-upgrades.md), [REST API](../../pubnub-app-developer/references/rest-api.md). Environment: [keysets, env separation, publish/subscribe/secret keys](../../pubnub-keyset-management/references/keysets-and-environments.md), [key rotation hygiene](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md), [demo keys](../../pubnub-keyset-management/references/demo-keys.md), [custom origin](../../pubnub-keyset-management/references/custom-origin.md). Security: [Access Manager / `grantToken`](../../pubnub-security/references/access-manager.md), [AES-256 / message encryption](../../pubnub-security/references/encryption.md), [IP allowlisting](../../pubnub-security/references/ip-whitelisting.md), [DoS mitigation](../../pubnub-security/references/dos-mitigation.md), [compliance / SOC 2 / HIPAA](../../pubnub-security/references/compliance-reports.md). Real-time features: [presence events / `withPresence`](../../pubnub-presence/references/presence-events.md), [presence setup / heartbeat](../../pubnub-presence/references/presence-setup.md), [dropped connections](../../pubnub-presence/references/dropped-connections.md), [multi-device sync](../../pubnub-presence/references/multi-device-sync.md). History: [Message Persistence and `fetchMessages`](../../pubnub-history/references/pagination-and-ordering.md), [offline catch-up](../../pubnub-history/references/offline-catch-up.md), [retention](../../pubnub-history/references/retention-and-storage.md). App Context: [users / user metadata](../../pubnub-app-context/references/users.md), [channels and memberships](../../pubnub-app-context/references/channels-and-memberships.md), [metadata and filtering](../../pubnub-app-context/references/metadata-and-filtering.md). Functions: [Before/After Publish, `request.ok()`/`request.abort()`](../../pubnub-functions/references/functions-basics.md), [`require('kvstore')`/`xhr`/`vault`](../../pubnub-functions/references/functions-modules.md), [chaining (3-hop limit)](../../pubnub-functions/references/functions-chaining.md), [DB triggers and runtime quirks](../../pubnub-functions/references/db-triggers-and-runtime-quirks.md), [common patterns](../../pubnub-functions/references/functions-patterns.md). Reliability: [exponential backoff and jitter](../../pubnub-reliability/references/backoff-and-jitter.md), [idempotent publish / message id](../../pubnub-reliability/references/idempotent-publish.md), [dedup on merge](../../pubnub-reliability/references/dedup-on-merge.md), [queue and retry](../../pubnub-reliability/references/queue-and-retry.md), [schema version](../../pubnub-reliability/references/schema-versioning.md). Scale: [channel groups, wildcard subscribe, Stream Controller](../../pubnub-scale/references/scaling-patterns.md), [performance tuning](../../pubnub-scale/references/performance.md), [10K+ live events](../../pubnub-scale/references/large-events.md). Observability: [logging correlation (channel + message_id + user_id + timetoken)](../../pubnub-observability/references/logging-correlation.md), [test pyramid](../../pubnub-observability/references/test-pyramid.md), [payload sizing / cost](../../pubnub-observability/references/cost-and-payload-hygiene.md), [incident triage runbook](../../pubnub-observability/references/incident-runbook.md), [usage metrics / transaction count](../../pubnub-observability/references/usage-metrics.md). Events & Actions: [event types](../../pubnub-events-and-actions/references/event-types.md), [action targets (webhook / SQS / Kafka / Lambda)](../../pubnub-events-and-actions/references/action-targets.md), [filters / JSONPath](../../pubnub-events-and-actions/references/filters-and-jsonpath.md). Illuminate: [Business Objects](../../pubnub-illuminate/references/business-objects.md), [Metrics](../../pubnub-illuminate/references/metrics.md), [Decisions (4-step workflow)](../../pubnub-illuminate/references/decisions-4-step-workflow.md), [Queries](../../pubnub-illuminate/references/queries-adhoc-vs-saved.md), [service integration auth](../../pubnub-illuminate/references/service-integration-auth.md). Chat: [Chat SDK setup](../../pubnub-chat/references/chat-setup.md), [message actions / reactions](../../pubnub-chat/references/message-actions.md), [file sharing / `sendFile`](../../pubnub-chat/references/file-sharing.md), [threading](../../pubnub-chat/references/threading.md). Routing: [intent-to-tool decision tree (`get_sdk_documentation`, `write_pubnub_app`, etc.)](../../pubnub-choose-docs-path/references/intent-to-tool.md).
-
-
 # PubNub Game State Synchronization
+
+**Canonical owner (S5):** Delta updates, sequence/version ordering, snapshots/resync, and stale-state protection — **reusable beyond gaming** (sport scoreboards, IoT telemetry, live dashboards). Vertical skills link here; keep domain state models locally.
 
 ## Overview
 
@@ -22,45 +19,7 @@ Game state synchronization is the core challenge of multiplayer game networking.
 
 ### Authoritative Server with PubNub Functions
 
-```javascript
-// PubNub Function (Before Publish handler) acts as authoritative server
-// This runs on PubNub's edge network before the message is delivered
-export default (request) => {
-  const message = request.message;
-
-  if (message.type === 'player-action') {
-    // Validate the action server-side
-    const validation = validateAction(message.action, message.playerId);
-
-    if (!validation.valid) {
-      // Reject the message - it will not be published
-      request.message = {
-        type: 'action-rejected',
-        playerId: message.playerId,
-        reason: validation.reason
-      };
-    } else {
-      // Apply the action and compute new state
-      request.message = {
-        type: 'state-update',
-        action: message.action,
-        result: validation.result,
-        serverTimestamp: Date.now()
-      };
-    }
-  }
-
-  return request.ok();
-};
-
-function validateAction(action, playerId) {
-  // Server-side validation logic
-  if (action.type === 'move' && action.distance > MAX_MOVE_DISTANCE) {
-    return { valid: false, reason: 'Invalid move distance' };
-  }
-  return { valid: true, result: computeResult(action) };
-}
-```
+Use the [server-authoritative Before-Publish pattern](../../pubnub-functions/references/functions-patterns.md) to validate `player-action` messages before delivery. **Game-specific delta:** validate move distance, cooldowns, and game rules in `validateAction`; transform accepted actions into `state-update` payloads with `serverTimestamp`.
 
 ### Host-Authoritative Model
 
@@ -140,7 +99,7 @@ class HostAuthoritativeSync {
 
 ## Delta Updates
 
-Sending only changed state properties instead of the full game state reduces message size and bandwidth consumption. This is critical for keeping messages under PubNub's 32 KB limit.
+Sending only changed state properties instead of the full game state reduces message size and bandwidth consumption. This is critical for staying under PubNub's message size limit — retrieve the current cap via **`how_to`** (`calculate-message-payload-size`).
 
 ### Delta Update Structure
 
@@ -492,29 +451,9 @@ function applySnapshot(msg, localState) {
 }
 ```
 
-### Using Message Persistence for Recovery
+### Recovery after disconnect
 
-```javascript
-// Fetch missed messages from PubNub history
-async function recoverMissedUpdates(pubnub, stateChannel, lastKnownTimetoken) {
-  const result = await pubnub.fetchMessages({
-    channels: [stateChannel],
-    start: lastKnownTimetoken,
-    count: 100
-  });
-
-  const messages = result.channels[stateChannel] || [];
-
-  // Apply missed deltas in order
-  for (const msg of messages) {
-    if (msg.message.type === 'state-delta') {
-      applyDelta(gameState, msg.message.delta);
-    }
-  }
-
-  return messages.length;
-}
-```
+Follow the canonical [offline catch-up flow](../../pubnub-history/references/offline-catch-up.md) with [dedup-on-merge](../../pubnub-reliability/references/dedup-on-merge.md). **Game-specific delta:** when replaying history, apply only `state-delta` messages to `gameState` in timetoken order; request a full snapshot if sequence gaps remain (see State Snapshot section above).
 
 ## Handling Player Disconnections Mid-Game
 
@@ -670,9 +609,9 @@ function decodePositions(encoded, playerIds) {
 
 5. **Choose the right sync model for your game type** -- turn-based games work well with lockstep, casual games with peer-to-peer, competitive games with server-authoritative.
 
-6. **Use Message Persistence for recovery** -- enable message storage so reconnecting clients can fetch missed updates from PubNub history.
+6. **Use Message Persistence for recovery** — follow [offline catch-up](../../pubnub-history/references/offline-catch-up.md); apply game deltas after merge with dedup.
 
-7. **Keep state messages under 32 KB** -- PubNub's maximum message size is 32 KB. If your full state exceeds this, you must use delta updates or split into multiple messages.
+7. **Keep state messages within PubNub's message size limit** — retrieve the current cap via **`how_to`**. If your full state exceeds it, use delta updates or split into multiple messages.
 
 8. **Handle out-of-order processing gracefully** -- even though PubNub guarantees per-channel ordering, cross-channel messages may arrive in any order. Use timestamps or sequence numbers for cross-channel coordination.
 

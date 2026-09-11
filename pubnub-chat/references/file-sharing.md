@@ -1,8 +1,3 @@
-<!-- canonical-for: FILE_SHARING -->
-<!-- used-by: -->
-
-> **Cross-references:** Built on [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md). Files are encrypted with the same [CryptoModule cipher key](../../pubnub-security/references/encryption.md) as messages when configured. [Access Manager grants](../../pubnub-security/references/access-manager.md) on a channel govern who can `sendFile`. Storage limits per [keyset add-on](../../pubnub-keyset-management/references/keysets-and-environments.md). Watch transfer volume on [usage metrics](../../pubnub-observability/references/usage-metrics.md).
-
 # File Sharing
 
 PubNub Files lets users send arbitrary files (images, PDFs, audio, video) on the same channel as messages. The Chat SDK wraps the underlying `pubnub.sendFile` API.

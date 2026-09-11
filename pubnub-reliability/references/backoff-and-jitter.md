@@ -1,7 +1,6 @@
-<!-- canonical-for: BACKOFF_AND_JITTER -->
-<!-- used-by: pubnub-app-developer, pubnub-presence, pubnub-history, pubnub-observability -->
-
 # Reconnect: Backoff and Jitter
+
+**Canonical owner (S3):** PubNub client reconnect strategy with exponential backoff, jitter, and status-category wiring. Vertical setup guides should link here instead of duplicating status switch blocks.
 
 The canonical reference for retry-with-backoff in PubNub clients and any wrappers around them.
 
@@ -84,7 +83,7 @@ class ReconnectController {
 
 ## Listening for PubNub Connection State
 
-Drive the controller from the SDK's connection-state events. For [`PNNetworkDownCategory` / `PNNetworkUpCategory` / `PNReconnectedCategory` semantics](../../pubnub-presence/references/dropped-connections.md) see the canonical owner. The [`addListener` mechanics](../../pubnub-app-developer/references/publish-subscribe.md) are documented separately.
+Drive the controller from the SDK's connection-state events. For [`PNNetworkDownCategory` / `PNNetworkUpCategory` / `PNReconnectedCategory` semantics](../../pubnub-presence/references/dropped-connections.md) see the canonical owner. The [`addListener` mechanics](../../pubnub-app-developer/SKILL.md) are documented separately.
 
 ```javascript
 const reconnectController = new ReconnectController();

@@ -1,6 +1,3 @@
-<!-- canonical-for: ILLUMINATE_BUSINESS_OBJECTS -->
-<!-- used-by: -->
-
 # Illuminate Business Objects
 
 The canonical reference for Illuminate Business Objects: schema, field types, JSONPath rules, and the activation sequence.
@@ -23,10 +20,10 @@ All JSONPath expressions in field definitions therefore start with `$.message.bo
 
 ## Field Types
 
-| Type | Use for | Limit |
+| Type | Use for | Notes |
 |---|---|---|
-| `TEXT` | String values; group-by dimensions | 256 characters |
-| `TEXT_LONG` | Long string values | 1,000 characters; **max 5 per Business Object** |
+| `TEXT` | String values; group-by dimensions | Retrieve field length limits via **`manage_illuminate`** / Illuminate docs |
+| `TEXT_LONG` | Long string values | Retrieve per-BO field count limits via **`manage_illuminate`** / Illuminate docs |
 | `NUMERIC` | Numbers; **required for AVG, SUM, MIN, MAX metrics** | — |
 | `TIMESTAMP` | ISO 8601 timestamps | used in `TIME_DIFF` derived fields |
 | `BOOLEAN` | True/false values | — |

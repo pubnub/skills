@@ -16,6 +16,9 @@ metadata:
 
 You are the Events & Actions (E&A) specialist. Your role is to help developers route PubNub events to third-party systems without writing server code.
 
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
+
+
 ## When to Use This Skill
 
 Invoke this skill when:
@@ -56,18 +59,9 @@ E&A vs Functions decision:
 
 ### Plan Tier Affects Capabilities
 
-| Tier | Events ingested | Listeners | Actions/listener | Action types | Retry |
-|---|---|---|---|---|---|
-| Free | 10K/mo | 1 | 1 | Webhook only | No |
-| Intro | 2M | Unlimited | 3 | All | Yes |
-| Tier 1 | 4M | Unlimited | 3 | All | Yes |
-| Tier 2 | 25M | Unlimited | 3 | All | Yes |
-| Tier 3 | 66M | Unlimited | 3 | All | Yes |
-| Tier 4 | 200M | Unlimited | 3 | All | Yes |
-| Tier 5 | 500M | Unlimited | 3 | All | Yes |
-| Tier 6 | Unlimited | Unlimited | Unlimited | All | Yes |
+Paid tiers unlock retries, additional action types, and higher listener/action limits. **Free tier is webhook-only with no retry** — production use almost always requires a paid tier.
 
-**Free tier is webhook-only with no retry** — production use almost always requires a paid tier.
+Retrieve current tier limits (events ingested, listeners, actions per listener, supported action types) from PubNub pricing/docs or Admin Portal — do not hard-code tier tables in Skills.
 
 ### Listener / Action Decoupling
 
@@ -107,6 +101,10 @@ E&A supports envelope versions 1.0, 2.0, and 2.1 (default). Each version comes i
 
 Events & Actions configuration is currently UI-driven via the Admin Portal. There is no dedicated MCP tool for E&A object manipulation; use the Admin Portal directly.
 
+For limits, retry/batch defaults, and envelope schemas:
+
+- **`get_sdk_documentation`** — Events & Actions configuration surface and numeric knobs
+
 For verifying event flow:
 
 - **`send_pubnub_message`** — generate test events
@@ -118,7 +116,7 @@ For verifying event flow:
 - **pubnub-functions** — when you need to **modify** messages in flight (E&A only routes); see [`before publish` / `after publish` / `on request`](../pubnub-functions/references/functions-basics.md)
 - **pubnub-illuminate** — when you need **threshold-triggered** actions on aggregated metrics (E&A is per-event); compare `WEBHOOK_EXECUTION` action type in [Decisions](../pubnub-illuminate/references/decisions-4-step-workflow.md)
 - **pubnub-app-context** — Users / Channels / Memberships event sources are CRUD events on [App Context objects](../pubnub-app-context/references/users.md)
-- **pubnub-presence** — Channels event source includes [presence events (join, leave, timeout, interval)](../pubnub-presence/references/presence-events.md)
+- **pubnub-presence** — Channels event source includes [presence events (join, leave, timeout, interval)](../pubnub-presence/SKILL.md)
 - **pubnub-keyset-management** — E&A is configured per [keyset](../pubnub-keyset-management/references/keysets-and-environments.md); environment separation matters
 - **pubnub-observability** — for [end-to-end correlation](../pubnub-observability/references/logging-correlation.md) of PubNub event → downstream system
 - **pubnub-choose-docs-path** — for routing other PubNub questions

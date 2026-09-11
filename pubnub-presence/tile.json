@@ -9,7 +9,6 @@
     }
   },
   "dependencies": {
-    "pubnub-choose-docs-path": ">=0.1.0",
     "pubnub-app-context": ">=0.1.0",
     "pubnub-app-developer": ">=0.1.0",
     "pubnub-events-and-actions": ">=0.1.0",

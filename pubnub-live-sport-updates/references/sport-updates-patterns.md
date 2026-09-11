@@ -1,8 +1,3 @@
-<!-- xrefs-injected -->
-
-> **Canonical owners (link-don't-copy):** This vertical relies on cross-cutting skills. Always link to the canonical owner instead of duplicating. Foundations: [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md), [pub/sub basics (`pubnub.publish(`, `pubnub.subscribe(`, `addListener`)](../../pubnub-app-developer/references/publish-subscribe.md), [channel naming](../../pubnub-app-developer/references/channels.md), [message filters](../../pubnub-app-developer/references/message-filters.md), [SDK upgrades](../../pubnub-app-developer/references/sdk-upgrades.md), [REST API](../../pubnub-app-developer/references/rest-api.md). Environment: [keysets, env separation, publish/subscribe/secret keys](../../pubnub-keyset-management/references/keysets-and-environments.md), [key rotation hygiene](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md), [demo keys](../../pubnub-keyset-management/references/demo-keys.md), [custom origin](../../pubnub-keyset-management/references/custom-origin.md). Security: [Access Manager / `grantToken`](../../pubnub-security/references/access-manager.md), [AES-256 / message encryption](../../pubnub-security/references/encryption.md), [IP allowlisting](../../pubnub-security/references/ip-whitelisting.md), [DoS mitigation](../../pubnub-security/references/dos-mitigation.md), [compliance / SOC 2 / HIPAA](../../pubnub-security/references/compliance-reports.md). Real-time features: [presence events / `withPresence`](../../pubnub-presence/references/presence-events.md), [presence setup / heartbeat](../../pubnub-presence/references/presence-setup.md), [dropped connections](../../pubnub-presence/references/dropped-connections.md), [multi-device sync](../../pubnub-presence/references/multi-device-sync.md). History: [Message Persistence and `fetchMessages`](../../pubnub-history/references/pagination-and-ordering.md), [offline catch-up](../../pubnub-history/references/offline-catch-up.md), [retention](../../pubnub-history/references/retention-and-storage.md). App Context: [users / user metadata](../../pubnub-app-context/references/users.md), [channels and memberships](../../pubnub-app-context/references/channels-and-memberships.md), [metadata and filtering](../../pubnub-app-context/references/metadata-and-filtering.md). Functions: [Before/After Publish, `request.ok()`/`request.abort()`](../../pubnub-functions/references/functions-basics.md), [`require('kvstore')`/`xhr`/`vault`](../../pubnub-functions/references/functions-modules.md), [chaining (3-hop limit)](../../pubnub-functions/references/functions-chaining.md), [DB triggers and runtime quirks](../../pubnub-functions/references/db-triggers-and-runtime-quirks.md), [common patterns](../../pubnub-functions/references/functions-patterns.md). Reliability: [exponential backoff and jitter](../../pubnub-reliability/references/backoff-and-jitter.md), [idempotent publish / message id](../../pubnub-reliability/references/idempotent-publish.md), [dedup on merge](../../pubnub-reliability/references/dedup-on-merge.md), [queue and retry](../../pubnub-reliability/references/queue-and-retry.md), [schema version](../../pubnub-reliability/references/schema-versioning.md). Scale: [channel groups, wildcard subscribe, Stream Controller](../../pubnub-scale/references/scaling-patterns.md), [performance tuning](../../pubnub-scale/references/performance.md), [10K+ live events](../../pubnub-scale/references/large-events.md). Observability: [logging correlation (channel + message_id + user_id + timetoken)](../../pubnub-observability/references/logging-correlation.md), [test pyramid](../../pubnub-observability/references/test-pyramid.md), [payload sizing / cost](../../pubnub-observability/references/cost-and-payload-hygiene.md), [incident triage runbook](../../pubnub-observability/references/incident-runbook.md), [usage metrics / transaction count](../../pubnub-observability/references/usage-metrics.md). Events & Actions: [event types](../../pubnub-events-and-actions/references/event-types.md), [action targets (webhook / SQS / Kafka / Lambda)](../../pubnub-events-and-actions/references/action-targets.md), [filters / JSONPath](../../pubnub-events-and-actions/references/filters-and-jsonpath.md). Illuminate: [Business Objects](../../pubnub-illuminate/references/business-objects.md), [Metrics](../../pubnub-illuminate/references/metrics.md), [Decisions (4-step workflow)](../../pubnub-illuminate/references/decisions-4-step-workflow.md), [Queries](../../pubnub-illuminate/references/queries-adhoc-vs-saved.md), [service integration auth](../../pubnub-illuminate/references/service-integration-auth.md). Chat: [Chat SDK setup](../../pubnub-chat/references/chat-setup.md), [message actions / reactions](../../pubnub-chat/references/message-actions.md), [file sharing / `sendFile`](../../pubnub-chat/references/file-sharing.md), [threading](../../pubnub-chat/references/threading.md). Routing: [intent-to-tool decision tree (`get_sdk_documentation`, `write_pubnub_app`, etc.)](../../pubnub-choose-docs-path/references/intent-to-tool.md).
-
-
 # PubNub Sport Updates Patterns
 
 ## Multi-Sport Dashboard
@@ -45,6 +40,7 @@ class MultiSportDashboard {
   }
 
   handleStatus(event) {
+    // S3 owner: backoff-and-jitter; S2 owner: offline-catch-up — refresh all leagues after reconnect
     if (event.category === 'PNReconnectedCategory') this.refreshAllGames();
   }
 
@@ -355,44 +351,11 @@ export default (request) => {
 
 ### Delta Compression for High-Frequency Updates
 
-```javascript
-class DeltaCompressor {
-  constructor() { this.lastPublished = new Map(); }
-
-  computeDelta(gameId, fullState) {
-    const previous = this.lastPublished.get(gameId);
-    if (!previous) { this.lastPublished.set(gameId, { ...fullState }); return { type: 'full_state', ...fullState }; }
-
-    const delta = { type: 'delta', gameId, sequence: fullState.sequence, changes: {} };
-    let hasChanges = false;
-    for (const key of Object.keys(fullState)) {
-      if (JSON.stringify(fullState[key]) !== JSON.stringify(previous[key])) {
-        delta.changes[key] = fullState[key];
-        hasChanges = true;
-      }
-    }
-    if (hasChanges) { this.lastPublished.set(gameId, { ...fullState }); return delta; }
-    return null;
-  }
-}
-
-class DeltaApplier {
-  constructor() { this.gameStates = new Map(); }
-
-  apply(message) {
-    if (message.type === 'full_state') { this.gameStates.set(message.gameId, message); return message; }
-    if (message.type === 'delta') {
-      const current = this.gameStates.get(message.gameId) || {};
-      const updated = { ...current, ...message.changes, sequence: message.sequence };
-      this.gameStates.set(message.gameId, updated);
-      return updated;
-    }
-    return message;
-  }
-}
-```
+Use the canonical [delta / sequence state-sync pattern](../../pubnub-multiplayer-gaming/references/gaming-state-sync.md#delta-updates) for compute-and-apply deltas. **Sport-specific:** compress scoreboard fields (team scores, clock, period) and tag each publish with a per-game monotonic `sequence` for gap detection.
 
 ## Historical Data and Replay
+
+Both patterns below use the canonical [offline catch-up pattern (S2)](../../pubnub-history/references/offline-catch-up.md) — `fetchMessages` for the game channel, sorted by sequence, with sport-specific replay / aggregation logic as the delta.
 
 ### Game Replay from History
 
@@ -440,39 +403,7 @@ async function buildGameSummary(pubnub, league, gameId) {
 
 ### Graceful Degradation
 
-```javascript
-class ResilientSportsClient {
-  constructor(pubnub) {
-    this.pubnub = pubnub;
-    this.isConnected = false;
-    this.reconnectAttempts = 0;
-
-    this.pubnub.addListener({
-      status: (event) => {
-        switch (event.category) {
-          case 'PNConnectedCategory':
-            this.isConnected = true;
-            this.reconnectAttempts = 0;
-            break;
-          case 'PNNetworkDownCategory':
-            this.isConnected = false;
-            break;
-          case 'PNReconnectedCategory':
-            this.isConnected = true;
-            this.reconnectAttempts = 0;
-            break;
-          case 'PNNetworkIssuesCategory':
-            this.reconnectAttempts++;
-            if (this.reconnectAttempts >= 10) {
-              console.warn('Unable to connect. Scores may be delayed.');
-            }
-            break;
-        }
-      }
-    });
-  }
-}
-```
+Wire status categories per [backoff-and-jitter (S3)](../../pubnub-reliability/references/backoff-and-jitter.md) and [dropped-connections](../../pubnub-presence/references/dropped-connections.md). **Sport-specific:** track `isConnected` / reconnect attempts; after repeated `PNNetworkIssuesCategory`, show “Scores may be delayed” instead of a hard error.
 
 ## Best Practices
 

@@ -12,14 +12,19 @@ metadata:
   output-format: code
 ---
 
-<!-- xrefs-injected -->
 
-> **Canonical owners (link-don't-copy):** This vertical relies on cross-cutting skills. Always link to the canonical owner instead of duplicating. Foundations: [SDK initialization (`new PubNub(`, `userId`/UUID)](../pubnub-app-developer/references/sdk-patterns.md), [pub/sub basics (`pubnub.publish(`, `pubnub.subscribe(`, `addListener`)](../pubnub-app-developer/references/publish-subscribe.md), [channel naming](../pubnub-app-developer/references/channels.md), [message filters](../pubnub-app-developer/references/message-filters.md), [SDK upgrades](../pubnub-app-developer/references/sdk-upgrades.md), [REST API](../pubnub-app-developer/references/rest-api.md). Environment: [keysets, env separation, publish/subscribe/secret keys](../pubnub-keyset-management/references/keysets-and-environments.md), [key rotation hygiene](../pubnub-keyset-management/references/key-rotation-and-hygiene.md), [demo keys](../pubnub-keyset-management/references/demo-keys.md), [custom origin](../pubnub-keyset-management/references/custom-origin.md). Security: [Access Manager / `grantToken`](../pubnub-security/references/access-manager.md), [AES-256 / message encryption](../pubnub-security/references/encryption.md), [IP allowlisting](../pubnub-security/references/ip-whitelisting.md), [DoS mitigation](../pubnub-security/references/dos-mitigation.md), [compliance / SOC 2 / HIPAA](../pubnub-security/references/compliance-reports.md). Real-time features: [presence events / `withPresence`](../pubnub-presence/references/presence-events.md), [presence setup / heartbeat](../pubnub-presence/references/presence-setup.md), [dropped connections](../pubnub-presence/references/dropped-connections.md), [multi-device sync](../pubnub-presence/references/multi-device-sync.md). History: [Message Persistence and `fetchMessages`](../pubnub-history/references/pagination-and-ordering.md), [offline catch-up](../pubnub-history/references/offline-catch-up.md), [retention](../pubnub-history/references/retention-and-storage.md). App Context: [users / user metadata](../pubnub-app-context/references/users.md), [channels and memberships](../pubnub-app-context/references/channels-and-memberships.md), [metadata and filtering](../pubnub-app-context/references/metadata-and-filtering.md). Functions: [Before/After Publish, `request.ok()`/`request.abort()`](../pubnub-functions/references/functions-basics.md), [`require('kvstore')`/`xhr`/`vault`](../pubnub-functions/references/functions-modules.md), [chaining (3-hop limit)](../pubnub-functions/references/functions-chaining.md), [DB triggers and runtime quirks](../pubnub-functions/references/db-triggers-and-runtime-quirks.md), [common patterns](../pubnub-functions/references/functions-patterns.md). Reliability: [exponential backoff and jitter](../pubnub-reliability/references/backoff-and-jitter.md), [idempotent publish / message id](../pubnub-reliability/references/idempotent-publish.md), [dedup on merge](../pubnub-reliability/references/dedup-on-merge.md), [queue and retry](../pubnub-reliability/references/queue-and-retry.md), [schema version](../pubnub-reliability/references/schema-versioning.md). Scale: [channel groups, wildcard subscribe, Stream Controller](../pubnub-scale/references/scaling-patterns.md), [performance tuning](../pubnub-scale/references/performance.md), [10K+ live events](../pubnub-scale/references/large-events.md). Observability: [logging correlation (channel + message_id + user_id + timetoken)](../pubnub-observability/references/logging-correlation.md), [test pyramid](../pubnub-observability/references/test-pyramid.md), [payload sizing / cost](../pubnub-observability/references/cost-and-payload-hygiene.md), [incident triage runbook](../pubnub-observability/references/incident-runbook.md), [usage metrics / transaction count](../pubnub-observability/references/usage-metrics.md). Events & Actions: [event types](../pubnub-events-and-actions/references/event-types.md), [action targets (webhook / SQS / Kafka / Lambda)](../pubnub-events-and-actions/references/action-targets.md), [filters / JSONPath](../pubnub-events-and-actions/references/filters-and-jsonpath.md). Illuminate: [Business Objects](../pubnub-illuminate/references/business-objects.md), [Metrics](../pubnub-illuminate/references/metrics.md), [Decisions (4-step workflow)](../pubnub-illuminate/references/decisions-4-step-workflow.md), [Queries](../pubnub-illuminate/references/queries-adhoc-vs-saved.md), [service integration auth](../pubnub-illuminate/references/service-integration-auth.md). Chat: [Chat SDK setup](../pubnub-chat/references/chat-setup.md), [message actions / reactions](../pubnub-chat/references/message-actions.md), [file sharing / `sendFile`](../pubnub-chat/references/file-sharing.md), [threading](../pubnub-chat/references/threading.md). Routing: [intent-to-tool decision tree (`get_sdk_documentation`, `write_pubnub_app`, etc.)](../pubnub-choose-docs-path/references/intent-to-tool.md).
 
 
 # PubNub Live Betting & Casino Specialist
 
 You are a PubNub live betting and casino platform specialist. Your role is to help developers build real-time betting applications and casino game platforms using PubNub's infrastructure for odds broadcasting, wager management, game state synchronization, and regulatory compliance.
+
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
+
+## Shared pattern routing
+
+Edge validation: [S1](../pubnub-functions/references/functions-patterns.md) owner only — this skill keeps **betting delta** ([betting-wagers.md](references/betting-wagers.md): stake rules, odds drift, balance). Reconnect: [S3](../pubnub-reliability/references/backoff-and-jitter.md). [shared-pattern-routing.md](../pubnub-choose-docs-path/references/shared-pattern-routing.md)
+
 
 ## When to Use This Skill
 
@@ -130,7 +135,7 @@ pubnub.addListener({
 ## MCP Tools
 
 - **`get_sdk_documentation`** — pull SDK-specific publish/subscribe APIs (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
-- **`create_pubnub_function`** — scaffold the Before-Publish wager validator and rate limiter
+- **`manage_functions`** (`resource=package`, `operation=create`) — create the Before-Publish wager validator and rate limiter package
 - **`grant_token`** — issue scoped grants per market / table / role
 - **`manage_apps`** — verify Stream Controller and Message Persistence add-ons
 
@@ -141,7 +146,7 @@ pubnub.addListener({
 - **[pubnub-reliability](../pubnub-reliability/SKILL.md)** — [idempotent publish](../pubnub-reliability/references/idempotent-publish.md) so a network retry doesn't double-bet; [schema versioning](../pubnub-reliability/references/schema-versioning.md) for evolving bet payloads
 - **[pubnub-history](../pubnub-history/SKILL.md)** — [Message Persistence](../pubnub-history/references/pagination-and-ordering.md) for wager audit trails
 - **[pubnub-scale](../pubnub-scale/SKILL.md)** — [channel groups for market hierarchies](../pubnub-scale/references/scaling-patterns.md) and [large-event playbook](../pubnub-scale/references/large-events.md) for major matches
-- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [tracking active users on markets and tables](../pubnub-presence/references/presence-events.md)
+- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [tracking active users on markets and tables](../pubnub-presence/SKILL.md)
 - **[pubnub-app-context](../pubnub-app-context/SKILL.md)** — [user profiles, KYC flags, exclusion lists](../pubnub-app-context/references/users.md)
 - **[pubnub-observability](../pubnub-observability/SKILL.md)** — [logging correlation](../pubnub-observability/references/logging-correlation.md) for every wager, [usage metrics](../pubnub-observability/references/usage-metrics.md), [incident runbook](../pubnub-observability/references/incident-runbook.md)
 - **[pubnub-illuminate](../pubnub-illuminate/SKILL.md)** — [Decisions](../pubnub-illuminate/references/decisions-4-step-workflow.md) for real-time fraud signaling
@@ -151,8 +156,8 @@ pubnub.addListener({
 ## Output Format
 
 When providing implementations:
-1. Include PubNub SDK initialization with encryption and Access Manager configuration
-2. Show market channel naming conventions and channel group setup
-3. Provide odds broadcasting with all three format types (decimal, fractional, American)
-4. Include PubNub Functions for server-side bet validation
+1. **Edge validation:** Link [functions-patterns](../pubnub-functions/references/functions-patterns.md); describe **betting checks** (stake, selections, odds drift) as tables — no full handler unless deployable code requested.
+2. Include PubNub SDK initialization with encryption and Access Manager configuration
+3. Show market channel naming conventions and channel group setup
+4. Provide odds broadcasting with all three format types (decimal, fractional, American)
 5. Add responsible gambling checks and regulatory compliance patterns

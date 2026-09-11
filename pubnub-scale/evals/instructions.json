@@ -25,8 +25,8 @@
       "why_given": "new knowledge"
     },
     {
-      "instruction": "Maximum 2 dots (3 levels) in wildcard patterns",
-      "original_snippets": "Maximum **2 dots** (3 levels) ... Maximum 2 dots in wildcard patterns (3 levels)",
+      "instruction": "Maximum 2 dots in wildcard subscribe patterns (a.* or a.b.*, not a.b.c.*)",
+      "original_snippets": "Maximum **two dots in the pattern** ... Limited to **two dots (three levels)**. For example, `a.*` or `a.b.*` are valid, but `a.b.c.*` is not.",
       "relevant_when": "Designing hierarchical channel namespaces with wildcards",
       "why_given": "new knowledge"
     },

@@ -49,7 +49,7 @@
     },
     {
       "name": "Operation limit awareness",
-      "description": "The function does not exceed 3 combined operations (KV + publish) per execution, or documents awareness of this limit",
+      "description": "The function respects per-module execution limits (KV Store and PubNub API have separate budgets) or documents awareness of those limits",
       "max_score": 8
     },
     {

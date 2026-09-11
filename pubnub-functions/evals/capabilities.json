@@ -33,7 +33,7 @@
     {
       "id": 4,
       "name": "Operation limit awareness",
-      "description": "Stays within the 3 combined operations per execution limit (KV + XHR + publish combined)",
+      "description": "Stays within per-module execution limits or documents awareness that XHR, KV Store, PubNub API, and Vault budgets are independent (not a combined pool)",
       "complexity": "intermediate",
       "api_elements": ["kvstore", "xhr", "pubnub.publish", "pubnub.fire"]
     },

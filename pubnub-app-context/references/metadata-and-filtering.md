@@ -1,6 +1,3 @@
-<!-- canonical-for: APP_CONTEXT_FILTERING -->
-<!-- used-by: -->
-
 # App Context: Filtering, Sorting, Pagination, and Change Events
 
 The canonical reference for efficient querying of App Context objects and reacting to metadata changes in real time.
@@ -127,9 +124,9 @@ pubnub.addListener({
 pubnub.subscribe({ channels: ['user-123', 'room-photo-challenge-123'] });
 ```
 
-Events are published on the corresponding object's channel — to receive user-123's metadata events, subscribe to channel `user-123`. See [userId conventions](../../pubnub-app-developer/references/sdk-patterns.md) and [channel name rules](../../pubnub-app-developer/references/channels.md) for the underlying primitives.
+Events are published on the corresponding object's channel — to receive user-123's metadata events, subscribe to channel `user-123`. See [userId conventions](../../pubnub-app-developer/SKILL.md) and [channel name rules](../../pubnub-app-developer/references/channels.md) for the underlying primitives.
 
-For [`addListener` mechanics](../../pubnub-app-developer/references/publish-subscribe.md) see the canonical owner.
+For [`addListener` mechanics](../../pubnub-app-developer/SKILL.md) see the canonical owner.
 
 ## Bulk Operations
 

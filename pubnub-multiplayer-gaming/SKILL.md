@@ -1,6 +1,6 @@
 ---
 name: pubnub-multiplayer-gaming
-description: Build real-time multiplayer games with PubNub game state sync
+description: Build real-time multiplayer games and any delta/sequence state-sync workload with PubNub. Canonical owner for S5 state sync (gaming, sport feeds, IoT dashboards). Game rooms, matchmaking, and lobby patterns.
 license: PubNub
 metadata:
   author: pubnub
@@ -12,14 +12,19 @@ metadata:
   output-format: code
 ---
 
-<!-- xrefs-injected -->
 
-> **Canonical owners (link-don't-copy):** This vertical relies on cross-cutting skills. Always link to the canonical owner instead of duplicating. Foundations: [SDK initialization (`new PubNub(`, `userId`/UUID)](../pubnub-app-developer/references/sdk-patterns.md), [pub/sub basics (`pubnub.publish(`, `pubnub.subscribe(`, `addListener`)](../pubnub-app-developer/references/publish-subscribe.md), [channel naming](../pubnub-app-developer/references/channels.md), [message filters](../pubnub-app-developer/references/message-filters.md), [SDK upgrades](../pubnub-app-developer/references/sdk-upgrades.md), [REST API](../pubnub-app-developer/references/rest-api.md). Environment: [keysets, env separation, publish/subscribe/secret keys](../pubnub-keyset-management/references/keysets-and-environments.md), [key rotation hygiene](../pubnub-keyset-management/references/key-rotation-and-hygiene.md), [demo keys](../pubnub-keyset-management/references/demo-keys.md), [custom origin](../pubnub-keyset-management/references/custom-origin.md). Security: [Access Manager / `grantToken`](../pubnub-security/references/access-manager.md), [AES-256 / message encryption](../pubnub-security/references/encryption.md), [IP allowlisting](../pubnub-security/references/ip-whitelisting.md), [DoS mitigation](../pubnub-security/references/dos-mitigation.md), [compliance / SOC 2 / HIPAA](../pubnub-security/references/compliance-reports.md). Real-time features: [presence events / `withPresence`](../pubnub-presence/references/presence-events.md), [presence setup / heartbeat](../pubnub-presence/references/presence-setup.md), [dropped connections](../pubnub-presence/references/dropped-connections.md), [multi-device sync](../pubnub-presence/references/multi-device-sync.md). History: [Message Persistence and `fetchMessages`](../pubnub-history/references/pagination-and-ordering.md), [offline catch-up](../pubnub-history/references/offline-catch-up.md), [retention](../pubnub-history/references/retention-and-storage.md). App Context: [users / user metadata](../pubnub-app-context/references/users.md), [channels and memberships](../pubnub-app-context/references/channels-and-memberships.md), [metadata and filtering](../pubnub-app-context/references/metadata-and-filtering.md). Functions: [Before/After Publish, `request.ok()`/`request.abort()`](../pubnub-functions/references/functions-basics.md), [`require('kvstore')`/`xhr`/`vault`](../pubnub-functions/references/functions-modules.md), [chaining (3-hop limit)](../pubnub-functions/references/functions-chaining.md), [DB triggers and runtime quirks](../pubnub-functions/references/db-triggers-and-runtime-quirks.md), [common patterns](../pubnub-functions/references/functions-patterns.md). Reliability: [exponential backoff and jitter](../pubnub-reliability/references/backoff-and-jitter.md), [idempotent publish / message id](../pubnub-reliability/references/idempotent-publish.md), [dedup on merge](../pubnub-reliability/references/dedup-on-merge.md), [queue and retry](../pubnub-reliability/references/queue-and-retry.md), [schema version](../pubnub-reliability/references/schema-versioning.md). Scale: [channel groups, wildcard subscribe, Stream Controller](../pubnub-scale/references/scaling-patterns.md), [performance tuning](../pubnub-scale/references/performance.md), [10K+ live events](../pubnub-scale/references/large-events.md). Observability: [logging correlation (channel + message_id + user_id + timetoken)](../pubnub-observability/references/logging-correlation.md), [test pyramid](../pubnub-observability/references/test-pyramid.md), [payload sizing / cost](../pubnub-observability/references/cost-and-payload-hygiene.md), [incident triage runbook](../pubnub-observability/references/incident-runbook.md), [usage metrics / transaction count](../pubnub-observability/references/usage-metrics.md). Events & Actions: [event types](../pubnub-events-and-actions/references/event-types.md), [action targets (webhook / SQS / Kafka / Lambda)](../pubnub-events-and-actions/references/action-targets.md), [filters / JSONPath](../pubnub-events-and-actions/references/filters-and-jsonpath.md). Illuminate: [Business Objects](../pubnub-illuminate/references/business-objects.md), [Metrics](../pubnub-illuminate/references/metrics.md), [Decisions (4-step workflow)](../pubnub-illuminate/references/decisions-4-step-workflow.md), [Queries](../pubnub-illuminate/references/queries-adhoc-vs-saved.md), [service integration auth](../pubnub-illuminate/references/service-integration-auth.md). Chat: [Chat SDK setup](../pubnub-chat/references/chat-setup.md), [message actions / reactions](../pubnub-chat/references/message-actions.md), [file sharing / `sendFile`](../pubnub-chat/references/file-sharing.md), [threading](../pubnub-chat/references/threading.md). Routing: [intent-to-tool decision tree (`get_sdk_documentation`, `write_pubnub_app`, etc.)](../pubnub-choose-docs-path/references/intent-to-tool.md).
 
 
 # PubNub Multiplayer Gaming Specialist
 
 You are a PubNub multiplayer gaming specialist. Your role is to help developers build real-time multiplayer games using PubNub's publish/subscribe infrastructure for game state synchronization, player matchmaking, game room management, lobby systems, and in-game communication.
+
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
+
+## Shared pattern routing
+
+**S5 owner:** [gaming-state-sync.md](references/gaming-state-sync.md) — delta, sequence, snapshot (reusable beyond gaming). **S1** move validation: link [functions-patterns.md](../pubnub-functions/references/functions-patterns.md), keep game rules locally. **S2/S3:** [offline-catch-up](../pubnub-history/references/offline-catch-up.md), [backoff-and-jitter](../pubnub-reliability/references/backoff-and-jitter.md). [shared-pattern-routing.md](../pubnub-choose-docs-path/references/shared-pattern-routing.md)
+
 
 ## When to Use This Skill
 
@@ -122,46 +127,11 @@ async function createGameRoom(pubnub, hostPlayerId, gameConfig) {
 
 ### Synchronize Game State
 
-```javascript
-// Send delta state updates (only changed properties)
-async function sendStateUpdate(pubnub, stateChannel, deltaUpdate) {
-  await pubnub.publish({
-    channel: stateChannel,
-    message: {
-      type: 'state-delta',
-      senderId: pubnub.getUserId(),
-      timestamp: Date.now(),
-      sequenceNum: ++localSequence,
-      delta: deltaUpdate
-    }
-  });
-}
-
-// Listen for state updates and apply them
-pubnub.addListener({
-  message: (event) => {
-    if (event.channel.endsWith('.state')) {
-      const { type, delta, sequenceNum, senderId } = event.message;
-
-      if (type === 'state-delta' && senderId !== pubnub.getUserId()) {
-        applyDelta(gameState, delta, sequenceNum);
-        renderGame(gameState);
-      }
-    }
-  },
-  presence: (event) => {
-    if (event.action === 'leave' || event.action === 'timeout') {
-      handlePlayerDisconnect(event.uuid, event.channel);
-    } else if (event.action === 'join') {
-      handlePlayerJoin(event.uuid, event.channel);
-    }
-  }
-});
-```
+Follow the canonical [gaming-state-sync](references/gaming-state-sync.md) reference for delta updates, sequence numbers, batching, snapshots, and recovery. **Game-room delta:** publish `state-delta` on `<roomId>.state`; wire presence join/leave to your disconnect handler.
 
 ## Constraints
 
-- Keep game state messages under 32 KB; use delta updates instead of full state
+- Keep game state messages within PubNub's message size limit (retrieve via **`how_to`**); use delta updates instead of full state
 - Use PubNub Presence with short timeouts (15-30s) to detect player disconnections quickly
 - Always implement reconnection logic with state recovery for dropped players
 - Validate critical game actions server-side using PubNub Functions to prevent cheating
@@ -171,13 +141,13 @@ pubnub.addListener({
 ## MCP Tools
 
 - **`get_sdk_documentation`** — pull SDK-specific publish/subscribe and signal APIs (route via [intent-to-tool](../pubnub-choose-docs-path/references/intent-to-tool.md))
-- **`create_pubnub_function`** — scaffold the Before-Publish anti-cheat / state validator
+- **`manage_functions`** (`resource=package`, `operation=create`) — create the Before-Publish anti-cheat / state validator package
 - **`grant_token`** — issue scoped grants per game room
 - **`manage_apps`** — verify Stream Controller for room and lobby fan-out
 
 ## See Also
 
-- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [room occupancy and player online/offline](../pubnub-presence/references/presence-events.md), [dropped-connection recovery](../pubnub-presence/references/dropped-connections.md), [multi-device sync](../pubnub-presence/references/multi-device-sync.md)
+- **[pubnub-presence](../pubnub-presence/SKILL.md)** — [room occupancy and player online/offline](../pubnub-presence/SKILL.md), [dropped-connection recovery](../pubnub-presence/references/dropped-connections.md), [multi-device sync](../pubnub-presence/references/multi-device-sync.md)
 - **[pubnub-functions](../pubnub-functions/SKILL.md)** — [Before Publish](../pubnub-functions/references/functions-basics.md) for anti-cheat / move validation; [`require('kvstore')`](../pubnub-functions/references/functions-modules.md) for authoritative state; [chaining](../pubnub-functions/references/functions-chaining.md) for enrich-then-broadcast
 - **[pubnub-security](../pubnub-security/SKILL.md)** — [Access Manager grants per room](../pubnub-security/references/access-manager.md), [DoS mitigation](../pubnub-security/references/dos-mitigation.md) for griefer waves, [encryption](../pubnub-security/references/encryption.md) for sensitive payloads
 - **[pubnub-reliability](../pubnub-reliability/SKILL.md)** — [idempotent publish](../pubnub-reliability/references/idempotent-publish.md) so move-retries don't apply twice; [dedup-on-merge](../pubnub-reliability/references/dedup-on-merge.md) on rejoin after disconnect; use `signal` over `publish` for high-frequency state via [payload hygiene](../pubnub-observability/references/cost-and-payload-hygiene.md)

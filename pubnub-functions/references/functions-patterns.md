@@ -1,9 +1,8 @@
-<!-- canonical-for: FUNCTION_PATTERNS -->
-<!-- used-by: -->
-
-> **Cross-references:** Patterns here lean on [pub/sub basics](../../pubnub-app-developer/references/publish-subscribe.md), [SDK userId/UUID handling](../../pubnub-app-developer/references/sdk-patterns.md), [the REST API surface](../../pubnub-app-developer/references/rest-api.md) for direct calls, [idempotent publish](../../pubnub-reliability/references/idempotent-publish.md), and [logging correlation](../../pubnub-observability/references/logging-correlation.md). For mirror-to-DB see [DB triggers](db-triggers-and-runtime-quirks.md). For decision-style automation use [Illuminate Decisions](../../pubnub-illuminate/references/decisions-4-step-workflow.md) instead of polling KVStore on an On Interval.
-
 # PubNub Functions 2.0 Common Patterns
+
+**Canonical owner (S1):** Server-authoritative Before-Publish validation, mutation, and counter patterns live here. Vertical skills (voting, auctions, betting, gaming) must **link here** and keep **domain delta only** — see [shared-pattern-routing.md](../../pubnub-choose-docs-path/references/shared-pattern-routing.md).
+
+**When answering from a vertical skill:** route to Pattern 1 (or Pattern 7 for rate limits); do **not** paste a second full Before-Publish handler unless the user explicitly asks for deployable code.
 
 ## Pattern 1: Distributed Counter
 
@@ -386,7 +385,7 @@ export default async (request) => {
 1. **Use vault for secrets** - Never hardcode API keys
 2. **Implement try/catch** - Always handle errors gracefully
 3. **Use async/await** - Avoid .then()/.catch() chains
-4. **Consider operation limits** - Max 3 per execution
+4. **Consider operation limits** - Count xhr / pubnub / kvstore / vault ops per execution; budgets are independent per module (retrieve caps via **`how_to`**)
 5. **Log appropriately** - Use console.log/error for debugging
 6. **Fail gracefully** - Decide whether to block or allow on errors
 7. **Validate inputs** - Check message structure before processing

@@ -1,8 +1,3 @@
-<!-- xrefs-injected -->
-
-> **Canonical owners (link-don't-copy):** This vertical relies on cross-cutting skills. Always link to the canonical owner instead of duplicating. Foundations: [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md), [pub/sub basics (`pubnub.publish(`, `pubnub.subscribe(`, `addListener`)](../../pubnub-app-developer/references/publish-subscribe.md), [channel naming](../../pubnub-app-developer/references/channels.md), [message filters](../../pubnub-app-developer/references/message-filters.md), [SDK upgrades](../../pubnub-app-developer/references/sdk-upgrades.md), [REST API](../../pubnub-app-developer/references/rest-api.md). Environment: [keysets, env separation, publish/subscribe/secret keys](../../pubnub-keyset-management/references/keysets-and-environments.md), [key rotation hygiene](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md), [demo keys](../../pubnub-keyset-management/references/demo-keys.md), [custom origin](../../pubnub-keyset-management/references/custom-origin.md). Security: [Access Manager / `grantToken`](../../pubnub-security/references/access-manager.md), [AES-256 / message encryption](../../pubnub-security/references/encryption.md), [IP allowlisting](../../pubnub-security/references/ip-whitelisting.md), [DoS mitigation](../../pubnub-security/references/dos-mitigation.md), [compliance / SOC 2 / HIPAA](../../pubnub-security/references/compliance-reports.md). Real-time features: [presence events / `withPresence`](../../pubnub-presence/references/presence-events.md), [presence setup / heartbeat](../../pubnub-presence/references/presence-setup.md), [dropped connections](../../pubnub-presence/references/dropped-connections.md), [multi-device sync](../../pubnub-presence/references/multi-device-sync.md). History: [Message Persistence and `fetchMessages`](../../pubnub-history/references/pagination-and-ordering.md), [offline catch-up](../../pubnub-history/references/offline-catch-up.md), [retention](../../pubnub-history/references/retention-and-storage.md). App Context: [users / user metadata](../../pubnub-app-context/references/users.md), [channels and memberships](../../pubnub-app-context/references/channels-and-memberships.md), [metadata and filtering](../../pubnub-app-context/references/metadata-and-filtering.md). Functions: [Before/After Publish, `request.ok()`/`request.abort()`](../../pubnub-functions/references/functions-basics.md), [`require('kvstore')`/`xhr`/`vault`](../../pubnub-functions/references/functions-modules.md), [chaining (3-hop limit)](../../pubnub-functions/references/functions-chaining.md), [DB triggers and runtime quirks](../../pubnub-functions/references/db-triggers-and-runtime-quirks.md), [common patterns](../../pubnub-functions/references/functions-patterns.md). Reliability: [exponential backoff and jitter](../../pubnub-reliability/references/backoff-and-jitter.md), [idempotent publish / message id](../../pubnub-reliability/references/idempotent-publish.md), [dedup on merge](../../pubnub-reliability/references/dedup-on-merge.md), [queue and retry](../../pubnub-reliability/references/queue-and-retry.md), [schema version](../../pubnub-reliability/references/schema-versioning.md). Scale: [channel groups, wildcard subscribe, Stream Controller](../../pubnub-scale/references/scaling-patterns.md), [performance tuning](../../pubnub-scale/references/performance.md), [10K+ live events](../../pubnub-scale/references/large-events.md). Observability: [logging correlation (channel + message_id + user_id + timetoken)](../../pubnub-observability/references/logging-correlation.md), [test pyramid](../../pubnub-observability/references/test-pyramid.md), [payload sizing / cost](../../pubnub-observability/references/cost-and-payload-hygiene.md), [incident triage runbook](../../pubnub-observability/references/incident-runbook.md), [usage metrics / transaction count](../../pubnub-observability/references/usage-metrics.md). Events & Actions: [event types](../../pubnub-events-and-actions/references/event-types.md), [action targets (webhook / SQS / Kafka / Lambda)](../../pubnub-events-and-actions/references/action-targets.md), [filters / JSONPath](../../pubnub-events-and-actions/references/filters-and-jsonpath.md). Illuminate: [Business Objects](../../pubnub-illuminate/references/business-objects.md), [Metrics](../../pubnub-illuminate/references/metrics.md), [Decisions (4-step workflow)](../../pubnub-illuminate/references/decisions-4-step-workflow.md), [Queries](../../pubnub-illuminate/references/queries-adhoc-vs-saved.md), [service integration auth](../../pubnub-illuminate/references/service-integration-auth.md). Chat: [Chat SDK setup](../../pubnub-chat/references/chat-setup.md), [message actions / reactions](../../pubnub-chat/references/message-actions.md), [file sharing / `sendFile`](../../pubnub-chat/references/file-sharing.md), [threading](../../pubnub-chat/references/threading.md). Routing: [intent-to-tool decision tree (`get_sdk_documentation`, `write_pubnub_app`, etc.)](../../pubnub-choose-docs-path/references/intent-to-tool.md).
-
-
 # PubNub Betting & Casino Patterns
 
 ## Overview
@@ -47,40 +42,17 @@ async function publishBlackjackState(pubnub, tableId, gameState) {
 
 ### Blackjack PubNub Function (Game Logic)
 
-```javascript
-// PubNub Function: On Publish to 'casino.blackjack.*.action'
-const db = require('kvstore');
-const pubnub = require('pubnub');
+Use the canonical [server-authoritative Before-Publish pattern (S1)](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter). **Blackjack-specific behavior:**
 
-export default async (request) => {
-  const action = request.message;
-  const gameState = await db.get(`blackjack:${action.tableId}`);
-  if (!gameState) return request.ok();
+| Step | Blackjack delta |
+|------|-----------------|
+| Validate action | Reject if player not `active` or game not found |
+| Mutate state | Apply hit / stand / double rules to player cards + total |
+| Bust check | If `total > 21` after hit/double → `status = 'bust'` |
+| Persist | `db.set(blackjack:{tableId}, gameState)` atomically before publish |
+| Broadcast | `pubnub.publish` updated `game_state` on `casino.blackjack.{tableId}` |
 
-  const player = gameState.players.find(p => p.userId === action.userId);
-  if (!player || player.status !== 'active') return request.ok();
-
-  switch (action.action) {
-    case 'hit':
-      player.cards.push(drawCard(gameState.deck));
-      player.total = calculateTotal(player.cards);
-      if (player.total > 21) player.status = 'bust';
-      break;
-    case 'stand': player.status = 'stand'; break;
-    case 'double':
-      if (player.cards.length !== 2) break;
-      player.bet *= 2;
-      player.cards.push(drawCard(gameState.deck));
-      player.total = calculateTotal(player.cards);
-      player.status = player.total > 21 ? 'bust' : 'stand';
-      break;
-  }
-
-  await db.set(`blackjack:${action.tableId}`, gameState);
-  await pubnub.publish({ channel: `casino.blackjack.${action.tableId}`, message: { type: 'game_state', ...gameState, timestamp: Date.now() } });
-  return request.ok();
-};
-```
+Channel: `casino.blackjack.{tableId}.action` (On Publish). Deployable handler: start from [Pattern 1](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter) and apply the table above.
 
 ### Roulette Spin Sequence
 
@@ -201,19 +173,16 @@ class SessionTracker {
 
 ### Self-Exclusion
 
-```javascript
-// PubNub Function: Check self-exclusion before granting access
-const db = require('kvstore');
+Use the canonical [server-authoritative Before-Publish pattern (S1)](../../pubnub-functions/references/functions-patterns.md). **Self-exclusion delta:**
 
-export default async (request) => {
-  const exclusion = await db.get(`exclusion:${request.message.userId}`);
-  if (exclusion && exclusion.active && Date.now() < exclusion.expiresAt) {
-    request.message = { type: 'access_denied', reason: 'self_excluded', expiresAt: exclusion.expiresAt };
-    return request.abort();
-  }
-  return request.ok();
-};
-```
+| Check | Rule |
+|-------|------|
+| KV key | `exclusion:{userId}` — read with `db.get` |
+| Active guard | If `exclusion.active && Date.now() < exclusion.expiresAt` → abort |
+| Abort payload | `{ type: 'access_denied', reason: 'self_excluded', expiresAt }` |
+| Pass-through | If no exclusion record or expired → `request.ok()` |
+
+Apply to any channel where wagers or access tokens are submitted.
 
 ## Regulatory Compliance
 
@@ -236,25 +205,17 @@ async function verifyGeolocation(pubnub, userId) {
 
 ### Geo-Fence PubNub Function
 
-```javascript
-const db = require('kvstore');
-const xhr = require('xhr');
+Use the canonical [server-authoritative Before-Publish pattern (S1)](../../pubnub-functions/references/functions-patterns.md) — XHR module for the geocoding call, KV Store for result caching. **Geo-fence delta:**
 
-export default async (request) => {
-  const { userId, latitude, longitude } = request.message;
-  const response = await xhr.fetch(`https://api.geocoding-service.com/reverse?lat=${latitude}&lon=${longitude}`);
-  const location = JSON.parse(response.body);
-  const ALLOWED = ['GB', 'MT', 'GI', 'IE', 'SE', 'DK'];
+| Step | Betting-specific rule |
+|------|-----------------------|
+| Extract coords | `{ userId, latitude, longitude }` from `request.message` |
+| XHR lookup | Reverse geocode to `countryCode` via external API (`xhr.fetch`) |
+| Allowlist | Validate `countryCode` against jurisdiction-approved list (operator-configured) |
+| KV cache | Store `{ allowed, country, verifiedAt, expiresAt }` under `geo:{userId}` — re-verify every 30 minutes |
+| Abort | `{ type: 'geo_blocked', country }` if not allowed |
 
-  if (!ALLOWED.includes(location.countryCode)) {
-    await db.set(`geo:${userId}`, { allowed: false, country: location.countryCode });
-    return request.abort();
-  }
-
-  await db.set(`geo:${userId}`, { allowed: true, country: location.countryCode, verifiedAt: Date.now(), expiresAt: Date.now() + 1800000 });
-  return request.ok();
-};
-```
+Counts **1 XHR op** per execution — stay within budget; cache geo result to avoid repeated lookups (see [S1 budget guidance](../../pubnub-functions/references/functions-patterns.md)).
 
 ## Multi-Table Tournament Support
 

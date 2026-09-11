@@ -16,6 +16,9 @@ metadata:
 
 You are the PubNub scaling and performance specialist. Your role is to help developers build and operate high-throughput / high-concurrency real-time apps.
 
+> **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
+
+
 ## When to Use This Skill
 
 Invoke this skill when:
@@ -42,25 +45,15 @@ Invoke this skill when:
 | Reference | Purpose |
 |-----------|---------|
 | [scaling-patterns.md](references/scaling-patterns.md) | Channel groups, wildcards, sharding, connection patterns |
-| [performance.md](references/performance.md) | Throughput tuning, batching, signal vs publish |
+| [cost-and-payload-hygiene.md](../pubnub-observability/references/cost-and-payload-hygiene.md) | Payload sizing, signal vs publish tradeoffs |
 | [large-events.md](references/large-events.md) | 10K+ concurrent live-event playbook + PubNub engagement |
 
 ## Key Implementation Requirements
 
-> **Cross-references:** Built on [pub/sub basics](../pubnub-app-developer/references/publish-subscribe.md) and [SDK initialization](../pubnub-app-developer/references/sdk-patterns.md). For [history retrieval / Message Persistence and `fetchMessages`](../pubnub-history/references/pagination-and-ordering.md) see the canonical owner. For [payload sizing and coalescing](../pubnub-observability/references/cost-and-payload-hygiene.md) see the cost owner. Pair fan-out designs with [reliable publish (idempotent)](../pubnub-reliability/references/idempotent-publish.md).
 
-### Channel Groups (2000 channels per group)
+### Channel Groups (topology)
 
-```javascript
-await pubnub.channelGroups.addChannels({
-  channelGroup: 'user-feeds',
-  channels: ['feed-1', 'feed-2', 'feed-3']
-});
-
-pubnub.subscribe({
-  channelGroups: ['user-feeds']
-});
-```
+Retrieve channel-group CRUD APIs and numeric limits via **`get_sdk_documentation`** and **`how_to`** (`use-channel-groups`, `understand-channel-limits`).
 
 ### Wildcard Subscribe
 
@@ -72,22 +65,23 @@ pubnub.subscribe({
 
 ### Performance Guidelines (rule-of-thumb)
 
-- Publish rate: 10-15 messages/second per channel recommended.
-- Message size: keep well under 32KB (smaller is faster).
-- Subscribers: consider sharding if >10K users in a single chat room.
+- Publish rate: keep per-channel publish rate within SDK/docs recommendations — retrieve current guidance via **`get_sdk_documentation`**.
+- Message size: keep payloads small; retrieve hard limits via **`how_to`** (`calculate-message-payload-size`) and [payload hygiene](../pubnub-observability/references/cost-and-payload-hygiene.md).
+- Subscribers: consider sharding when a single channel exceeds comfortable occupancy for your use case (see [large-events.md](references/large-events.md)).
 
 ## Constraints
 
 - **Stream Controller add-on required** for channel groups and wildcards.
-- Wildcard patterns must end with `.*`; max 2 dots (3 levels).
+- Wildcard patterns must end with `.*`; max **two dots in the pattern** (`a.*` or `a.b.*`).
 - Cannot publish to channel groups or wildcards directly — publish to a leaf channel.
-- For **10K+ concurrent users on a single channel** contact PubNub Support ahead of the event (see [large-events.md](references/large-events.md)).
-- Message buffer: 100 messages per channel (configurable).
+- For **large concurrent audiences on a single channel** contact PubNub Support ahead of the event (see [large-events.md](references/large-events.md)).
+- Message buffer size is configurable — retrieve current defaults via **`get_sdk_documentation`**.
 - Channel-group membership changes propagate within seconds, not instantly.
 
 ## MCP Tools
 
-- **`get_sdk_documentation`** — pull SDK-specific channel group / wildcard APIs (see [intent-to-tool routing](../pubnub-choose-docs-path/references/intent-to-tool.md))
+- **`get_sdk_documentation`** — channel groups, wildcards, subscribe APIs, and numeric limits (see [intent-to-tool routing](../pubnub-choose-docs-path/references/intent-to-tool.md))
+- **`how_to`** — channel limits, payload size, channel-group setup (`understand-channel-limits`, `calculate-message-payload-size`, `use-channel-groups`)
 - **`manage_apps`** — verify Stream Controller add-on is enabled per keyset
 
 ## See Also

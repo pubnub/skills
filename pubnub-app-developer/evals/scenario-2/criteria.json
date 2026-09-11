@@ -8,8 +8,8 @@
       "max_score": 15
     },
     {
-      "name": "Maximum three levels",
-      "description": "The channel hierarchy uses at most three levels (two dots), not exceeding the PubNub wildcard depth limit",
+      "name": "Wildcard pattern depth",
+      "description": "Wildcard subscribe patterns use at most two dots (e.g. 'building1.*' or 'iot.building1.*', not 'iot.building1.floor.*') — this is a wildcard pattern limit, not a universal channel-name cap",
       "max_score": 10
     },
     {

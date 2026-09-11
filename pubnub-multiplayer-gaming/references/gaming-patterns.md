@@ -1,8 +1,3 @@
-<!-- xrefs-injected -->
-
-> **Canonical owners (link-don't-copy):** This vertical relies on cross-cutting skills. Always link to the canonical owner instead of duplicating. Foundations: [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md), [pub/sub basics (`pubnub.publish(`, `pubnub.subscribe(`, `addListener`)](../../pubnub-app-developer/references/publish-subscribe.md), [channel naming](../../pubnub-app-developer/references/channels.md), [message filters](../../pubnub-app-developer/references/message-filters.md), [SDK upgrades](../../pubnub-app-developer/references/sdk-upgrades.md), [REST API](../../pubnub-app-developer/references/rest-api.md). Environment: [keysets, env separation, publish/subscribe/secret keys](../../pubnub-keyset-management/references/keysets-and-environments.md), [key rotation hygiene](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md), [demo keys](../../pubnub-keyset-management/references/demo-keys.md), [custom origin](../../pubnub-keyset-management/references/custom-origin.md). Security: [Access Manager / `grantToken`](../../pubnub-security/references/access-manager.md), [AES-256 / message encryption](../../pubnub-security/references/encryption.md), [IP allowlisting](../../pubnub-security/references/ip-whitelisting.md), [DoS mitigation](../../pubnub-security/references/dos-mitigation.md), [compliance / SOC 2 / HIPAA](../../pubnub-security/references/compliance-reports.md). Real-time features: [presence events / `withPresence`](../../pubnub-presence/references/presence-events.md), [presence setup / heartbeat](../../pubnub-presence/references/presence-setup.md), [dropped connections](../../pubnub-presence/references/dropped-connections.md), [multi-device sync](../../pubnub-presence/references/multi-device-sync.md). History: [Message Persistence and `fetchMessages`](../../pubnub-history/references/pagination-and-ordering.md), [offline catch-up](../../pubnub-history/references/offline-catch-up.md), [retention](../../pubnub-history/references/retention-and-storage.md). App Context: [users / user metadata](../../pubnub-app-context/references/users.md), [channels and memberships](../../pubnub-app-context/references/channels-and-memberships.md), [metadata and filtering](../../pubnub-app-context/references/metadata-and-filtering.md). Functions: [Before/After Publish, `request.ok()`/`request.abort()`](../../pubnub-functions/references/functions-basics.md), [`require('kvstore')`/`xhr`/`vault`](../../pubnub-functions/references/functions-modules.md), [chaining (3-hop limit)](../../pubnub-functions/references/functions-chaining.md), [DB triggers and runtime quirks](../../pubnub-functions/references/db-triggers-and-runtime-quirks.md), [common patterns](../../pubnub-functions/references/functions-patterns.md). Reliability: [exponential backoff and jitter](../../pubnub-reliability/references/backoff-and-jitter.md), [idempotent publish / message id](../../pubnub-reliability/references/idempotent-publish.md), [dedup on merge](../../pubnub-reliability/references/dedup-on-merge.md), [queue and retry](../../pubnub-reliability/references/queue-and-retry.md), [schema version](../../pubnub-reliability/references/schema-versioning.md). Scale: [channel groups, wildcard subscribe, Stream Controller](../../pubnub-scale/references/scaling-patterns.md), [performance tuning](../../pubnub-scale/references/performance.md), [10K+ live events](../../pubnub-scale/references/large-events.md). Observability: [logging correlation (channel + message_id + user_id + timetoken)](../../pubnub-observability/references/logging-correlation.md), [test pyramid](../../pubnub-observability/references/test-pyramid.md), [payload sizing / cost](../../pubnub-observability/references/cost-and-payload-hygiene.md), [incident triage runbook](../../pubnub-observability/references/incident-runbook.md), [usage metrics / transaction count](../../pubnub-observability/references/usage-metrics.md). Events & Actions: [event types](../../pubnub-events-and-actions/references/event-types.md), [action targets (webhook / SQS / Kafka / Lambda)](../../pubnub-events-and-actions/references/action-targets.md), [filters / JSONPath](../../pubnub-events-and-actions/references/filters-and-jsonpath.md). Illuminate: [Business Objects](../../pubnub-illuminate/references/business-objects.md), [Metrics](../../pubnub-illuminate/references/metrics.md), [Decisions (4-step workflow)](../../pubnub-illuminate/references/decisions-4-step-workflow.md), [Queries](../../pubnub-illuminate/references/queries-adhoc-vs-saved.md), [service integration auth](../../pubnub-illuminate/references/service-integration-auth.md). Chat: [Chat SDK setup](../../pubnub-chat/references/chat-setup.md), [message actions / reactions](../../pubnub-chat/references/message-actions.md), [file sharing / `sendFile`](../../pubnub-chat/references/file-sharing.md), [threading](../../pubnub-chat/references/threading.md). Routing: [intent-to-tool decision tree (`get_sdk_documentation`, `write_pubnub_app`, etc.)](../../pubnub-choose-docs-path/references/intent-to-tool.md).
-
-
 # PubNub Multiplayer Gaming Patterns
 
 ## Overview
@@ -445,69 +440,16 @@ function lerp(a, b, t) {
 
 ## Anti-Cheat Validation via PubNub Functions
 
-### Before Publish Trigger for Move Validation
+Use [Pattern 1 Before Publish](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter) on `game.*.state` channels. **Game-specific checks only:**
 
-```javascript
-// PubNub Function: Before Publish on game.*.state channels
-export default (request) => {
-  const message = request.message;
+| Input | Rule |
+|-------|------|
+| `player-input` move | Max speed / distance per tick |
+| `state-delta` health | Cap decrement magnitude |
+| Timestamp | Reject if >5s in the future |
+| On fail | `request.abort()` or replace with `action-rejected` |
 
-  if (message.type === 'player-input' || message.type === 'state-delta') {
-    const validation = validateGameAction(message);
-
-    if (!validation.valid) {
-      // Option 1: Block the message entirely
-      // return request.abort('Cheat detected');
-
-      // Option 2: Replace with a rejection message
-      request.message = {
-        type: 'action-rejected',
-        originalType: message.type,
-        playerId: message.playerId,
-        reason: validation.reason,
-        timestamp: Date.now()
-      };
-    }
-  }
-
-  return request.ok();
-};
-
-function validateGameAction(message) {
-  // Validate movement speed
-  if (message.input?.type === 'move') {
-    const dx = Math.abs(message.input.dx || 0);
-    const dy = Math.abs(message.input.dy || 0);
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    const MAX_SPEED = 10; // units per tick
-
-    if (distance > MAX_SPEED) {
-      return { valid: false, reason: 'Movement speed exceeded' };
-    }
-  }
-
-  // Validate damage values
-  if (message.delta) {
-    for (const [path, value] of Object.entries(message.delta)) {
-      if (path.includes('.health') && typeof value === 'object') {
-        if (value.operation === 'decrement' && value.value > 100) {
-          return { valid: false, reason: 'Damage value out of range' };
-        }
-      }
-    }
-  }
-
-  // Validate message frequency (rate limiting)
-  if (message.timestamp) {
-    const now = Date.now();
-    if (message.timestamp > now + 5000) {
-      return { valid: false, reason: 'Timestamp in the future' };
-    }
-  }
-
-  return { valid: true };
-}
-```
+Full deployable handler: start from the functions owner; apply rules from [gaming-state-sync.md](gaming-state-sync.md).
 
 ### Server-Side Score Validation
 

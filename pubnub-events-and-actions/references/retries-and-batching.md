@@ -1,6 +1,3 @@
-<!-- canonical-for: EVENTS_AND_ACTIONS_DELIVERY -->
-<!-- used-by: -->
-
 # Retries, Envelopes, and Batching
 
 The canonical reference for E&A delivery configuration: retry policy, envelope versions, and batching for high-volume targets.
@@ -11,23 +8,19 @@ E&A uses a **jittered [exponential backoff](../../pubnub-reliability/references/
 
 ### Algorithm
 
-```
-delay = random_between(
-  minIntervalForRetry = 10s,
-  min(maxRetryPeriod = 900s, (baseRetryIntervalDefinedByUser * 2)^attemptNo)
-)
-```
+Retrieve the current retry interval formula, minimum interval, and maximum retry period from Events & Actions documentation — do not hard-code delay bounds in Skills.
 
-The cap (`maxRetryPeriod`) is 900 seconds = 15 minutes. The minimum interval is 10 seconds.
+At a high level:
+
+```
+delay = random_between(minInterval, min(maxRetryPeriod, (baseRetryInterval * 2)^attemptNo))
+```
 
 ### Per-Action Retry Knobs
 
-| Knob | Default | Min | Max |
-|---|---|---|---|
-| Number of retries | 2 | 1 | 4 |
-| Retry interval seconds (`baseRetryIntervalDefinedByUser`) | 450 | 10 | 900 |
+Each action exposes configurable retry count and base retry interval within documented min/max bounds. Retrieve current defaults and limits via **`get_sdk_documentation`** (Events & Actions section) before tuning.
 
-For high-priority actions where every event must land, set retries to 4 and accept the longer total delay. For best-effort routing, leave at default.
+For high-priority actions where every event must land, increase retries and accept the longer total delay. For best-effort routing, use defaults.
 
 ### Webhook Retry Logic
 
@@ -83,10 +76,7 @@ Available on **Webhook** and **Amazon S3** action types.
 
 ### Per-Batch Limits
 
-| Knob | Default | Min | Max |
-|---|---|---|---|
-| Item count | 100 | 1 | 10000 |
-| Time bound (seconds) | 5 | 1 | 300 |
+Batching is bounded by configurable item-count and time-bound knobs. Retrieve current defaults and min/max via **`get_sdk_documentation`** (Events & Actions section).
 
 A batch is sent when **either** bound is reached first.
 

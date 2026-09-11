@@ -1,7 +1,3 @@
-<!-- canonical-for: APPS_AND_KEYSETS -->
-<!-- canonical-for: ENVIRONMENT_SEPARATION -->
-<!-- used-by: pubnub-choose-docs-path, pubnub-security, pubnub-observability -->
-
 # Apps, Keysets, and Environment Separation
 
 The canonical reference for the PubNub app/keyset hierarchy and how to lay out dev/staging/prod isolation.
@@ -30,14 +26,14 @@ App: Acme Chat
 ### Publish Key (`pub-c-...`)
 
 - Sent from clients and servers to publish messages.
-- Required for [`publish()`, `signal()`, `fire()`, and `pubnub.publish()`](../../pubnub-app-developer/references/publish-subscribe.md) from a Function.
+- Required for [`publish()`, `signal()`, `fire()`, and `pubnub.publish()`](../../pubnub-app-developer/SKILL.md) from a Function.
 - Safe to ship in client code (presence in source code is expected).
 - Subject to Access Manager when enabled — even with the publish key, a client without a valid token cannot publish to restricted channels.
 
 ### Subscribe Key (`sub-c-...`)
 
 - Sent from clients and servers to receive messages.
-- Required for `subscribe()`, [`hereNow()`](../../pubnub-presence/references/presence-events.md), [`fetchMessages()`](../../pubnub-history/references/pagination-and-ordering.md), and most read operations.
+- Required for `subscribe()`, [`hereNow()`](../../pubnub-presence/SKILL.md), [`fetchMessages()`](../../pubnub-history/references/pagination-and-ordering.md), and most read operations.
 - Safe to ship in client code.
 - Also required to instantiate any PubNub SDK.
 
@@ -131,7 +127,7 @@ export const pubnubConfig = {
 };
 ```
 
-For the actual client SDK initialization patterns (listeners, error handling, userId requirements), see [pubnub-app-developer/references/sdk-patterns.md](../../pubnub-app-developer/references/sdk-patterns.md).
+For the actual client SDK initialization patterns (listeners, error handling, userId requirements), see [pubnub-app-developer/SKILL.md](../../pubnub-app-developer/SKILL.md).
 
 ## Common Anti-Patterns
 

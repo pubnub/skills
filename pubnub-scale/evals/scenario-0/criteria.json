@@ -9,7 +9,7 @@
     },
     {
       "name": "Max 2 dots in wildcards",
-      "description": "No wildcard subscription pattern contains more than 2 dots (i.e., no more than 3 levels of hierarchy in any wildcard pattern)",
+      "description": "No wildcard subscription pattern contains more than 2 dots (wildcard patterns like a.b.* are valid; a.b.c.* is not)",
       "max_score": 10
     },
     {

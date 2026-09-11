@@ -1,8 +1,3 @@
-<!-- canonical-for: FUNCTION_BUNDLING -->
-<!-- used-by: -->
-
-> **Cross-references:** [Handler shapes and async/await](functions-basics.md). [Handler-scoped `require`](db-triggers-and-runtime-quirks.md#quirk-8-require-is-handler-scoped). [3-call XHR/PubNub cap](db-triggers-and-runtime-quirks.md#quirk-2-3-call-cap-on-xhr--pubnub-api-calls) and [10-call vault cap](functions-modules.md#vault-module) constrain what the bundled handler can do at runtime. For pub/sub semantics inside the bundled handler, see the [pub/sub canonical owner](../../pubnub-app-developer/references/publish-subscribe.md). This document is **build-system-specific**: the constraints from §3 onward apply only when you bundle/transpile code (esbuild, Rollup, webpack, tsc) before uploading. If you author directly in the PubNub Admin Portal, you can skip them.
-
 # Bundling and TypeScript for PubNub Functions
 
 PubNub Functions accept JavaScript modules with an `export default` handler. Anything you bundle, transpile, or minify before uploading must end up looking like that handler — and several toolchain defaults break the contract. This reference covers what to do and what to avoid.
@@ -16,15 +11,16 @@ A two-adapter strategy lets you share business logic between local Node (tests, 
 
 Author your business logic against an internal abstraction (`Db.get(key)`, `Http.fetch(url)`, `Signer.sign(payload)`) and select the adapter at build time. The Functions bundle imports the Functions adapter; local tests import the Node adapter. Keep the abstraction surface small so neither adapter accumulates surprises.
 
-## 2. 64 KB bundle size guard
+## 2. Bundle size guard
 
-The maximum bundle size accepted by Functions is approximately **64 KB**. Enforce this in your build so you catch regressions before deploy:
+Functions enforces a maximum uploaded bundle size — retrieve the current cap via **`how_to`** (`understand-pubnub-functions-limits-and-constraints`) or Functions docs. Enforce it in your build so you catch regressions before deploy:
 
 ```bash
-# Example: fail the build if the bundle exceeds 64 KB
+# Example: fail the build if the bundle exceeds the platform limit (set MAX_BYTES from docs/MCP)
+MAX_BYTES=65536   # replace with value from how_to / Functions docs
 SIZE=$(stat -f%z dist-functions/myfn.js 2>/dev/null || stat -c%s dist-functions/myfn.js)
-if [ "$SIZE" -gt 65536 ]; then
-  echo "Bundle is $SIZE bytes; exceeds 64KB limit" >&2
+if [ "$SIZE" -gt "$MAX_BYTES" ]; then
+  echo "Bundle is $SIZE bytes; exceeds platform limit ($MAX_BYTES)" >&2
   exit 1
 fi
 ```
@@ -258,19 +254,19 @@ Use this checklist when generating or reviewing Functions code that will be bund
 - Put `require()` calls **inside** the handler body.
 - Mark every Functions built-in as `--external:` for the bundler (full list in §3).
 - Use `async`/`await` for new code; Promise chains are acceptable when returned from the handler (see [`functions-basics.md`](functions-basics.md#promise-chains-are-acceptable-if-you-return-them)).
-- Keep external calls minimal — see the 3-call cap in [Quirk 2](db-triggers-and-runtime-quirks.md#quirk-2-3-call-cap-on-xhr--pubnub-api-calls).
-- Keep vault lookups minimal — 10 per execution (see [Vault Module](functions-modules.md#vault-module)).
+- Keep external calls minimal — see [per-module execution limits](db-triggers-and-runtime-quirks.md#quirk-2-per-module-execution-limits).
+- Keep vault lookups minimal — each `vault.get` counts toward the Vault module budget (retrieve current cap via **`how_to`**; see [Vault Module](functions-modules.md#vault-module)).
 - Guard `vault.get(...)` and check `typeof vault.get === 'function'` (see [Quirk 10](db-triggers-and-runtime-quirks.md#quirk-10-vault-may-be-unavailable-or-return-not-found)).
 - Use `function` declarations for helpers if your entry calls them before their textual definition (see §7).
 - Verify the minified bundle's `require(...)` calls are plain (no `__require`, no `Dynamic require of`).
-- Enforce the 64 KB size guard in CI (see §2).
+- Enforce the bundle size guard in CI (see §2; set `MAX_BYTES` from **`how_to`**).
 
 **Don't**
 
 - Don't assume Node.js built-ins exist — no `fs`, no Node `crypto`, no `process`, no `Buffer`, no Node-flavored `setTimeout`/`setInterval` semantics.
 - Don't install npm packages for runtime usage that aren't already provided by the Functions module list.
 - Don't omit the completion return (`ok` / `abort` / `send`). The runtime has no fallback for "no return".
-- Don't fan out N HTTP calls in a loop — you'll trip the 3-call cap on the second iteration.
+- Don't fan out N HTTP calls in a loop — you'll exhaust the XHR module budget (retrieve current cap via **`how_to`**).
 - Don't rely on `globalThis.require` being set by the runtime (see [Quirk 8](db-triggers-and-runtime-quirks.md#quirk-8-require-is-handler-scoped)).
 - Don't ship bundles that still contain `__require` or `Dynamic require of` — they will fail at first invocation.
 - Don't use dynamic-require tricks (`Function('return require')()`, `eval('require')`).

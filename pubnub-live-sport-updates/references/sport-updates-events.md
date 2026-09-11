@@ -1,8 +1,3 @@
-<!-- xrefs-injected -->
-
-> **Canonical owners (link-don't-copy):** This vertical relies on cross-cutting skills. Always link to the canonical owner instead of duplicating. Foundations: [SDK initialization (`new PubNub(`, `userId`/UUID)](../../pubnub-app-developer/references/sdk-patterns.md), [pub/sub basics (`pubnub.publish(`, `pubnub.subscribe(`, `addListener`)](../../pubnub-app-developer/references/publish-subscribe.md), [channel naming](../../pubnub-app-developer/references/channels.md), [message filters](../../pubnub-app-developer/references/message-filters.md), [SDK upgrades](../../pubnub-app-developer/references/sdk-upgrades.md), [REST API](../../pubnub-app-developer/references/rest-api.md). Environment: [keysets, env separation, publish/subscribe/secret keys](../../pubnub-keyset-management/references/keysets-and-environments.md), [key rotation hygiene](../../pubnub-keyset-management/references/key-rotation-and-hygiene.md), [demo keys](../../pubnub-keyset-management/references/demo-keys.md), [custom origin](../../pubnub-keyset-management/references/custom-origin.md). Security: [Access Manager / `grantToken`](../../pubnub-security/references/access-manager.md), [AES-256 / message encryption](../../pubnub-security/references/encryption.md), [IP allowlisting](../../pubnub-security/references/ip-whitelisting.md), [DoS mitigation](../../pubnub-security/references/dos-mitigation.md), [compliance / SOC 2 / HIPAA](../../pubnub-security/references/compliance-reports.md). Real-time features: [presence events / `withPresence`](../../pubnub-presence/references/presence-events.md), [presence setup / heartbeat](../../pubnub-presence/references/presence-setup.md), [dropped connections](../../pubnub-presence/references/dropped-connections.md), [multi-device sync](../../pubnub-presence/references/multi-device-sync.md). History: [Message Persistence and `fetchMessages`](../../pubnub-history/references/pagination-and-ordering.md), [offline catch-up](../../pubnub-history/references/offline-catch-up.md), [retention](../../pubnub-history/references/retention-and-storage.md). App Context: [users / user metadata](../../pubnub-app-context/references/users.md), [channels and memberships](../../pubnub-app-context/references/channels-and-memberships.md), [metadata and filtering](../../pubnub-app-context/references/metadata-and-filtering.md). Functions: [Before/After Publish, `request.ok()`/`request.abort()`](../../pubnub-functions/references/functions-basics.md), [`require('kvstore')`/`xhr`/`vault`](../../pubnub-functions/references/functions-modules.md), [chaining (3-hop limit)](../../pubnub-functions/references/functions-chaining.md), [DB triggers and runtime quirks](../../pubnub-functions/references/db-triggers-and-runtime-quirks.md), [common patterns](../../pubnub-functions/references/functions-patterns.md). Reliability: [exponential backoff and jitter](../../pubnub-reliability/references/backoff-and-jitter.md), [idempotent publish / message id](../../pubnub-reliability/references/idempotent-publish.md), [dedup on merge](../../pubnub-reliability/references/dedup-on-merge.md), [queue and retry](../../pubnub-reliability/references/queue-and-retry.md), [schema version](../../pubnub-reliability/references/schema-versioning.md). Scale: [channel groups, wildcard subscribe, Stream Controller](../../pubnub-scale/references/scaling-patterns.md), [performance tuning](../../pubnub-scale/references/performance.md), [10K+ live events](../../pubnub-scale/references/large-events.md). Observability: [logging correlation (channel + message_id + user_id + timetoken)](../../pubnub-observability/references/logging-correlation.md), [test pyramid](../../pubnub-observability/references/test-pyramid.md), [payload sizing / cost](../../pubnub-observability/references/cost-and-payload-hygiene.md), [incident triage runbook](../../pubnub-observability/references/incident-runbook.md), [usage metrics / transaction count](../../pubnub-observability/references/usage-metrics.md). Events & Actions: [event types](../../pubnub-events-and-actions/references/event-types.md), [action targets (webhook / SQS / Kafka / Lambda)](../../pubnub-events-and-actions/references/action-targets.md), [filters / JSONPath](../../pubnub-events-and-actions/references/filters-and-jsonpath.md). Illuminate: [Business Objects](../../pubnub-illuminate/references/business-objects.md), [Metrics](../../pubnub-illuminate/references/metrics.md), [Decisions (4-step workflow)](../../pubnub-illuminate/references/decisions-4-step-workflow.md), [Queries](../../pubnub-illuminate/references/queries-adhoc-vs-saved.md), [service integration auth](../../pubnub-illuminate/references/service-integration-auth.md). Chat: [Chat SDK setup](../../pubnub-chat/references/chat-setup.md), [message actions / reactions](../../pubnub-chat/references/message-actions.md), [file sharing / `sendFile`](../../pubnub-chat/references/file-sharing.md), [threading](../../pubnub-chat/references/threading.md). Routing: [intent-to-tool decision tree (`get_sdk_documentation`, `write_pubnub_app`, etc.)](../../pubnub-choose-docs-path/references/intent-to-tool.md).
-
-
 # PubNub Sport Game Events
 
 ## Event Type Taxonomy
@@ -320,60 +315,7 @@ function getOrCreate(table, team, name) {
 
 ### Client-Side Timeline Builder
 
-```javascript
-class PlayByPlayTimeline {
-  constructor() {
-    this.events = [];
-    this.lastSequence = 0;
-    this.pendingOutOfOrder = [];
-  }
-
-  addEvent(event) {
-    if (event.sequence <= this.lastSequence) {
-      if (this.events.some(e => e.sequence === event.sequence)) return;
-      this.insertSorted(event);
-      return;
-    }
-    if (event.sequence > this.lastSequence + 1) {
-      this.pendingOutOfOrder.push(event);
-      this.requestBackfill(this.lastSequence + 1, event.sequence - 1);
-      return;
-    }
-    this.events.push(event);
-    this.lastSequence = event.sequence;
-    this.processPending();
-  }
-
-  insertSorted(event) {
-    const index = this.events.findIndex(e => e.sequence > event.sequence);
-    if (index === -1) this.events.push(event);
-    else this.events.splice(index, 0, event);
-  }
-
-  processPending() {
-    this.pendingOutOfOrder.sort((a, b) => a.sequence - b.sequence);
-    while (this.pendingOutOfOrder.length > 0 && this.pendingOutOfOrder[0].sequence === this.lastSequence + 1) {
-      const next = this.pendingOutOfOrder.shift();
-      this.events.push(next);
-      this.lastSequence = next.sequence;
-    }
-  }
-
-  requestBackfill(fromSeq, toSeq) {
-    console.warn(`Gap detected: requesting events ${fromSeq}-${toSeq}`);
-  }
-
-  getScoringSummary() {
-    const scoringTypes = {
-      nfl: ['touchdown', 'field_goal', 'safety'],
-      nba: ['basket', 'three_pointer', 'free_throw', 'dunk'],
-      epl: ['goal'],
-      mlb: ['run_scored', 'home_run']
-    };
-    return this.events.filter(e => (scoringTypes[e.sport] || []).includes(e.type));
-  }
-}
-```
+Use [delta / sequence state synchronization](../../pubnub-multiplayer-gaming/references/gaming-state-sync.md) for monotonic sequence tracking, gap detection, and backfill. **Sport-specific delta:** maintain a play-by-play timeline sorted by `sequence`; on gap, request backfill for the missing range; filter scoring events by sport-specific play types (`touchdown`, `goal`, etc.).
 
 ## Period and Clock Tracking
 
@@ -416,6 +358,8 @@ function getOrdinalSuffix(n) {
 ## Error Handling
 
 ### Out-of-Order Event Recovery
+
+The backfill inside this handler applies the canonical [offline catch-up pattern (S2)](../../pubnub-history/references/offline-catch-up.md). **Sport-specific delta:** target the single game channel (`sports.{league}.{gameId}`), merge via `timeline.addEvent`, and retry with [exponential backoff (S3)](../../pubnub-reliability/references/backoff-and-jitter.md) on history failure.
 
 ```javascript
 async function handleEventWithRecovery(pubnub, event, timeline, gameChannel) {

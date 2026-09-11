@@ -1,11 +1,9 @@
-<!-- canonical-for: MULTI_DEVICE_SYNC -->
-<!-- used-by: pubnub-reliability, pubnub-app-context -->
-
 # Multi-Device Sync: Same User on Multiple Devices
+
+**Canonical owner (S8):** Shared vs per-device `userId` tradeoff and consequences for presence and message delivery.
 
 The canonical reference for handling presence and message delivery when one user has multiple devices (phone + laptop + tablet) connected simultaneously.
 
-> **Cross-references:** [`userId` semantics](../../pubnub-app-developer/references/sdk-patterns.md) is the primary lever. [Dedup-on-merge](../../pubnub-reliability/references/dedup-on-merge.md) handles cross-device duplicate suppression. [App Context user metadata](../../pubnub-app-context/references/users.md) tracks per-user state across devices.
 
 ## Two Choices: Shared `userId` vs Per-Device `userId`
 
@@ -97,7 +95,7 @@ A common pattern: send push notification to mobile devices that are NOT actively
 
 | Tactic | How |
 |---|---|
-| Detect active devices | Use [presence](presence-events.md) `hereNow` or active-device tracking in App Context |
+| Detect active devices | Use [presence](../../pubnub-presence/SKILL.md) `hereNow` or active-device tracking in App Context |
 | Suppress push if active in-app | Server checks active devices before triggering push |
 | Per-device opt-out | Per-device `userId` lets you target push by device |
 
@@ -118,7 +116,7 @@ Aggregate the per-device entries into a per-user view at the application layer.
 
 | Anti-pattern | Fix |
 |---|---|
-| Random `userId` per session | Use a persistent userId; see [sdk-patterns.md](../../pubnub-app-developer/references/sdk-patterns.md) |
+| Random `userId` per session | Use a persistent userId; see [pubnub-app-developer/SKILL.md](../../pubnub-app-developer/SKILL.md) |
 | Shared `userId` everywhere when device-specific state is needed | Switch to per-device with real-user suffix |
 | Per-device `userId` when "is this user online" is the only question | Use shared; saves cost and complexity |
 | Forgetting cross-device message dedup | Always dedup by `message_id` |
@@ -127,8 +125,8 @@ Aggregate the per-device entries into a per-user view at the application layer.
 
 ## Related Reading
 
-- [presence-events.md](presence-events.md) — `join`, `leave`, `hereNow` semantics
+- [pubnub-presence/SKILL.md](../../pubnub-presence/SKILL.md) — `join`, `leave`, `hereNow` orchestration
 - [dropped-connections.md](dropped-connections.md) — connection state per device
 - [presence-patterns.md](presence-patterns.md) — additional patterns
-- [pubnub-app-developer/references/sdk-patterns.md](../../pubnub-app-developer/references/sdk-patterns.md) — `userId` rules
+- [pubnub-app-developer/SKILL.md](../../pubnub-app-developer/SKILL.md) — `userId` rules
 - [pubnub-reliability/references/dedup-on-merge.md](../../pubnub-reliability/references/dedup-on-merge.md) — message dedup

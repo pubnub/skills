@@ -1,6 +1,3 @@
-<!-- canonical-for: ILLUMINATE_AUTH -->
-<!-- used-by: -->
-
 # Illuminate: Service Integration & API Key Setup
 
 The canonical reference for getting an Illuminate API key and using it correctly.

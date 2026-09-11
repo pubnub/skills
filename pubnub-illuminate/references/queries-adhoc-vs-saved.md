@@ -1,6 +1,3 @@
-<!-- canonical-for: ILLUMINATE_QUERIES -->
-<!-- used-by: -->
-
 # Illuminate Queries: Ad-hoc vs Saved Format
 
 The canonical reference for Illuminate Queries — flexible data pipelines over Business Object fields, including the **critical format difference** between the ad-hoc and saved endpoints.
