@@ -59,64 +59,7 @@ Invoke this skill when:
 
 ### HIPAA-Compliant PubNub Configuration
 
-Every telemedicine application must initialize PubNub with encryption enabled and Access Manager enforcing role-based access. PHI must never traverse unencrypted channels.
-
-```javascript
-import PubNub from 'pubnub';
-
-const pubnub = new PubNub({
-  publishKey: process.env.PUBNUB_PUBLISH_KEY,
-  subscribeKey: process.env.PUBNUB_SUBSCRIBE_KEY,
-  secretKey: process.env.PUBNUB_SECRET_KEY, // Server-side only
-  userId: currentUser.id,
-  cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({
-    cipherKey: process.env.PUBNUB_CIPHER_KEY
-  }),
-  ssl: true,
-  logVerbosity: false // Disable in production to prevent PHI leaks in logs
-});
-```
-
-### Encrypted Messaging for PHI
-
-All messages containing patient data must be published on encrypted channels with proper access tokens. Message payloads should minimize PHI exposure.
-
-```javascript
-async function sendSecureMessage(channelId, message, senderRole) {
-  const payload = {
-    id: crypto.randomUUID(),
-    type: message.type,
-    content: message.content,
-    sender: {
-      id: message.senderId,
-      role: senderRole // 'provider' | 'patient' | 'nurse'
-    },
-    timestamp: new Date().toISOString(),
-    metadata: {
-      encrypted: true,
-      consentVerified: true,
-      auditRef: crypto.randomUUID()
-    }
-  };
-
-  try {
-    const result = await pubnub.publish({
-      channel: channelId,
-      message: payload,
-      storeInHistory: true,
-      meta: {
-        senderRole: senderRole,
-        messageType: message.type
-      }
-    });
-    await logAuditEvent('MESSAGE_SENT', channelId, payload.metadata.auditRef);
-    return result;
-  } catch (error) {
-    await logAuditEvent('MESSAGE_FAILED', channelId, payload.metadata.auditRef);
-    throw new Error(`Secure message delivery failed: ${error.message}`);
-  }
-}
-```
+Initialize with CryptoModule on every PHI client. See [telemedicine-setup.md](references/telemedicine-setup.md) and [encryption.md](../pubnub-security/references/encryption.md). Do not send unencrypted health data.
 
 ### Access Manager for Healthcare Roles
 
@@ -175,7 +118,7 @@ async function grantPatientAccess(patientId, consultationChannelId, ttlMinutes =
 - All channels transmitting PHI must use AES-256 encryption via PubNub's CryptoModule — never send unencrypted health data
 - A signed Business Associate Agreement (BAA) with PubNub must be in place before handling any PHI in production
 - Access Manager tokens must enforce least-privilege and use short TTLs (15-60 minutes) that match consultation session durations
-- Message history retention must comply with organizational and jurisdictional record-keeping requirements (typically 6-10 years for medical records)
+- Message history retention must follow your organizational policy — do not copy statutory year tables into the skill; video signaling uses `storeInHistory: false`
 - Audit logs must capture all message events, access grants, and consent actions for HIPAA compliance verification
 - Never log PHI to console, application logs, or third-party monitoring services — audit logs must store references, not raw patient data
 

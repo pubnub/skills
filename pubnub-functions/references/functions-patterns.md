@@ -382,11 +382,5 @@ export default async (request) => {
 
 ## Best Practices Summary
 
-1. **Use vault for secrets** - Never hardcode API keys
-2. **Implement try/catch** - Always handle errors gracefully
-3. **Use async/await** - Avoid .then()/.catch() chains
-4. **Consider operation limits** - Count xhr / pubnub / kvstore / vault ops per execution; budgets are independent per module (retrieve caps via **`how_to`**)
-5. **Log appropriately** - Use console.log/error for debugging
-6. **Fail gracefully** - Decide whether to block or allow on errors
-7. **Validate inputs** - Check message structure before processing
-8. **Use fire for analytics** - Avoid triggering subscriber delivery
+- Module budgets (xhr / pubnub / kvstore / vault) are **independent** — retrieve caps via **`how_to`**.
+- Use `vault` for secrets; `fire` for analytics so you do not fan out to subscribers.

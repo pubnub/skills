@@ -106,16 +106,7 @@ class PatientQueueManager {
 }
 ```
 
-### Queue Status Transitions
-
-| Current Status | Valid Transitions | Triggered By |
-|---------------|-------------------|--------------|
-| `checked-in` | `waiting`, `cancelled` | Patient completes device check / Patient cancels |
-| `waiting` | `in-consultation`, `no-show`, `cancelled` | Provider starts session / Timeout / Patient cancels |
-| `in-consultation` | `completed`, `waiting` | Provider ends session / Provider returns to queue |
-| `completed` | (terminal) | Consultation finished |
-| `no-show` | `waiting` | Patient returns within grace period |
-| `cancelled` | `checked-in` | Patient reschedules same day |
+Publish queue mutations on `queue.{departmentId}` and persist the list in channel metadata. Product workflow (no-show timers, priority override) lives in your app, not this skill.
 
 ## Real-Time Notifications
 
@@ -188,26 +179,6 @@ class TelemedicineNotificationService {
     });
 
     return payload.id;
-  }
-
-  async scheduleReminder(appointmentId, patientId, appointmentTime, minutesBefore = 15) {
-    const reminderTime = new Date(appointmentTime);
-    reminderTime.setMinutes(reminderTime.getMinutes() - minutesBefore);
-
-    return {
-      appointmentId,
-      patientId,
-      scheduledFor: reminderTime.toISOString(),
-      notification: {
-        type: 'APPOINTMENT_REMINDER',
-        title: 'Upcoming Appointment',
-        body: `Your telemedicine appointment starts in ${minutesBefore} minutes.`,
-        priority: 'high',
-        appointmentId,
-        senderId: 'system',
-        actionUrl: `/appointments/${appointmentId}/join`
-      }
-    };
   }
 }
 ```
@@ -406,33 +377,9 @@ class SecureFileSharing {
 
 ## Best Practices
 
-### Queue Management
-
-- Implement automatic no-show detection with a configurable timeout (typically 10-15 minutes past appointment time)
-- Send progressive notifications as wait times change: initial estimate, updated estimate at 50% wait, and a "provider ready" alert
-- Support priority override for urgent cases that need to bypass the standard queue order
-- Persist queue state to your database in addition to PubNub channel metadata for recovery after outages
-
-### Notifications
-
-- Use PubNub Mobile Push for appointment reminders so notifications reach patients even when the app is backgrounded
-- Include actionable deep links in notifications so patients can join consultations with a single tap
-- Implement notification deduplication to prevent repeated alerts when patients have multiple devices
-
-### Provider Availability
-
-- Combine Presence events with manual status updates for accurate availability -- Presence detects connectivity, manual status reflects clinical availability
-- Implement automatic status transitions: set to `in-consultation` when a session starts and back to `available` when it ends
-- Track provider capacity (concurrent patients) to prevent overloading
-
-### Consent and Compliance
-
-- Always verify consent before establishing a consultation channel -- block channel access if consent is not recorded
-- Record consent events immutably: never delete consent records, only append revocation records
-- Support multiple consent types independently (telehealth, data sharing, recording)
-
-### File Sharing
-
-- Restrict file types to clinical document formats and common image types -- block executable files
-- Scan uploaded files for malware before making them available to recipients
-- Implement automatic file expiry for sensitive documents like prescriptions
+- Persist queue state in App Context **and** your database so recovery is not history-only
+- Use Mobile Push on `notification.{userId}` so reminders arrive when the app is backgrounded
+- Combine Presence occupancy with `setState` so connectivity and clinical availability stay distinct
+- Verify consent in App Context (`consent_{type}`) before granting the consultation channel
+- Record consent via `setUUIDMetadata`; revoke by appending `granted: false`, do not delete the custom field
+- Restrict `sendFile` types on `{consultationId}.files` and audit every share

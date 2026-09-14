@@ -1,24 +1,10 @@
 # Test Pyramid for Real-Time Apps
 
-The canonical reference for testing PubNub features at the right level: unit tests for pure logic, integration tests for round-trips, load tests for fan-out and concurrency.
-
-## Layered Test Strategy
-
-```
-              ┌──────────────────┐
-              │   End-to-end     │   Few; slow; on real devices
-              ├──────────────────┤
-              │     Load         │   Few; pre-launch & pre-large-event
-              ├──────────────────┤
-              │   Integration    │   Medium; CI on a test keyset
-              └──────────────────┘
-              │     Unit         │   Many; fast; no network
-              └──────────────────┘
-```
+The canonical reference for testing PubNub features at the right level: unit (envelope/reducer, no network), integration (test keyset round-trips), load (fan-out), E2E (device reconnect/catch-up).
 
 ## Unit Tests (Many, Fast, No Network)
 
-Test pure logic that doesn't need PubNub:
+Test PubNub-adjacent logic that does not need the network:
 
 | Subject | What to assert |
 |---|---|
@@ -106,7 +92,7 @@ Run before launch and before any [large event](../../pubnub-scale/references/lar
 | Metric | Target |
 |---|---|
 | Sustained publish rate per connection | Per your SDK's documented limit |
-| Subscribe fan-out latency at N concurrent subscribers | p50 < 100ms, p99 < 500ms (typical) |
+| Subscribe fan-out latency at N concurrent subscribers | Measure p50/p99; coordinate targets with Support for large-N |
 | Reconnect storm: thousands of clients reconnecting at once | All reconnect within bounded backoff window without errors |
 | History fetch concurrency | N concurrent `fetchMessages` calls succeed without throttling |
 | [Presence event](../../pubnub-presence/SKILL.md) volume | `join` / `leave` events scale with N |
@@ -146,15 +132,7 @@ async function loadTest(N, channel) {
 
 ## End-to-End Tests (Few, Real Devices, Staging)
 
-For mobile and complex web flows, run a small E2E suite on real devices in a staging environment that mirrors prod configuration:
-
-- App cold start → connect → receive
-- Background → foreground transition → reconnect
-- Network interruption → reconnect → catch-up
-- Long offline → queue drain on reconnect
-- App update flow with [schema version](../../pubnub-reliability/references/schema-versioning.md) bump
-
-E2E tests are slow and brittle. Keep the suite small. Most logic should be covered by unit + integration.
+For mobile and complex web flows, keep a small staging E2E suite on PubNub paths: cold start → subscribe; background/foreground → `PNReconnectedCategory`; disconnect → [catch-up](../../pubnub-history/references/offline-catch-up.md); offline queue drain; [schema_version](../../pubnub-reliability/references/schema-versioning.md) bump after an app update.
 
 ## What Not to Test
 

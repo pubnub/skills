@@ -22,86 +22,15 @@ The canonical reference for deduplicating messages when combining live subscript
 
 **Always prefer `message_id`** when the producer is under your control. See [idempotent-publish.md](idempotent-publish.md) for how to generate it.
 
-## Set vs LRU vs TTL
+## Bound the seen-set
 
-### Small Window: `Set`
+| Window | Structure | When |
+|--------|-----------|------|
+| Single catch-up / short session | In-memory `Set` of `message_id` (or `timetoken`) | Unbounded is fine for minutes |
+| Long client session | Bounded LRU | Cap memory; size to traffic |
+| Long-running service | TTL map | Expire keys older than the offline window |
 
-For short-lived dedup (a single session, a single catch-up pass):
-
-```javascript
-const seen = new Set();
-
-function process(msg) {
-  const key = msg.message_id ?? msg.timetoken;
-  if (seen.has(key)) return;
-  seen.add(key);
-  render(msg);
-}
-```
-
-Simple but unbounded — fine for a session of minutes.
-
-### Bounded: LRU
-
-For longer sessions, cap memory with an LRU:
-
-```javascript
-class LRU {
-  constructor(max = 10_000) {
-    this.max = max;
-    this.map = new Map();
-  }
-  has(key) {
-    if (!this.map.has(key)) return false;
-    const v = this.map.get(key);
-    this.map.delete(key);
-    this.map.set(key, v);   // refresh recency
-    return true;
-  }
-  add(key) {
-    if (this.map.has(key)) this.map.delete(key);
-    this.map.set(key, true);
-    if (this.map.size > this.max) {
-      this.map.delete(this.map.keys().next().value);
-    }
-  }
-}
-
-const seen = new LRU(10_000);
-function process(msg) {
-  const key = msg.message_id ?? msg.timetoken;
-  if (seen.has(key)) return;
-  seen.add(key);
-  render(msg);
-}
-```
-
-10,000 entries covers most chat / consumer apps. Adjust based on traffic.
-
-### Time-Bounded: TTL Map
-
-For long-running services where memory pressure dominates:
-
-```javascript
-class TTLMap {
-  constructor(ttlMs = 24 * 60 * 60 * 1000) {
-    this.ttlMs = ttlMs;
-    this.map = new Map();
-  }
-  has(key) {
-    const exp = this.map.get(key);
-    if (!exp) return false;
-    if (exp < Date.now()) {
-      this.map.delete(key);
-      return false;
-    }
-    return true;
-  }
-  add(key) { this.map.set(key, Date.now() + this.ttlMs); }
-}
-```
-
-Pair with periodic GC if `add` rate is high.
+Do not ship a generic LRU/TTL implementation here — pick a bound and use `message_id`.
 
 ## Live + History Merge
 

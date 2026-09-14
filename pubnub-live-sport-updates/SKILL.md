@@ -59,7 +59,7 @@ Invoke this skill when:
 | Reference | Purpose |
 |-----------|---------|
 | [sport-updates-setup.md](references/sport-updates-setup.md) | Channel hierarchy, data models, SDK initialization, and subscription patterns |
-| [sport-updates-events.md](references/sport-updates-events.md) | Game event types, scoring logic, play-by-play construction, and period tracking |
+| [sport-updates-events.md](references/sport-updates-events.md) | Universal event envelope, sequenced publish, standings channel |
 | [sport-updates-patterns.md](references/sport-updates-patterns.md) | Multi-sport dashboards, fan engagement, push notifications, and scaling strategies |
 
 ## Key Implementation Requirements
@@ -67,15 +67,6 @@ Invoke this skill when:
 ### Broadcast a Score Update
 
 ```javascript
-import PubNub from 'pubnub';
-
-const pubnub = new PubNub({
-  publishKey: 'pub-c-...',
-  subscribeKey: 'sub-c-...',
-  userId: 'score-service'
-});
-
-// Publish a score change to the game channel
 await pubnub.publish({
   channel: 'sports.nfl.games.2024-SEA-SF-week5',
   message: {

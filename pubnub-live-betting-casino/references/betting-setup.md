@@ -2,71 +2,11 @@
 
 ## Overview
 
-This reference covers initializing a PubNub-powered betting platform, designing market channel hierarchies, broadcasting odds in real time, and securing the infrastructure with Access Manager and encryption.
+Market channel hierarchy, odds publish, market suspension, Access Manager, and encryption for wager channels. Pull SDK init from MCP / docs; do not copy install manuals or odds-format math here.
 
-## SDK Installation
+Enable **Access Manager**, **Message Persistence** (bet audit), and **Functions** (wager validation) on the keyset. Initialize with `setToken` plus CryptoModule — retrieve current SDK parameters via MCP.
 
-### JavaScript/TypeScript
-
-```bash
-npm install pubnub
-# or
-yarn add pubnub
-```
-
-### Prerequisites
-
-- Publish and Subscribe keys from PubNub Admin Portal
-- **Access Manager** enabled on the keyset
-- **Message Persistence** enabled for bet audit trails
-- **PubNub Functions** enabled for server-side validation
-
-## Basic Initialization
-
-```javascript
-import PubNub from 'pubnub';
-
-const pubnub = new PubNub({
-  publishKey: 'pub-c-...',
-  subscribeKey: 'sub-c-...',
-  userId: 'betting-client-001',
-  cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({
-    cipherKey: 'your-encryption-key'
-  })
-});
-pubnub.setToken('auth-token-from-server');
-```
-
-## Configuration Options
-
-```javascript
-const pubnub = new PubNub({
-  publishKey: 'pub-c-...',
-  subscribeKey: 'sub-c-...',
-  userId: 'betting-client-001',
-
-  // Security — CryptoModule for AES-256-CBC; setToken() for Access Manager
-  cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({
-    cipherKey: 'your-encryption-key'
-  }),
-
-  // Connection
-  ssl: true,                              // Always use TLS
-  keepAlive: true,                        // Persistent connections
-  presenceTimeout: 120,                   // Detect disconnected users
-
-  // Performance
-  requestMessageCountThreshold: 100,      // Message queue threshold
-  restore: true,                          // Reconnect and catch up
-  autoNetworkDetection: true              // Detect network changes
-});
-```
-
-## Market Channel Design
-
-### Channel Naming Convention
-
-Betting platforms require a structured channel hierarchy to organize events, markets, and selections efficiently.
+## Market channel design
 
 | Channel Pattern | Purpose | Example |
 |----------------|---------|---------|
@@ -77,12 +17,9 @@ Betting platforms require a structured channel hierarchy to organize events, mar
 | `wagers.{userId}.status` | Per-user bet status updates | `wagers.user-789.status` |
 | `balance.{userId}` | Per-user balance updates | `balance.user-789` |
 
-### Channel Groups
-
-Use channel groups to manage subscriptions efficiently when users follow multiple events.
+### Channel groups
 
 ```javascript
-// Server-side: Add market channels to an event channel group
 await pubnub.channelGroups.addChannels({
   channelGroup: 'event-football-12345-markets',
   channels: [
@@ -93,23 +30,14 @@ await pubnub.channelGroups.addChannels({
   ]
 });
 
-// Client-side: Subscribe to all markets for an event
 pubnub.subscribe({
   channelGroups: ['event-football-12345-markets']
 });
 ```
 
-## Odds Broadcasting
+## Odds broadcasting
 
-### Odds Format Types
-
-| Format | Example | Description |
-|--------|---------|-------------|
-| Decimal | 2.50 | Multiply by stake for total return |
-| Fractional | 3/2 | Profit-to-stake ratio (UK standard) |
-| American | +150 | Positive = profit on $100, Negative = stake for $100 profit |
-
-### Publishing Odds Updates
+Publish decimal/fractional/American as operator-supplied fields on the market channel. Do not convert formats in this skill.
 
 ```javascript
 async function publishOdds(eventId, market) {
@@ -122,46 +50,22 @@ async function publishOdds(eventId, market) {
       selections: market.selections.map(sel => ({
         id: sel.id,
         name: sel.name,
-        odds: {
-          decimal: sel.decimal,
-          fractional: sel.fractional,
-          american: sel.american
-        },
-        movement: sel.movement,       // 'up', 'down', or 'stable'
-        status: sel.status             // 'active', 'suspended', 'resulted'
+        odds: sel.odds,
+        movement: sel.movement,
+        status: sel.status
       })),
       suspended: market.suspended,
       inPlay: market.inPlay,
       timestamp: Date.now(),
-      sequence: market.sequenceNumber  // For ordering guarantees
+      sequence: market.sequenceNumber
     }
   });
 }
 ```
 
-### Odds Conversion Utility
+### Market suspension
 
-```javascript
-function decimalToFractional(decimal) {
-  const numerator = Math.round((decimal - 1) * 100);
-  const denominator = 100;
-  const gcd = (a, b) => (b ? gcd(b, a % b) : a);
-  const d = gcd(numerator, denominator);
-  return `${numerator / d}/${denominator / d}`;
-}
-
-function decimalToAmerican(decimal) {
-  if (decimal >= 2.0) {
-    return `+${Math.round((decimal - 1) * 100)}`;
-  } else {
-    return `${Math.round(-100 / (decimal - 1))}`;
-  }
-}
-```
-
-### Market Suspension
-
-When key events happen (goals, red cards, injuries), markets must be suspended before new odds are calculated.
+Suspend before recalculating odds (goals, cards, VAR). Same sequence as [betting-patterns.md](betting-patterns.md) incident handler.
 
 ```javascript
 async function suspendMarket(eventId, marketId, reason) {
@@ -171,26 +75,23 @@ async function suspendMarket(eventId, marketId, reason) {
       type: 'market_suspension',
       marketId: marketId,
       suspended: true,
-      reason: reason,           // 'goal', 'red_card', 'var_review', 'manual'
+      reason: reason,
       timestamp: Date.now()
     }
   });
 }
 
-// Resume market with new odds
 async function resumeMarket(eventId, market) {
   market.suspended = false;
   await publishOdds(eventId, market);
 }
 ```
 
-## Platform Security
+## Access Manager
 
-### Access Manager Configuration
+Odds engines write market channels; clients read markets and write `wagers.submit` only.
 
 ```javascript
-// Server-side: Grant permissions with grantToken (not legacy grant)
-// Odds engine gets publish access to market channels
 const oddsToken = await pubnub.grantToken({
   ttl: 60,
   authorized_uuid: 'odds-engine',
@@ -201,13 +102,14 @@ const oddsToken = await pubnub.grantToken({
   }
 });
 
-// Users get read-only access to market channels + write on wager submit
 const userToken = await pubnub.grantToken({
   ttl: 1440,
   authorized_uuid: userId,
   resources: {
     channels: {
-      'wagers.submit': { write: true }
+      'wagers.submit': { write: true },
+      [`wagers.${userId}.status`]: { read: true },
+      [`balance.${userId}`]: { read: true }
     }
   },
   patterns: {
@@ -218,139 +120,22 @@ const userToken = await pubnub.grantToken({
 });
 ```
 
-### Token-Based Authentication
+Encrypt wager and balance channels with CryptoModule (see [pubnub-security encryption](../../pubnub-security/references/encryption.md)).
 
-```javascript
-async function generateUserToken(userId) {
-  const token = await pubnub.grantToken({
-    ttl: 1440,
-    authorized_uuid: userId,
-    resources: {
-      channels: {
-        [`wagers.${userId}.status`]: { read: true },
-        [`balance.${userId}`]: { read: true },
-        'wagers.submit': { write: true }
-      },
-      channelGroups: {
-        'live-football': { read: true },
-        'live-basketball': { read: true }
-      }
-    }
-  });
-  return token;
-}
+## Regulatory enforcement (PubNub)
 
-// Client receives token and sets it
-const pubnub = new PubNub({
-  subscribeKey: 'sub-c-...',
-  userId: 'user-789'
-});
-pubnub.setToken(authToken);
-```
+Enforce via AM grants + Message Persistence + Before-Publish (self-exclusion / geo in [betting-patterns.md](betting-patterns.md)). Do not copy jurisdiction retention or age-verify primers here.
 
-## Encryption
-
-```javascript
-// All messages on betting channels are encrypted by default
-const pubnub = new PubNub({
-  publishKey: 'pub-c-...',
-  subscribeKey: 'sub-c-...',
-  userId: 'betting-client-001',
-  cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({
-    cipherKey: 'your-encryption-key'
-  })
-});
-```
-
-### Custom Encryption for Sensitive Data
-
-```javascript
-import crypto from 'crypto';
-
-function encryptSensitive(data, key) {
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-  let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
-  encrypted += cipher.final('hex');
-  return { encrypted, iv: iv.toString('hex') };
-}
-```
-
-## Swift Initialization (iOS)
-
-```swift
-import PubNub
-
-let config = PubNubConfiguration(
-  publishKey: "pub-c-...",
-  subscribeKey: "sub-c-...",
-  userId: "ios-user-123",
-  cryptoModule: CryptoModule.aesCbcCryptoModule(with: "encryption-key")
-)
-let pubnub = PubNub(configuration: config)
-pubnub.setToken("auth-token-from-server")
-
-pubnub.subscribe(to: ["event.football.12345.market.match-winner"])
-
-let listener = SubscriptionListener()
-listener.didReceiveMessage = { message in
-  guard let oddsUpdate = message.payload.dictionaryOptional else { return }
-  DispatchQueue.main.async {
-    self.updateOddsDisplay(oddsUpdate)
-  }
-}
-pubnub.add(listener)
-```
-
-## Kotlin Initialization (Android)
-
-```kotlin
-import com.pubnub.api.PubNub
-import com.pubnub.api.PNConfiguration
-import com.pubnub.api.UserId
-
-import com.pubnub.api.crypto.CryptoModule
-
-val config = PNConfiguration(userId = UserId("android-user-456")).apply {
-    publishKey = "pub-c-..."
-    subscribeKey = "sub-c-..."
-    cryptoModule = CryptoModule.createAesCbcCryptoModule("encryption-key")
-    secure = true
-}
-
-val pubnub = PubNub.create(config)
-
-pubnub.subscribe(channels = listOf("event.football.12345.market.match-winner"))
-
-pubnub.addListener(object : SubscribeCallback() {
-    override fun message(pubnub: PubNub, pnMessageResult: PNMessageResult) {
-        val odds = pnMessageResult.message
-        runOnUiThread { updateOddsDisplay(odds) }
-    }
-})
-```
-
-## Regulatory Considerations
-
-- **Audit Trail**: Enable Message Persistence to store all odds changes and wager messages for regulatory review
-- **Geo-Fencing**: Verify user location before granting access to betting channels (see `betting-patterns.md`)
-- **Age Verification**: Require identity verification before issuing Access Manager tokens
-- **Data Retention**: Configure message retention policies to meet jurisdictional requirements (e.g., 5 years in UK)
-- **Responsible Gambling**: Integrate with self-exclusion registries before granting channel access
-
-## Error Handling
+## Error handling
 
 Wire status categories per [dropped-connections](../../pubnub-presence/references/dropped-connections.md) and [backoff-and-jitter](../../pubnub-reliability/references/backoff-and-jitter.md). **Betting-specific on reconnect:** refresh auth token on `PNAccessDeniedCategory`; refresh all odds on `PNReconnectedCategory`; show stale-odds warning on `PNNetworkIssuesCategory`.
 
 ## Best Practices
 
-1. **Use channel groups** to manage market subscriptions instead of subscribing to channels individually
-2. **Include sequence numbers** in odds messages to handle out-of-order delivery
-3. **Always encrypt** wager and balance channels with AES-256 encryption
-4. **Enable Message Persistence** on all channels for regulatory audit trails
-5. **Set short TTLs** on Access Manager tokens and rotate frequently
-6. **Use TLS/SSL** for all connections without exception
-7. **Implement reconnection logic** that refreshes stale odds on network recovery
-8. **Separate read and write permissions** so clients cannot publish to odds channels
-9. **Use presence** to track active users for responsible gambling monitoring
-10. **Design channel names** with consistent dot-separated hierarchies for easy pattern matching
+1. **Channel groups** for market subscriptions instead of per-market subscribe calls.
+2. **Sequence numbers** on odds messages for out-of-order delivery.
+3. **Encrypt** wager and balance channels.
+4. **Message Persistence** on odds and wager channels for audit.
+5. **Short AM TTLs**; clients cannot write odds channels.
+6. **Presence** on market/table channels for occupancy, not as a compliance product.
+7. **Dot-separated channel hierarchies** for AM pattern matching.

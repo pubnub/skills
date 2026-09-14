@@ -1,8 +1,6 @@
 # PubNub Channels — Decisions
 
-## What is a channel?
-
-A channel is a named routing label connecting publishers and subscribers. Channels are created on first use — no pre-registration.
+Channels are created on first use — no pre-registration. Naming and topology below are PubNub-specific.
 
 ## Naming decisions
 
@@ -56,7 +54,5 @@ Default: open publish/subscribe. Restrict via Access Manager grants scoped to sm
 
 ## Best practices
 
-1. Document the naming scheme for the team
-2. Match hierarchy depth to subscription mode (wildcard vs explicit vs groups)
-3. Keep segment literals short where context allows
-4. Plan scale path before committing to a topology — see [scaling-patterns](../../pubnub-scale/references/scaling-patterns.md)
+1. Match hierarchy depth to subscription mode (wildcard vs explicit vs groups)
+2. Plan scale path before committing to a topology — see [scaling-patterns](../../pubnub-scale/references/scaling-patterns.md)

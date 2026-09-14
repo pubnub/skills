@@ -2,9 +2,7 @@
 
 ## Multi-Sport Dashboard
 
-### Dashboard Architecture
-
-A multi-sport dashboard subscribes to multiple league channels simultaneously and renders a unified view of all active games.
+A multi-sport dashboard subscribes to multiple league channels simultaneously. Render scores in the client; do not keep ticker/sparkline UI in this skill.
 
 ```javascript
 class MultiSportDashboard {
@@ -82,59 +80,17 @@ class MultiSportDashboard {
 }
 ```
 
-### React Dashboard Component
-
-```javascript
-import { useState, useEffect } from 'react';
-
-function SportsDashboard({ pubnub, leagues }) {
-  const [dashboard] = useState(() => new MultiSportDashboard(pubnub));
-  const [games, setGames] = useState(new Map());
-
-  useEffect(() => {
-    dashboard.subscribeToLeagues(leagues);
-    const unsub = dashboard.onUpdate((g) => setGames(new Map(g)));
-    return () => { unsub(); dashboard.destroy(); };
-  }, [dashboard, leagues]);
-
-  return (
-    <div className="dashboard">
-      {leagues.map(league => (
-        <LeagueSection key={league} league={league} games={dashboard.getGamesByLeague(league)} />
-      ))}
-    </div>
-  );
-}
-
-function ScoreCard({ game }) {
-  return (
-    <div className={`score-card status-${game.status}`}>
-      <div className="team away">
-        <span className="name">{game.away?.name}</span>
-        <span className="score">{game.away?.score}</span>
-      </div>
-      <div className="team home">
-        <span className="name">{game.home?.name}</span>
-        <span className="score">{game.home?.score}</span>
-      </div>
-      <div className="game-info">
-        <span className="period">{game.period?.label}</span>
-        {game.period?.clock && <span className="clock">{game.period.clock}</span>}
-      </div>
-    </div>
-  );
-}
-```
-
 ## Fan Engagement Features
+
+Use `sports.<league>.fan_<gameId>` (see [channel hierarchy](sport-updates-setup.md)). The samples below use a four-segment `sports.fan.*` path — that **cannot** be covered by a two-dot wildcard; prefer `sports.<league>.fan_<gameId>` for production.
 
 ### Live Polls
 
 ```javascript
 class GamePoll {
-  constructor(pubnub, gameId) {
+  constructor(pubnub, league, gameId) {
     this.pubnub = pubnub;
-    this.channel = `sports.fan.polls.${gameId}`;
+    this.channel = `sports.${league}.fan_${gameId}`;
   }
 
   async createPoll(poll) {
@@ -164,9 +120,9 @@ class GamePoll {
 
 ```javascript
 class GameReactions {
-  constructor(pubnub, gameId) {
+  constructor(pubnub, league, gameId) {
     this.pubnub = pubnub;
-    this.channel = `sports.fan.reactions.${gameId}`;
+    this.channel = `sports.${league}.fan_${gameId}`;
     this.counts = {};
   }
 
@@ -191,22 +147,6 @@ class GameReactions {
     this.pubnub.subscribe({ channels: [this.channel] });
     return () => { this.pubnub.removeListener(listener); this.pubnub.unsubscribe({ channels: [this.channel] }); };
   }
-}
-```
-
-### Live Predictions
-
-```javascript
-async function submitPrediction(pubnub, gameId, userId, prediction) {
-  await pubnub.publish({
-    channel: `sports.fan.predictions.${gameId}`,
-    message: {
-      type: 'prediction',
-      gameId, userId,
-      prediction: { winner: prediction.winner, finalScore: prediction.finalScore, mvp: prediction.mvp },
-      timestamp: Date.now()
-    }
-  });
 }
 ```
 
@@ -241,24 +181,11 @@ class FanPreferences {
   }
 
   subscribeToFavorites() {
-    const channels = this.favorites.flatMap(fav => [
-      `sports.${fav.league}.teams.${fav.teamId}`,
-      `sports.${fav.league}.teams.${fav.teamId}.*`
-    ]);
+    const channels = this.favorites.map(fav => `sports.${fav.league}.team_${fav.teamId}`);
     this.pubnub.subscribe({ channels });
     return channels;
   }
 }
-
-// Usage
-const prefs = new FanPreferences(pubnub, 'fan-user-123');
-await prefs.loadPreferences();
-await prefs.savePreferences([
-  { league: 'nfl', teamId: 'SF' },
-  { league: 'nba', teamId: 'GSW' },
-  { league: 'epl', teamId: 'ARS' }
-]);
-prefs.subscribeToFavorites();
 ```
 
 ## Push Notifications for Key Events
@@ -267,7 +194,7 @@ prefs.subscribeToFavorites();
 
 ```javascript
 async function registerForPush(pubnub, deviceToken, platform, favoriteTeams) {
-  const channels = favoriteTeams.map(fav => `sports.${fav.league}.teams.${fav.teamId}`);
+  const channels = favoriteTeams.map(fav => `sports.${fav.league}.team_${fav.teamId}`);
 
   if (platform === 'ios') {
     await pubnub.push.addChannels({
@@ -285,7 +212,7 @@ async function registerForPush(pubnub, deviceToken, platform, favoriteTeams) {
 ```javascript
 function buildPushPayload(event) {
   const title = `${event.score.away.team} ${event.score.away.score} - ${event.score.home.team} ${event.score.home.score}`;
-  const body = getPushBody(event);
+  const body = event.payload?.description || event.type;
 
   return {
     pn_apns: {
@@ -297,19 +224,6 @@ function buildPushPayload(event) {
       data: { gameId: event.gameId, type: event.type }
     }
   };
-}
-
-function getPushBody(event) {
-  switch (event.type) {
-    case 'goal': return `GOAL! ${event.payload.scorer} scores for ${event.payload.team}`;
-    case 'touchdown': return `TOUCHDOWN! ${event.payload.player} - ${event.payload.description}`;
-    case 'home_run': return `HOME RUN! ${event.payload.batter} - ${event.payload.description}`;
-    case 'game_status':
-      if (event.payload.status === 'final') return 'FINAL';
-      if (event.payload.status === 'in_progress') return 'Game has started!';
-      return event.payload.statusMessage;
-    default: return event.payload?.description || '';
-  }
 }
 
 async function publishWithPush(pubnub, channel, event) {
@@ -328,6 +242,8 @@ async function publishWithPush(pubnub, channel, event) {
 | League score channel | Very High | Low | Score tickers, league overviews |
 | PubNub Functions filter | Medium | Medium (+50ms) | Personalized filtering |
 | Delta compression | Very High | Low | High-frequency stat updates |
+
+Also see [S4 large events](../../pubnub-scale/references/large-events.md) for league-wide fan-out.
 
 ### PubNub Functions for Event Enrichment
 
@@ -387,9 +303,7 @@ async function buildGameSummary(pubnub, league, gameId) {
   const messages = (response.channels[channel] || []).map(e => e.message);
 
   const finalScore = messages.filter(m => m.type === 'score_update').sort((a, b) => b.sequence - a.sequence)[0];
-  const scoringPlays = messages.filter(m =>
-    ['touchdown', 'field_goal', 'goal', 'home_run', 'run_scored', 'three_pointer', 'dunk'].includes(m.type)
-  );
+  const scoringPlays = messages.filter(m => m.type === 'play_by_play' && m.payload?.scoring);
 
   return {
     gameId, league,
