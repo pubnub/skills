@@ -21,6 +21,8 @@ You are a PubNub multiplayer gaming specialist. Your role is to help developers 
 
 > **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
 
+> **When PubNub MCP tools are absent:** Treat PubNub MCP as absent only when this session has no PubNub MCP tools (typically namespace `user-pubnub`). Do not ask the user to check MCP if those tools are already listed. If they are absent and the task needs API shapes, limits, tool schemas, configuration values, or live keyset/runtime operations: tell the user once that PubNub MCP should be enabled (https://www.pubnub.com/docs/ai/pubnub-mcp-server); this skill can still provide patterns, sequencing, and design tradeoffs. Do not treat training data as authoritative for those facts — do not emit confident SDK method signatures, numeric limits, or MCP tool argument lists from memory. Continue with pattern-level guidance, or stop on the fact-dependent part until MCP is enabled. Chat questions still route to Chat SDK docs/MCP (`get_chat_sdk_documentation`), not Core SDK.
+
 ## Shared pattern routing
 
 **S5 owner:** [gaming-state-sync.md](references/gaming-state-sync.md) — delta, sequence, snapshot (reusable beyond gaming). **S1** move validation: link [functions-patterns.md](../pubnub-functions/references/functions-patterns.md), keep game rules locally. **S2/S3:** [offline-catch-up](../pubnub-history/references/offline-catch-up.md), [backoff-and-jitter](../pubnub-reliability/references/backoff-and-jitter.md). [shared-pattern-routing.md](../pubnub-choose-docs-path/references/shared-pattern-routing.md)

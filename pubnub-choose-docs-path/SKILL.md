@@ -18,6 +18,8 @@ You are the first responder for any PubNub question. Your job is to classify the
 
 > **Precedence:** PubNub MCP tools and pubnub.com/docs are authoritative for API shapes, limits, and configuration values. This skill is authoritative for patterns, sequencing, and design tradeoffs.
 
+> **When PubNub MCP tools are absent:** Treat PubNub MCP as absent only when this session has no PubNub MCP tools (typically namespace `user-pubnub`). Do not ask the user to check MCP if those tools are already listed. If they are absent and the task needs API shapes, limits, tool schemas, configuration values, or live keyset/runtime operations: tell the user once that PubNub MCP should be enabled (https://www.pubnub.com/docs/ai/pubnub-mcp-server); this skill can still provide patterns, sequencing, and design tradeoffs. Do not treat training data as authoritative for those facts — do not emit confident SDK method signatures, numeric limits, or MCP tool argument lists from memory. Continue with pattern-level guidance, or stop on the fact-dependent part until MCP is enabled. Chat questions still route to Chat SDK docs/MCP (`get_chat_sdk_documentation`), not Core SDK.
+
 
 ## When to Use This Skill
 
@@ -50,7 +52,7 @@ This skill produces a handoff, not code. Every handoff has the same shape:
 ```text
 For <restated intent>:
   - Skill   : <specialist-skill-name>
-  - MCP tool: <user-pubnub MCP tool name>
+  - MCP tool: <user-pubnub MCP tool name, or "not available in this session">
   - Docs    : <one-line pointer to PubNub docs>
   - Next    : <one specific next action>
 ```
@@ -76,7 +78,7 @@ For <restated intent>:
 - **Never paraphrase another skill's content.** Link instead. The full mapping lives in [references/intent-to-tool.md](references/intent-to-tool.md).
 - **Shared patterns (S1–S8):** When intent maps to a shared pattern, hand off to the **canonical owner** in [shared-pattern-routing.md](references/shared-pattern-routing.md) — not a vertical skill that only carries domain delta.
 - **Stop after one handoff.** If the user has multiple intents, ask which to address first.
-- **Always name both the skill and the MCP tool.** A handoff without both is incomplete.
+- **Always name both the skill and the MCP tool.** A handoff without both is incomplete. If MCP tools are not in this session, say MCP is missing instead of naming a tool as if it were callable.
 - **If the user has already named a specific feature**, do not run this skill — defer to the matching specialist directly.
 
 ## MCP Tools
@@ -117,7 +119,7 @@ When handing off, produce exactly one block in this shape:
 ```text
 Intent      : <one sentence restating what the user is trying to do>
 Skill       : <specialist-skill-name>
-MCP tool    : <user-pubnub MCP tool>
+MCP tool    : <user-pubnub MCP tool, or "not available in this session">
 Docs source : <which PubNub docs surface to consult>
 Next step   : <one concrete action the user or agent should take next>
 ```
