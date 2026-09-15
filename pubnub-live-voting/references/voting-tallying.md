@@ -133,19 +133,9 @@ On reject, set `request.message` to `{ error, detail, timestamp }` and call `req
 | `TOO_MANY_SELECTIONS` | 400 | Exceeded max selections for multi-choice |
 | `EMPTY_VOTE` | 400 | No options selected |
 
-## Tally Strategies
+## Weighted tally
 
-| Strategy | Description | When to Use | Complexity |
-|----------|-------------|-------------|------------|
-| Simple count | Increment counter per option | Single-choice polls | Low |
-| Weighted count | Multiply by voter weight | Stakeholder voting | Medium |
-| Ranked aggregation | Store ranking, compute Borda/IRV offline | Elections | High |
-| Running average | Maintain sum and count | Star ratings, NPS | Medium |
-| Approval count | Increment for each selected option | Multi-select polls | Low |
-
-### Weighted tally
-
-Use `incrCounter(..., weight)` on option and total counters after duplicate-voter check — same [Pattern 1](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter) pipeline with a non-1 increment.
+Use `incrCounter(..., weight)` on option and total counters after duplicate-voter check — same [Pattern 1](../../pubnub-functions/references/functions-patterns.md#pattern-1-distributed-counter) pipeline with a non-1 increment. Ranked/IRV aggregation is operator-side, not a PubNub tally strategy.
 
 ## Best Practices
 

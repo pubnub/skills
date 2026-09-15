@@ -1,49 +1,12 @@
 # PubNub Multiplayer Gaming Setup
 
-## Installation
-
-### JavaScript/TypeScript
-
-```bash
-npm install pubnub
-# or
-yarn add pubnub
-```
-
-### Swift (iOS)
-
-```swift
-// Package.swift or CocoaPods
-// SPM: https://github.com/pubnub/swift
-// CocoaPods: pod 'PubNubSwift', '~> 7.0'
-```
-
-### Kotlin (Android)
-
-```kotlin
-// build.gradle
-implementation("com.pubnub:pubnub-kotlin:9.0.0")
-```
-
-### Prerequisites
+## Prerequisites
 
 - PubNub account with Publish and Subscribe keys from the Admin Portal
 - **Presence** feature enabled on your keyset
 - **App Context** (Objects) enabled for storing room and player metadata
 - **Message Persistence** enabled if you need game state recovery
 - Optionally: **PubNub Functions** enabled for server-side validation
-
-## Basic Initialization
-
-```javascript
-import PubNub from 'pubnub';
-
-const pubnub = new PubNub({
-  publishKey: 'pub-c-...',
-  subscribeKey: 'sub-c-...',
-  userId: 'player-unique-id'
-});
-```
 
 ## Gaming-Optimized Configuration
 
@@ -282,7 +245,6 @@ async function startGame(pubnub, roomId, hostPlayerId) {
     message: {
       type: 'game-start',
       players,
-      initialState: buildInitialGameState(players, roomInfo.gameType),
       timestamp: Date.now()
     }
   });
@@ -297,21 +259,6 @@ async function startGame(pubnub, roomId, hostPlayerId) {
   });
 
   return { players, roomInfo };
-}
-
-function buildInitialGameState(players, gameType) {
-  return {
-    players: players.map((id, index) => ({
-      id,
-      index,
-      score: 0,
-      isActive: true
-    })),
-    turn: 0,
-    round: 1,
-    gameType,
-    startedAt: Date.now()
-  };
 }
 ```
 
@@ -397,8 +344,6 @@ function setupLobby(pubnub, gameType) {
           }
           break;
       }
-
-      onLobbyUpdate(Array.from(availableRooms.values()));
     }
   });
 
@@ -452,7 +397,6 @@ function setupPresenceHandling(pubnub, roomId, callbacks) {
           break;
 
         case 'timeout':
-          // Player lost connection
           callbacks.onPlayerDisconnect?.(event.uuid);
           break;
 
@@ -467,6 +411,8 @@ function setupPresenceHandling(pubnub, roomId, callbacks) {
 
 ### Handling Disconnections
 
+Publish room events so remaining clients can pause, wait, or request a snapshot (see [gaming-state-sync.md](gaming-state-sync.md)).
+
 ```javascript
 class PlayerConnectionManager {
   constructor(pubnub, roomId, options = {}) {
@@ -477,9 +423,6 @@ class PlayerConnectionManager {
   }
 
   handleDisconnect(playerId) {
-    console.log(`Player ${playerId} disconnected`);
-
-    // Start a reconnection timer
     const timer = setTimeout(() => {
       this.handleAbandon(playerId);
     }, this.reconnectTimeout);
@@ -489,7 +432,6 @@ class PlayerConnectionManager {
       timer
     });
 
-    // Notify other players
     this.pubnub.publish({
       channel: `game.${this.roomId}`,
       message: {
@@ -554,6 +496,4 @@ Wire PubNub status categories per [backoff-and-jitter](../../pubnub-reliability/
 
 8. **Use channel groups** when a player needs to subscribe to many channels simultaneously (e.g., multiple game lobbies), staying within the subscribe call limits.
 
-9. **Test with realistic latency** -- PubNub delivers messages in ~30-100ms globally, but always test your game logic under simulated latency conditions.
-
-10. **Rate limit publishing** on the client side to prevent flooding the game state channel; batch frequent updates into fewer messages where possible.
+9. **Rate limit publishing** on the client side to prevent flooding the game state channel; batch frequent updates into fewer messages where possible.

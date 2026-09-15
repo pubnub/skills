@@ -6,10 +6,7 @@ The canonical reference for rotating PubNub publish, subscribe, and secret keys,
 
 ## Why Rotate
 
-- Compromise: a developer leaks a key on a PR, a CI log exposes it, or a build artifact contains it.
-- Personnel change: an engineer with secret-key access leaves.
-- Compliance: [SOC 2, HIPAA](../../pubnub-security/references/compliance-reports.md), or your own policy mandates periodic rotation.
-- Routine hygiene: rotate at least annually for production keysets even without a known incident.
+Rotate on leak, personnel change with secret-key access, or compliance ([SOC 2 / HIPAA](../../pubnub-security/references/compliance-reports.md)). Subscribe-key rotation is a **keyset migration**, not a drop-in rotate.
 
 ## Key-Type Rotation Difficulty
 
@@ -68,57 +65,7 @@ Subscribe-key rotation is effectively a keyset migration because the subscribe k
 
 ## Secrets Storage
 
-Keys belong in one of:
-
-- **Secrets manager**: AWS Secrets Manager, HashiCorp Vault, Doppler, Azure Key Vault, GCP Secret Manager
-- **Per-environment env vars** loaded from CI/CD secret store at deploy time
-- **Encrypted config files** with KMS-managed decryption keys
-
-Never:
-
-- Plain text in source control (even private repos)
-- Slack messages, ticket comments, design docs
-- Local `.env` files committed to the repo
-- CI logs (mask via secret-handling features in your CI provider)
-- Docker image layers (use runtime secret injection, not build-time)
-
-## Source Control Hygiene
-
-### `.gitignore` (minimum)
-
-```gitignore
-.env
-.env.local
-.env.*.local
-*.pem
-*.key
-secrets/
-```
-
-### Pre-commit Hooks
-
-Use a tool that scans for high-entropy strings or known PubNub key prefixes:
-
-```bash
-# git pre-commit hook (basic example)
-if git diff --cached | grep -qE '(pub-c-|sub-c-|sec-c-)[a-f0-9-]{36}'; then
-    echo "ERROR: PubNub key detected in staged changes."
-    echo "Move it to a secrets manager and unstage the file."
-    exit 1
-fi
-```
-
-For real-world use prefer a tool like `gitleaks`, `truffleHog`, or `detect-secrets` with a custom rule for the PubNub key prefixes.
-
-### Repo-Wide Audit
-
-Periodically scan the entire repo history (not just current files) for past leaks:
-
-```bash
-gitleaks detect --source . --no-git -v
-```
-
-If a key is found in history: rotate it immediately, then strip from history with `git filter-repo` or treat the repo as compromised.
+Keep PubNub keys in a server-side secret store or CI-injected env vars. Never commit `pub-c-` / `sub-c-` / `sec-c-` values. A pre-commit grep on those prefixes is enough; if history already leaked a key, **rotate immediately** (subscribe-key leak = keyset migration above).
 
 ## Rotation Cadence
 

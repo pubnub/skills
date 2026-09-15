@@ -1,25 +1,8 @@
 # PubNub Live Sport Updates Setup
 
-## Installation
-
-### JavaScript/TypeScript
-
-```bash
-npm install pubnub
-# or
-yarn add pubnub
-```
-
-### Prerequisites
-
-- Node.js >= 16.0.0
-- Publish and Subscribe keys from PubNub Admin Portal
-- **Message Persistence** enabled for historical score lookups
-- **Stream Controller** enabled for wildcard subscriptions
-
 ## SDK Initialization
 
-### Score Ingestion Service (Server-Side)
+One JavaScript publisher is enough here. Pull other-language constructors via **`get_sdk_documentation`**.
 
 ```javascript
 import PubNub from 'pubnub';
@@ -32,48 +15,7 @@ const pubnub = new PubNub({
 });
 ```
 
-### Client Application (Browser/Mobile)
-
-```javascript
-import PubNub from 'pubnub';
-
-const pubnub = new PubNub({
-  subscribeKey: 'sub-c-...',
-  userId: `fan-${currentUserId}`,
-  restore: true,           // Reconnect and catch up on missed messages
-  autoNetworkDetection: true,
-  heartbeatInterval: 30
-});
-```
-
-### React Integration
-
-```javascript
-import { useState, useEffect } from 'react';
-import PubNub from 'pubnub';
-
-function SportsApp({ userId }) {
-  const [pubnub, setPubnub] = useState(null);
-
-  useEffect(() => {
-    const pn = new PubNub({
-      subscribeKey: process.env.REACT_APP_PUBNUB_SUB_KEY,
-      userId: `fan-${userId}`,
-      restore: true,
-      autoNetworkDetection: true
-    });
-    setPubnub(pn);
-
-    return () => {
-      pn.unsubscribeAll();
-      pn.destroy();
-    };
-  }, [userId]);
-
-  if (!pubnub) return <div>Loading...</div>;
-  return <ScoreboardDashboard pubnub={pubnub} />;
-}
-```
+Clients should omit `secretKey`, set `restore: true`, and treat themselves as subscribe-only.
 
 ## Channel Hierarchy
 
@@ -151,6 +93,8 @@ pubnub.subscribe({
 
 ### Universal Game State
 
+Keep a compact envelope. Do not embed sport-rule encyclopedias (down-and-distance, inning lines, goal lists) in the skill — put those fields in your ingestion mapper.
+
 ```javascript
 const gameState = {
   gameId: 'string',           // Unique game identifier
@@ -162,63 +106,13 @@ const gameState = {
   away: { team: 'string', name: 'string', score: 'number' },
   period: {
     current: 'number',        // Period number (1-based)
-    label: 'string',          // Display label (Q1, 1st Half, Top 3rd)
-    clock: 'string'           // Game clock (mm:ss or empty)
+    label: 'string',          // Display label from the provider feed
+    clock: 'string'           // Game clock from the provider feed
   }
 };
 ```
 
-### NFL Score Model
-
-```javascript
-const nflScore = {
-  sport: 'nfl',
-  period: { current: 3, label: 'Q3', clock: '07:42' },
-  home: { team: 'SF', name: '49ers', score: 21 },
-  away: { team: 'SEA', name: 'Seahawks', score: 14 },
-  scoring: { home: { q1: 7, q2: 7, q3: 7, q4: 0 }, away: { q1: 0, q2: 7, q3: 7, q4: 0 } },
-  possession: 'SF',
-  down: 2,
-  yardsToGo: 7,
-  yardLine: 'SEA 35'
-};
-```
-
-### Soccer Score Model
-
-```javascript
-const soccerScore = {
-  sport: 'epl',
-  period: { current: 2, label: '2nd Half', clock: '72:15' },
-  home: { team: 'ARS', name: 'Arsenal', score: 2 },
-  away: { team: 'CHE', name: 'Chelsea', score: 1 },
-  goals: [
-    { team: 'ARS', player: 'B. Saka', minute: 23, type: 'open_play' },
-    { team: 'CHE', player: 'C. Palmer', minute: 41, type: 'penalty' },
-    { team: 'ARS', player: 'K. Havertz', minute: 68, type: 'header' }
-  ],
-  cards: { home: { yellow: 1, red: 0 }, away: { yellow: 2, red: 0 } }
-};
-```
-
-### MLB Score Model
-
-```javascript
-const mlbScore = {
-  sport: 'mlb',
-  period: { current: 7, label: 'Bot 7th', clock: '' },
-  home: { team: 'NYY', name: 'Yankees', score: 5 },
-  away: { team: 'BOS', name: 'Red Sox', score: 3 },
-  inningScores: {
-    home: [0, 1, 0, 2, 0, 0, 2, null, null],
-    away: [1, 0, 0, 0, 2, 0, 0, null, null]
-  },
-  count: { balls: 2, strikes: 1, outs: 1 },
-  bases: { first: true, second: false, third: true }
-};
-```
-
-## Data Ingestion from Sports Providers
+## Publishing Score Updates
 
 ```javascript
 class SportDataIngestionService {
@@ -243,7 +137,6 @@ class SportDataIngestionService {
       message: { type: 'score_update', sequence, timestamp: Date.now(), ...game }
     });
 
-    // Also publish summary to league scores channel
     await this.pubnub.publish({
       channel: `sports.${game.league}.scores`,
       message: {
@@ -255,23 +148,6 @@ class SportDataIngestionService {
         period: game.period
       }
     });
-  }
-
-  normalizeEvent(rawEvent) {
-    return {
-      gameId: rawEvent.id,
-      league: rawEvent.sport_code.toLowerCase(),
-      sport: rawEvent.sport_code.toLowerCase(),
-      status: this.mapStatus(rawEvent.state),
-      home: { team: rawEvent.home_team.abbreviation, name: rawEvent.home_team.name, score: rawEvent.home_score },
-      away: { team: rawEvent.away_team.abbreviation, name: rawEvent.away_team.name, score: rawEvent.away_score },
-      period: { current: rawEvent.period, label: rawEvent.period_label, clock: rawEvent.clock || '' }
-    };
-  }
-
-  mapStatus(providerStatus) {
-    const statusMap = { 'scheduled': 'pre_game', 'in_progress': 'in_progress', 'halftime': 'halftime', 'delayed': 'delayed', 'final': 'final' };
-    return statusMap[providerStatus] || 'unknown';
   }
 }
 ```
@@ -313,32 +189,6 @@ function subscribeToGame(pubnub, league, gameId, handlers) {
 ### Reconnection and Catch-Up
 
 Follow [offline catch-up](../../pubnub-history/references/offline-catch-up.md) with [dedup-on-merge](../../pubnub-reliability/references/dedup-on-merge.md). **Sport-specific:** after reconnect, fetch missed messages for the game channels and dispatch `score_update` / `play_by_play` / `game_status` to the same handlers — dedupe by `gameId + sequence`.
-
-## Mobile SDK Initialization
-
-### Swift (iOS)
-
-```swift
-import PubNub
-
-let config = PubNubConfiguration(
-    publishKey: "pub-c-...",
-    subscribeKey: "sub-c-...",
-    userId: "fan-ios-\(userId)"
-)
-let pubnub = PubNub(configuration: config)
-pubnub.subscribe(to: ["sports.nfl.*"])
-```
-
-### Kotlin (Android)
-
-```kotlin
-val config = PNConfiguration(UserId("fan-android-$userId")).apply {
-    subscribeKey = "sub-c-..."
-}
-val pubnub = PubNub.create(config)
-pubnub.subscribe(channels = listOf("sports.nfl.*"))
-```
 
 ## Required Keyset Settings
 

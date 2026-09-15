@@ -1,142 +1,15 @@
 # PubNub Delivery Patterns
 
-This reference covers advanced delivery patterns including dispatch coordination, driver-customer chat, fleet management dashboards, privacy controls, multi-stop optimization, and proof of delivery workflows built on PubNub.
+This reference covers dispatch coordination, driver-customer chat, fleet dashboards, and location privacy on PubNub.
 
 ## Dispatch Coordination
 
-Dispatch is the process of matching incoming orders with available drivers. The strategy you choose affects delivery speed, driver utilization, and customer satisfaction.
-
-### Dispatch Strategies
-
-| Strategy | How It Works | Best For | Tradeoffs |
-|----------|-------------|----------|-----------|
-| Nearest driver | Assign the closest available driver by straight-line distance | Low-volume, small coverage area | Does not account for traffic or route distance |
-| Broadcast and claim | Broadcast the order to nearby drivers; first to accept wins | High driver density, gig workforce | May cause contention; requires timeout handling |
-| Round robin | Rotate assignments evenly across available drivers | Fairness-focused fleets | Ignores proximity; may increase delivery times |
-| Score-based | Rank drivers by composite score (distance, rating, load) | High-volume operations | More complex to implement and tune |
-| Zone-based | Pre-assign drivers to geographic zones; route orders to zone driver | Predictable coverage areas | Less flexible for cross-zone deliveries |
-
-### Nearest Driver Dispatch
-
-```javascript
-class DispatchSystem {
-  constructor(pubnub) {
-    this.pubnub = pubnub;
-    this.availableDrivers = new Map();
-
-    // Listen for driver presence and location
-    this.pubnub.addListener({
-      presence: (event) => this.handlePresence(event),
-      message: (event) => this.handleDriverLocation(event)
-    });
-
-    this.pubnub.subscribe({
-      channels: ['dispatch.new-orders'],
-      channelGroups: ['fleet-main-locations'],
-      withPresence: true
-    });
-  }
-
-  handlePresence(event) {
-    if (event.action === 'join' || event.action === 'state-change') {
-      if (event.state && event.state.status === 'available') {
-        this.availableDrivers.set(event.uuid, {
-          status: 'available',
-          ...event.state
-        });
-      }
-    } else if (event.action === 'leave' || event.action === 'timeout') {
-      this.availableDrivers.delete(event.uuid);
-    }
-  }
-
-  handleDriverLocation(event) {
-    if (event.channel.startsWith('driver.') && event.channel.endsWith('.location')) {
-      const driver = this.availableDrivers.get(event.message.driverId);
-      if (driver) {
-        driver.lat = event.message.lat;
-        driver.lng = event.message.lng;
-        driver.lastUpdate = event.message.timestamp;
-      }
-    }
-  }
-
-  findNearestDriver(pickupLat, pickupLng, maxDistanceKm = 10) {
-    let nearest = null;
-    let minDistance = Infinity;
-
-    for (const [driverId, driver] of this.availableDrivers) {
-      if (driver.status !== 'available' || !driver.lat) continue;
-
-      const distance = haversineDistance(
-        pickupLat, pickupLng, driver.lat, driver.lng
-      );
-
-      if (distance < minDistance && distance <= maxDistanceKm * 1000) {
-        minDistance = distance;
-        nearest = { driverId, distance, ...driver };
-      }
-    }
-
-    return nearest;
-  }
-
-  async assignOrder(orderId, pickupLat, pickupLng, dropoffLat, dropoffLng) {
-    const driver = this.findNearestDriver(pickupLat, pickupLng);
-
-    if (!driver) {
-      console.log(`No available drivers for order ${orderId}`);
-      await this.scheduleRetry(orderId, pickupLat, pickupLng, dropoffLat, dropoffLng);
-      return null;
-    }
-
-    // Mark driver as busy
-    driver.status = 'assigned';
-    this.availableDrivers.delete(driver.driverId);
-
-    // Send assignment to the driver
-    await this.pubnub.publish({
-      channel: `driver.${driver.driverId}.commands`,
-      message: {
-        type: 'new-assignment',
-        orderId,
-        pickup: { lat: pickupLat, lng: pickupLng },
-        dropoff: { lat: dropoffLat, lng: dropoffLng },
-        estimatedPickupDistance: Math.round(driver.distance),
-        timestamp: Date.now()
-      }
-    });
-
-    // Publish assignment confirmation
-    await this.pubnub.publish({
-      channel: `order.${orderId}.status`,
-      message: {
-        orderId,
-        status: 'dispatched',
-        driverId: driver.driverId,
-        estimatedPickupTime: Math.round(driver.distance / 8.3) * 1000, // ~30 km/h avg
-        timestamp: Date.now()
-      },
-      storeInHistory: true
-    });
-
-    return driver;
-  }
-
-  async scheduleRetry(orderId, pickupLat, pickupLng, dropoffLat, dropoffLng) {
-    // Retry after 30 seconds
-    setTimeout(() => {
-      this.assignOrder(orderId, pickupLat, pickupLng, dropoffLat, dropoffLng);
-    }, 30000);
-  }
-}
-```
+Match incoming orders with available drivers using presence on the fleet channel group plus publishes to `driver.{id}.commands` and `order.{id}.status`.
 
 ### Broadcast and Claim Dispatch
 
 ```javascript
 async function broadcastOrder(pubnub, orderId, pickupLocation, orderDetails) {
-  // Broadcast to all available drivers in the area
   await pubnub.publish({
     channel: 'dispatch.available-orders',
     message: {
@@ -145,13 +18,12 @@ async function broadcastOrder(pubnub, orderId, pickupLocation, orderDetails) {
       pickup: pickupLocation,
       estimatedPayout: orderDetails.driverPayout,
       estimatedDistance: orderDetails.distance,
-      expiresAt: Date.now() + 60000, // 60 second window to claim
+      expiresAt: Date.now() + 60000,
       timestamp: Date.now()
     }
   });
 }
 
-// Driver claims an order
 async function claimOrder(pubnub, orderId, driverId) {
   await pubnub.publish({
     channel: 'dispatch.order-claims',
@@ -185,6 +57,8 @@ async function claimOrder(pubnub, orderId, driverId) {
 // };
 ```
 
+Assignment after a successful claim: publish `dispatched` on `order.{orderId}.status` (`storeInHistory: true`) and `new-assignment` on `driver.{driverId}.commands`. Track availability via presence `join` / `leave` / `timeout` and `setState({ status: 'available' })`. If you pick a driver from last-known coordinates, do that in your dispatch service — PubNub only carries the location messages and the assignment publishes.
+
 ## Driver-Customer Real-Time Chat
 
 Allow drivers and customers to communicate through an order-scoped chat channel, avoiding the need to share phone numbers.
@@ -216,7 +90,6 @@ class DeliveryChat {
       }
     });
 
-    // Load recent message history
     this.loadHistory(onMessageReceived);
   }
 
@@ -247,21 +120,6 @@ class DeliveryChat {
       },
       storeInHistory: true
     });
-  }
-
-  async sendQuickReply(templateKey) {
-    const templates = {
-      'running-late': "I'm running a few minutes late. Sorry for the delay!",
-      'at-door': "I'm at your door with your order.",
-      'cant-find': "I'm having trouble finding your location. Can you share more details?",
-      'left-at-door': "I've left your order at the door. Enjoy!",
-      'on-my-way': "On my way to pick up your order!"
-    };
-
-    const text = templates[templateKey];
-    if (text) {
-      await this.sendMessage(text);
-    }
   }
 
   stop() {
@@ -343,7 +201,6 @@ class FleetDashboard {
       timestamp: statusMessage.timestamp
     });
 
-    // Clean up delivered or cancelled orders after a delay
     if (statusMessage.status === 'delivered' || statusMessage.status === 'cancelled') {
       setTimeout(() => {
         this.activeOrders.delete(statusMessage.orderId);
@@ -362,28 +219,13 @@ class FleetDashboard {
     };
   }
 
-  getDriverMetrics() {
-    const metrics = {
-      available: 0,
-      assigned: 0,
-      enRoute: 0,
-      offline: 0
-    };
-
-    for (const driver of this.drivers.values()) {
-      if (!driver.online) metrics.offline++;
-      else if (!driver.currentOrderId) metrics.available++;
-      else metrics.assigned++;
-    }
-
-    return metrics;
-  }
-
   stop() {
     this.pubnub.unsubscribeAll();
   }
 }
 ```
+
+For more than ~500 concurrent location streams, aggregate server-side and publish a snapshot to `fleet.{fleetId}.positions` instead of subscribing the dashboard to every driver channel.
 
 ## Privacy Controls
 
@@ -407,322 +249,73 @@ export default async (request) => {
   const kvstore = require('kvstore');
   const pubnub = require('pubnub');
   const message = request.message;
-  const driverId = message.driverId;
-  const delivery = await kvstore.get(`driver-delivery-${driverId}`);
-    if (!delivery) return request.ok();
+  const delivery = await kvstore.get(`driver-delivery-${message.driverId}`);
+  if (!delivery) return request.ok();
 
-    const distToCustomer = haversine(
-      message.lat, message.lng,
-      delivery.dropoffLat, delivery.dropoffLng
-    );
+  const sanitizedLocation = sanitizeForCustomer(message, delivery);
 
-    let sanitizedLocation;
-
-    if (distToCustomer < 1000) {
-      // Within 1km: show exact location
-      sanitizedLocation = {
-        lat: message.lat,
-        lng: message.lng,
-        precision: 'exact'
-      };
-    } else if (distToCustomer < 3000) {
-      // Within 3km: round to ~100m
-      sanitizedLocation = {
-        lat: Math.round(message.lat * 1000) / 1000,
-        lng: Math.round(message.lng * 1000) / 1000,
-        precision: 'approximate'
-      };
-    } else {
-      // Far away: round to ~1km
-      sanitizedLocation = {
-        lat: Math.round(message.lat * 100) / 100,
-        lng: Math.round(message.lng * 100) / 100,
-        precision: 'general'
-      };
+  return pubnub.publish({
+    channel: `order.${delivery.orderId}.driver-location`,
+    message: {
+      ...sanitizedLocation,
+      heading: message.heading,
+      timestamp: message.timestamp,
+      driverId: message.driverId
     }
-
-    return pubnub.publish({
-      channel: `order.${delivery.orderId}.driver-location`,
-      message: {
-        ...sanitizedLocation,
-        heading: message.heading,
-        timestamp: message.timestamp,
-        driverId: driverId
-      }
-    });
-};
-
-  function haversine(lat1, lng1, lat2, lng2) {
-    const R = 6371e3;
-    const toRad = (d) => (d * Math.PI) / 180;
-    const dLat = toRad(lat2 - lat1);
-    const dLng = toRad(lng2 - lng1);
-    const a = Math.sin(dLat / 2) ** 2 +
-              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-              Math.sin(dLng / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
+  });
 };
 ```
+
+Round coordinates by distance-to-dropoff in `sanitizeForCustomer` (exact / ~100m / ~1km). Grant customers AM read on `order.{orderId}.driver-location`, not raw `driver.{id}.location`.
 
 ### Customer Subscribes to Sanitized Channel
 
 ```javascript
-// Instead of subscribing to the raw driver location channel,
-// subscribe to the privacy-filtered channel
 function subscribeToSafeDriverLocation(pubnub, orderId) {
   pubnub.subscribe({
     channels: [`order.${orderId}.driver-location`]
   });
-
-  pubnub.addListener({
-    message: (event) => {
-      if (event.channel === `order.${orderId}.driver-location`) {
-        const loc = event.message;
-
-        if (loc.precision === 'exact') {
-          updateDriverMarker(loc.lat, loc.lng);
-        } else if (loc.precision === 'approximate') {
-          updateDriverArea(loc.lat, loc.lng, 200); // Show a 200m radius circle
-        } else {
-          updateDriverArea(loc.lat, loc.lng, 1000); // Show a 1km radius circle
-        }
-      }
-    }
-  });
 }
 ```
 
-## Multi-Stop Delivery Optimization
+## Multi-Stop Delivery
 
-For drivers handling multiple deliveries in a single trip, manage the route and status for each stop independently.
-
-### Multi-Stop Order Management
-
-```javascript
-class MultiStopDelivery {
-  constructor(pubnub, driverId) {
-    this.pubnub = pubnub;
-    this.driverId = driverId;
-    this.stops = []; // Ordered list of deliveries
-  }
-
-  addStop(orderId, address, lat, lng, priority) {
-    this.stops.push({
-      orderId,
-      address,
-      lat,
-      lng,
-      priority,
-      status: 'pending'
-    });
-    this.optimizeRoute();
-  }
-
-  optimizeRoute() {
-    // Simple nearest-neighbor optimization
-    if (this.stops.length < 2) return;
-
-    const pending = this.stops.filter((s) => s.status === 'pending');
-    if (pending.length < 2) return;
-
-    // Sort by priority first, then optimize within same priority
-    pending.sort((a, b) => {
-      if (a.priority !== b.priority) return a.priority - b.priority;
-      return 0; // Keep original order for same priority
-    });
-  }
-
-  async completeStop(orderId) {
-    const stop = this.stops.find((s) => s.orderId === orderId);
-    if (!stop) return;
-
-    stop.status = 'delivered';
-
-    // Publish delivery confirmation for this specific order
-    await this.pubnub.publish({
-      channel: `order.${orderId}.status`,
-      message: {
-        orderId,
-        status: 'delivered',
-        driverId: this.driverId,
-        timestamp: Date.now(),
-        remainingStops: this.stops.filter((s) => s.status === 'pending').length
-      },
-      storeInHistory: true
-    });
-
-    // Notify dispatch of progress
-    await this.pubnub.publish({
-      channel: 'dispatch.status-updates',
-      message: {
-        type: 'multi-stop-progress',
-        driverId: this.driverId,
-        completedOrderId: orderId,
-        remainingStops: this.stops.filter((s) => s.status === 'pending').length,
-        timestamp: Date.now()
-      }
-    });
-  }
-
-  getNextStop() {
-    return this.stops.find((s) => s.status === 'pending') || null;
-  }
-
-  getRemainingStops() {
-    return this.stops.filter((s) => s.status === 'pending');
-  }
-}
-```
+Keep each stop on its own `order.{orderId}.status` channel. When a stop completes, publish `delivered` with `remainingStops` and a `multi-stop-progress` event on `dispatch.status-updates`. Do not put route-optimization logic in PubNub.
 
 ## Proof of Delivery
 
-Capture delivery confirmation through photos, signatures, or PIN codes, and publish the proof to the order channel.
-
-### Photo Proof of Delivery
+Publish proof **on the order status channel** with `status: 'delivered'` and `storeInHistory: true`. Put a storage URL or verification flag in `proof` — do not send photo/signature bytes through PubNub.
 
 ```javascript
-async function submitPhotoProof(pubnub, orderId, driverId, photoBase64) {
-  // Store the photo in your backend first, then publish the URL
-  const photoUrl = await uploadPhotoToStorage(photoBase64, orderId);
-
-  await pubnub.publish({
-    channel: `order.${orderId}.status`,
-    message: {
-      orderId,
-      status: 'delivered',
-      driverId,
-      proof: {
-        type: 'photo',
-        url: photoUrl,
-        capturedAt: Date.now()
-      },
-      timestamp: Date.now()
+await pubnub.publish({
+  channel: `order.${orderId}.status`,
+  message: {
+    orderId,
+    status: 'delivered',
+    driverId,
+    proof: {
+      type: 'photo', // or 'pin' | 'signature'
+      url: photoUrl,
+      capturedAt: Date.now()
     },
-    storeInHistory: true
-  });
-}
+    timestamp: Date.now()
+  },
+  storeInHistory: true
+});
 ```
 
-### PIN Code Verification
-
-```javascript
-async function verifyDeliveryPIN(pubnub, orderId, driverId, enteredPin) {
-  // Validate PIN against the stored value (via your backend or PubNub Function)
-  const response = await fetch('/api/verify-delivery-pin', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ orderId, pin: enteredPin })
-  });
-
-  const result = await response.json();
-
-  if (result.valid) {
-    await pubnub.publish({
-      channel: `order.${orderId}.status`,
-      message: {
-        orderId,
-        status: 'delivered',
-        driverId,
-        proof: {
-          type: 'pin',
-          verified: true,
-          verifiedAt: Date.now()
-        },
-        timestamp: Date.now()
-      },
-      storeInHistory: true
-    });
-    return true;
-  }
-
-  return false;
-}
-```
-
-### Signature Capture
-
-```javascript
-async function submitSignatureProof(pubnub, orderId, driverId, signatureData) {
-  // signatureData is a base64-encoded image from a canvas signature pad
-  const signatureUrl = await uploadSignatureToStorage(signatureData, orderId);
-
-  await pubnub.publish({
-    channel: `order.${orderId}.status`,
-    message: {
-      orderId,
-      status: 'delivered',
-      driverId,
-      proof: {
-        type: 'signature',
-        url: signatureUrl,
-        signedBy: 'recipient',
-        capturedAt: Date.now()
-      },
-      timestamp: Date.now()
-    },
-    storeInHistory: true
-  });
-}
-```
-
-### Leave-at-Door with Photo
-
-```javascript
-async function leaveAtDoor(pubnub, orderId, driverId, photoBase64, note) {
-  const photoUrl = await uploadPhotoToStorage(photoBase64, orderId);
-
-  await pubnub.publish({
-    channel: `order.${orderId}.status`,
-    message: {
-      orderId,
-      status: 'delivered',
-      driverId,
-      deliveryMethod: 'left-at-door',
-      proof: {
-        type: 'photo',
-        url: photoUrl,
-        note: note || 'Left at front door',
-        capturedAt: Date.now()
-      },
-      timestamp: Date.now()
-    },
-    storeInHistory: true
-  });
-
-  // Notify the customer via chat
-  await pubnub.publish({
-    channel: `chat.order.${orderId}`,
-    message: {
-      text: `Your order has been left at the door. ${note || ''}`.trim(),
-      senderId: driverId,
-      senderRole: 'driver',
-      attachmentUrl: photoUrl,
-      timestamp: Date.now()
-    },
-    storeInHistory: true
-  });
-}
-```
+Leave-at-door can also publish a note on `chat.order.{orderId}`.
 
 ## Best Practices
 
-1. **Choose the right dispatch strategy for your scale.** Start with nearest-driver for small fleets. Switch to broadcast-and-claim when you have many independent contractors. Use score-based dispatch only when you have enough data and volume to justify the complexity.
+1. **Set timeouts on driver assignments.** If a driver does not accept or acknowledge an assignment within 60 seconds, automatically reassign. Publish a timeout event to the dispatch channel.
 
-2. **Set timeouts on driver assignments.** If a driver does not accept or acknowledge an assignment within 60 seconds, automatically reassign to the next best driver. Publish a timeout event to the dispatch channel.
+2. **Scope chat channels to orders.** Always use `chat.order.<orderId>`. Isolate per delivery and clean up after the order completes.
 
-3. **Scope chat channels to orders.** Always use `chat.order.<orderId>` as the channel pattern. This ensures the chat channel is automatically isolated per delivery and can be cleaned up after the order is complete.
+3. **Never share phone numbers.** The PubNub chat channel eliminates the need for customers and drivers to exchange personal contact information.
 
-4. **Never share phone numbers.** The PubNub chat channel eliminates the need for customers and drivers to exchange personal contact information, improving privacy and safety.
+4. **Aggregate fleet data server-side for large fleets.** If you have more than 500 active drivers, do not subscribe a dashboard client to every location channel.
 
-5. **Aggregate fleet data server-side for large fleets.** If you have more than 500 active drivers, subscribing to every driver location channel from a dashboard client is expensive. Instead, use a server process to aggregate positions and publish a single fleet snapshot every few seconds to a dashboard channel.
+5. **Implement progressive location disclosure.** Use the privacy filter pattern so customers far from delivery do not receive exact GPS.
 
-6. **Implement progressive location disclosure.** Use the privacy filter pattern to reveal driver location gradually. Customers far from delivery do not need exact GPS coordinates. This protects driver privacy and reduces anxiety from seeing erratic GPS jumps.
-
-7. **Require proof of delivery for high-value orders.** Implement at least one proof mechanism (photo, PIN, signature) for orders above a threshold value. Store proof references alongside order records in your database.
-
-8. **Clean up channels after delivery.** Once an order reaches a terminal state (`delivered` or `cancelled`), remove channels from channel groups, revoke access tokens, and unsubscribe clients. This prevents channel count from growing unboundedly.
-
-9. **Handle multi-stop delivery ETA independently.** Each customer on a multi-stop route should see their own ETA, not the total route time. Recalculate each customer's ETA based on the number of stops remaining before theirs.
-
-10. **Test dispatch under load.** Simulate scenarios with hundreds of concurrent orders and drivers to verify that your dispatch logic scales, that claim resolution works under contention, and that the fleet dashboard remains responsive.
+6. **Clean up channels after delivery.** Once an order reaches a terminal state (`delivered` or `cancelled`), remove channels from channel groups, revoke access tokens, and unsubscribe clients.

@@ -4,14 +4,9 @@
 
 The canonical reference for retry-with-backoff in PubNub clients and any wrappers around them.
 
-## Why Backoff + Jitter
+## Why Backoff + Jitter (PubNub)
 
-When a regional outage ends and thousands of clients reconnect simultaneously, a pure "retry every N seconds" strategy creates a thundering herd that immediately overloads the recovering infrastructure.
-
-Two compounding mitigations:
-
-- **Exponential backoff**: each retry waits longer than the previous one
-- **Jitter**: each retry adds randomness, breaking the synchronization across clients
+After a regional blip, many PubNub clients reconnect at once. Pair exponential backoff with full jitter so reconnect storms do not synchronize. Wire this to PubNub status categories below — not a generic HTTP retry loop.
 
 ## The Algorithm: Exponential Backoff with Full Jitter
 
@@ -34,21 +29,7 @@ Recommended defaults:
 | `initialMs` | 200 | Fast recovery from a true blip |
 | `maxMs` | 30000 | Cap so we don't wait forever |
 | `multiplier` | 2 | Standard exponential growth |
-| jitter | full | Better than equal jitter for synchronization-breaking |
-
-### Attempt Number Sequence
-
-| Attempt | Without jitter | With full jitter (range) |
-|---|---|---|
-| 1 | 200ms | 0–200ms |
-| 2 | 400ms | 0–400ms |
-| 3 | 800ms | 0–800ms |
-| 4 | 1.6s | 0–1.6s |
-| 5 | 3.2s | 0–3.2s |
-| 6 | 6.4s | 0–6.4s |
-| 7 | 12.8s | 0–12.8s |
-| 8 | 25.6s | 0–25.6s |
-| 9+ | capped at 30s | 0–30s |
+| jitter | full | Breaks synchronized reconnect after PubNub disconnect |
 
 ## Bounded Retries
 

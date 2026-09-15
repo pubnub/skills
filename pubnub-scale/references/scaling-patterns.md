@@ -1,12 +1,6 @@
 # PubNub Scaling Patterns
 
-## Overview
-
-PubNub is designed for massive scale:
-- **Millions** of concurrent connections
-- **Billions** of messages per day
-- **15+ global data centers** (Points of Presence)
-- **Sub-100ms** delivery target
+Choose multiplexing vs channel groups vs wildcards from the table below. Retrieve current numeric caps via **`get_sdk_documentation`** / **`how_to`**.
 
 ## Subscription Strategies
 
