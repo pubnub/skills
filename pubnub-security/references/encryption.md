@@ -25,8 +25,21 @@ Use all three for defense in depth on sensitive channels.
 ## Algorithm choice
 
 - Prefer **`CryptoModule.aesCbcCryptoModule`** for true 256-bit AES-CBC on new work.
-- Legacy bare `cipherKey` config had effectively ~128-bit strength before the October 2023 crypto-module upgrade — retrieve current migration guidance before mixing old and new clients.
+- Do **not** set top-level `cipherKey` / `useRandomIVs` on SDK configuration — those parameters are deprecated and used the legacy ~128-bit path. Pass the key into CryptoModule instead.
 - Never expose cipher keys or secret keys in client bundles.
+
+```javascript
+const pubnub = new PubNub({
+  publishKey: process.env.PN_PUBLISH_KEY,
+  subscribeKey: process.env.PN_SUBSCRIBE_KEY,
+  userId: persistentUserId,
+  cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({
+    cipherKey: process.env.PN_CIPHER_KEY // AES-256-CBC
+  })
+});
+```
+
+Retrieve the current CryptoModule constructor for Python, Swift, and Kotlin via **`get_sdk_documentation`** (`feature: encryption`) — do not copy the JavaScript shape into other SDKs.
 
 ## File encryption pattern
 

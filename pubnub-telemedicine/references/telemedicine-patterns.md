@@ -1,22 +1,17 @@
 # PubNub Telemedicine Patterns
 
-This reference covers architectural patterns for consultation workflows, WebRTC video signaling, audit logging, multi-provider consultations, emergency escalation, and message retention policies.
+Architectural patterns for consultation workflows, video **signaling** on PubNub, audit persist, multi-provider sessions, and emergency escalation.
 
 ## Consultation Workflow
 
-A telemedicine consultation follows a defined lifecycle from patient check-in through follow-up.
-
 ### Consultation States
 
-| State | Description | Active Channels | Duration |
-|-------|-------------|----------------|----------|
-| `scheduled` | Appointment confirmed | `notification.{patientId}` | Until check-in |
-| `checked-in` | Patient confirmed attendance | `waiting-room.{providerId}` | 0-5 minutes |
-| `waiting` | Patient in virtual waiting room | `waiting-room.{providerId}` | Variable |
-| `connecting` | Establishing session | `consultation.{providerId}.{patientId}` | 10-30 seconds |
-| `in-progress` | Active consultation | `consultation.*`, `.video`, `.files` | 15-60 minutes |
-| `wrapping-up` | Provider completing notes | `consultation.{providerId}.{patientId}` | 2-10 minutes |
-| `completed` | Consultation finished | None (channels cleaned up) | Terminal |
+| State | Active Channels |
+|-------|----------------|
+| `scheduled` | `notification.{patientId}` |
+| `checked-in` / `waiting` | `waiting-room.{providerId}` |
+| `connecting` / `in-progress` / `wrapping-up` | `consultation.{providerId}.{patientId}` plus `.video` and `.files` while in-progress |
+| `completed` | None (unsubscribe; revoke encounter tokens) |
 
 ### Consultation Lifecycle Manager
 
@@ -130,125 +125,25 @@ class ConsultationLifecycle {
 
 ## WebRTC Video Signaling via PubNub
 
-PubNub serves as the signaling layer for WebRTC video consultations. All offer/answer exchanges and ICE candidate transfers flow through encrypted PubNub channels.
+PubNub carries **signaling only** on `consultation.{providerId}.{patientId}.video`. Do not paste offer/answer/ICE tutorial classes here.
 
-### Signaling Channel Architecture
-
-The video signaling channel follows the pattern `consultation.{providerId}.{patientId}.video`. This channel carries only signaling metadata, never media streams.
-
-### Video Signaling Implementation
+- Publish SDP/ICE JSON as opaque signaling messages; media never goes through PubNub.
+- Set **`storeInHistory: false`** on the video signaling channel — signaling has no clinical retention value.
+- Grant the `.video` channel in the same encounter token as the consultation channel.
 
 ```javascript
-class TelemedicineVideoSignaling {
-  constructor(pubnub, consultationId, localUserId) {
-    this.pubnub = pubnub;
-    this.signalingChannel = `${consultationId}.video`;
-    this.localUserId = localUserId;
-    this.peerConnection = null;
-  }
-
-  async initialize(onRemoteStream) {
-    this.peerConnection = new RTCPeerConnection({
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        {
-          urls: 'turn:your-turn-server.example.com:3478',
-          username: 'telemedicine',
-          credential: await this.getTurnCredential()
-        }
-      ],
-      iceTransportPolicy: 'relay' // Force TURN relay for HIPAA compliance
-    });
-
-    this.peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        this.sendSignal({ type: 'ice-candidate', candidate: event.candidate.toJSON() });
-      }
-    };
-
-    this.peerConnection.ontrack = (event) => onRemoteStream(event.streams[0]);
-
-    this.pubnub.addListener({
-      message: (event) => {
-        if (event.channel === this.signalingChannel && event.publisher !== this.localUserId) {
-          this.handleSignal(event.message);
-        }
-      }
-    });
-
-    this.pubnub.subscribe({ channels: [this.signalingChannel] });
-  }
-
-  async startCall(localStream) {
-    localStream.getTracks().forEach(track => this.peerConnection.addTrack(track, localStream));
-    const offer = await this.peerConnection.createOffer({
-      offerToReceiveAudio: true, offerToReceiveVideo: true
-    });
-    await this.peerConnection.setLocalDescription(offer);
-    await this.sendSignal({ type: 'offer', sdp: offer.sdp });
-  }
-
-  async handleSignal(signal) {
-    switch (signal.type) {
-      case 'offer':
-        await this.peerConnection.setRemoteDescription(
-          new RTCSessionDescription({ type: 'offer', sdp: signal.sdp })
-        );
-        const answer = await this.peerConnection.createAnswer();
-        await this.peerConnection.setLocalDescription(answer);
-        await this.sendSignal({ type: 'answer', sdp: answer.sdp });
-        break;
-      case 'answer':
-        await this.peerConnection.setRemoteDescription(
-          new RTCSessionDescription({ type: 'answer', sdp: signal.sdp })
-        );
-        break;
-      case 'ice-candidate':
-        if (signal.candidate) {
-          await this.peerConnection.addIceCandidate(new RTCIceCandidate(signal.candidate));
-        }
-        break;
-      case 'end-call':
-        this.endCall();
-        break;
-    }
-  }
-
-  async sendSignal(signal) {
-    await this.pubnub.publish({
-      channel: this.signalingChannel,
-      message: { ...signal, senderId: this.localUserId, timestamp: new Date().toISOString() },
-      storeInHistory: false // Signaling messages do not need persistence
-    });
-  }
-
-  async endCall() {
-    await this.sendSignal({ type: 'end-call' });
-    if (this.peerConnection) { this.peerConnection.close(); this.peerConnection = null; }
-    this.pubnub.unsubscribe({ channels: [this.signalingChannel] });
-  }
-
-  async getTurnCredential() {
-    const response = await fetch('/api/telemedicine/turn-credentials', {
-      method: 'POST', headers: { 'Authorization': `Bearer ${authToken}` }
-    });
-    return (await response.json()).credential;
-  }
+async function sendVideoSignal(pubnub, consultationId, signal, localUserId) {
+  await pubnub.publish({
+    channel: `${consultationId}.video`,
+    message: { ...signal, senderId: localUserId, timestamp: new Date().toISOString() },
+    storeInHistory: false
+  });
 }
 ```
 
-### Video Signaling Flow
-
-| Step | Initiator | Signal Type | Direction |
-|------|-----------|-------------|-----------|
-| 1 | Provider | `offer` | Provider to Patient |
-| 2 | Patient | `answer` | Patient to Provider |
-| 3 | Both | `ice-candidate` | Bidirectional (multiple) |
-| 4 | Either | `end-call` | Bidirectional |
-
 ## Audit Logging for Compliance
 
-Every action involving PHI must be logged for compliance audits and breach investigations.
+Every action involving PHI must be logged. Prefer the After-Publish persist on `audit.*` from [telemedicine-setup.md](telemedicine-setup.md).
 
 ```javascript
 class ComplianceAuditTrail {
@@ -292,8 +187,6 @@ class ComplianceAuditTrail {
 
 ## Multi-Provider Consultations
 
-Some cases require multiple providers (e.g., primary care consulting with a specialist).
-
 ```javascript
 class MultiProviderConsultation {
   constructor(pubnub, tokenService, auditTrail) {
@@ -313,7 +206,7 @@ class MultiProviderConsultation {
         type: 'CONSULTATION_INVITE', title: 'Consultation Invitation',
         body: `You have been invited to join a consultation as ${role}.`,
         consultationId, invitedBy: invitedByProviderId,
-        role, // 'specialist' | 'second-opinion' | 'observer'
+        role,
         priority: 'high'
       }
     });
@@ -353,8 +246,6 @@ class MultiProviderConsultation {
 
 ## Emergency Escalation Patterns
 
-Emergency escalation allows any participant to flag an urgent situation requiring immediate attention.
-
 ```javascript
 class EmergencyEscalation {
   constructor(pubnub, auditTrail) {
@@ -371,7 +262,7 @@ class EmergencyEscalation {
       message: {
         id: escalationId, action: 'EMERGENCY_ESCALATION',
         consultationId, escalatedBy,
-        severity, // 'urgent' | 'critical' | 'life-threatening'
+        severity,
         reason, timestamp: new Date().toISOString(), status: 'active'
       }
     });
@@ -411,92 +302,35 @@ class EmergencyEscalation {
 }
 ```
 
-## Message Retention and Deletion Policies
+## Message Retention
 
-HIPAA and organizational policies dictate message retention and deletion schedules.
+Do not copy jurisdictional retention-year tables here. Configure Message Persistence per your policy ([retention-and-storage.md](../../pubnub-history/references/retention-and-storage.md)).
 
-### Retention Policy Configuration
+PubNub-specific deltas:
 
-| Channel Type | Retention Period | Rationale |
-|-------------|-----------------|-----------|
-| Consultation messages | 7 years | Medical record retention requirement |
-| Video signaling | 0 (no retention) | No clinical value |
-| Notifications | 90 days | Operational reference |
-| Audit logs | 7 years minimum | Compliance audit trail |
-| Emergency escalations | 7 years | Incident documentation |
-
-### Implementing Retention Policies
+- Video signaling: **`storeInHistory: false`**
+- Audit channel: **`storeInHistory: true`** plus After-Publish persist
+- Encounter teardown may `deleteMessages` on consultation / `.files` / `.video` when your policy requires it
 
 ```javascript
-class MessageRetentionManager {
-  constructor(pubnubAdmin) {
-    this.pubnubAdmin = pubnubAdmin;
-  }
-
-  async enforceRetention(channelId, retentionDays) {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
-    const cutoffTimetoken = (cutoffDate.getTime() * 10000).toString();
-
+async function deleteConsultationMessages(pubnubAdmin, consultationId) {
+  const channels = [consultationId, `${consultationId}.files`, `${consultationId}.video`];
+  const results = [];
+  for (const channel of channels) {
     try {
-      await this.pubnubAdmin.deleteMessages({
-        channel: channelId, start: '1', end: cutoffTimetoken
-      });
-      return { channel: channelId, deletedBefore: cutoffDate.toISOString() };
+      await pubnubAdmin.deleteMessages({ channel });
+      results.push({ channel, status: 'deleted' });
     } catch (error) {
-      console.error(`Retention enforcement failed for ${channelId}:`, error.message);
-      throw error;
+      results.push({ channel, status: 'error', message: error.message });
     }
   }
-
-  async deleteConsultationMessages(consultationId) {
-    const channels = [consultationId, `${consultationId}.files`, `${consultationId}.video`];
-    const results = [];
-    for (const channel of channels) {
-      try {
-        await this.pubnubAdmin.deleteMessages({ channel });
-        results.push({ channel, status: 'deleted' });
-      } catch (error) {
-        results.push({ channel, status: 'error', message: error.message });
-      }
-    }
-    return results;
-  }
+  return results;
 }
 ```
 
 ## Best Practices
 
-### Consultation Workflow
-
-- Implement a pre-consultation device check (camera, microphone, internet speed) during check-in to avoid technical issues
-- Set automatic session timeouts that warn participants 5 minutes before token expiry and refresh tokens seamlessly
-- Design the waiting room with estimated wait times and queue position updates to reduce patient anxiety
-- Always end consultations gracefully with a summary event capturing duration and follow-up requirements
-
-### Video Signaling
-
-- Force TURN relay mode (`iceTransportPolicy: 'relay'`) to ensure media flows through controlled infrastructure
-- Use TLS-enabled TURN servers on port 443 to avoid firewall issues on hospital and home networks
-- Implement connection quality monitoring with visible indicators for both patient and provider
-- Disable signaling message history (`storeInHistory: false`) since signaling data has no clinical retention value
-
-### Audit Logging
-
-- Persist audit logs to immutable storage (append-only database or write-once object store)
-- Include enough context in each event to reconstruct the sequence of actions without querying other systems
-- Set up real-time alerts on critical audit events (escalations, access failures, unusual patterns)
-- Never include raw PHI in audit entries -- use references (patient ID, consultation ID) resolvable through authorized queries
-
-### Multi-Provider Sessions
-
-- Clearly communicate roles when additional providers join so the patient understands who is present
-- Grant minimum necessary permissions for each provider role
-- Log all provider additions and removals as audit events
-
-### Emergency Escalation
-
-- Test escalation workflows regularly with simulated scenarios to ensure notifications reach on-call staff promptly
-- Escalation notifications must bypass do-not-disturb settings on mobile devices
-- Always require resolution documentation for every escalation to maintain the incident record
-- Design escalation as a one-tap action for the provider to minimize delay in genuine emergencies
+- Refresh encounter tokens before TTL expiry rather than relying on long-lived grants
+- Disable signaling message history (`storeInHistory: false`)
+- Persist audit logs to durable storage; never include raw PHI in audit entries
+- Grant minimum necessary permissions when additional providers join; log invite/remove

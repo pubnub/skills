@@ -93,16 +93,15 @@ If subscribers are untrusted, you can also dedup at the edge with a Function tha
 // before publish handler
 const kvstore = require('kvstore');
 
-export default (request) => {
+export default async (request) => {
   const id = request.message?.message_id;
   if (!id) return request.ok();
 
   const key = `dedup:${id}`;
-  return kvstore.get(key).then(seen => {
-    if (seen) return request.abort();           // duplicate; drop
-    return kvstore.set(key, '1', 60 * 24)      // remember 1 day
-      .then(() => request.ok());
-  });
+  const seen = await kvstore.get(key);
+  if (seen) return request.abort();
+  await kvstore.set(key, '1', 60 * 24);
+  return request.ok();
 };
 ```
 

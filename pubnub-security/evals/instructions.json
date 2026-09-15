@@ -104,7 +104,7 @@
     },
     {
       "instruction": "Use separate cipher keys for different security contexts",
-      "original_snippets": "Different cipher keys for different data sensitivity ... Separate Keys by Security Context ... cipherKey: 'private-conversations-key' ... cipherKey: 'financial-data-key'  // Different key for sensitive data",
+      "original_snippets": "Different cipher keys for different data sensitivity ... Separate Keys by Security Context ... cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({ cipherKey: 'private-conversations-key' }) ... cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({ cipherKey: 'financial-data-key' })",
       "relevant_when": "When encrypting messages across channels with different sensitivity levels",
       "why_given": "particular preference"
     },
@@ -164,7 +164,7 @@
     },
     {
       "instruction": "Include permission grant examples in implementation output",
-      "original_snippets": "Show proper authKey usage in client config ... Include permission grant examples",
+      "original_snippets": "Show proper setToken() usage on the client after grantToken() ... Include permission grant examples",
       "relevant_when": "When providing PubNub security code examples",
       "why_given": "particular preference"
     }

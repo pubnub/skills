@@ -139,8 +139,8 @@
       "why_given": "new knowledge"
     },
     {
-      "instruction": "Fetch last known driver location from history when initializing the tracking page",
-      "original_snippets": "async fetchLastLocation() { const response = await this.pubnub.history({ channel: `driver.${this.driverId}.location`, count: 1 }); if (response.messages.length > 0) { this.updateDriverPosition(response.messages[0].entry); } }",
+      "instruction": "Fetch last known driver location with fetchMessages when initializing the tracking page",
+      "original_snippets": "async fetchLastLocation() { const channel = `driver.${this.driverId}.location`; const response = await this.pubnub.fetchMessages({ channels: [channel], count: 1 }); const messages = response.channels[channel] ?? []; if (messages.length > 0) { this.updateDriverPosition(messages[0].message); } }",
       "relevant_when": "When setting up the customer tracking page",
       "why_given": "new knowledge"
     },

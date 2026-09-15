@@ -9,7 +9,7 @@
     },
     {
       "name": "Chat history loading",
-      "description": "The chat module loads recent message history from PubNub (using history/fetchMessages) when the chat is initialized",
+      "description": "The chat module loads recent message history from PubNub using fetchMessages (not history()) when the chat is initialized",
       "max_score": 8
     },
     {

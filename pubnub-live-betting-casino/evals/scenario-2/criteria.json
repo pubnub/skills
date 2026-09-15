@@ -29,7 +29,7 @@
     },
     {
       "name": "Encryption on init",
-      "description": "Client PubNub initialization includes a cipherKey parameter",
+      "description": "Client PubNub initialization uses CryptoModule.aesCbcCryptoModule (not a top-level cipherKey)",
       "max_score": 8
     },
     {

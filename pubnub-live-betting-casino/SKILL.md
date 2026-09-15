@@ -64,7 +64,9 @@ const pubnub = new PubNub({
   publishKey: 'pub-c-...',
   subscribeKey: 'sub-c-...',
   userId: 'odds-engine-01',
-  cipherKey: 'betting-encryption-key'
+  cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({
+    cipherKey: 'betting-encryption-key'
+  })
 });
 
 // Publish odds update to a market channel

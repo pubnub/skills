@@ -50,7 +50,7 @@
     },
     {
       "instruction": "Check poll status in KV Store before accepting a vote and reject if not 'open'",
-      "original_snippets": "return kvstore.get(`poll:${pollId}:status`).then((status) => { if (status !== 'open') { ... return request.abort(); } }",
+      "original_snippets": "const status = await kvstore.get(`poll:${pollId}:status`); if (status !== 'open') { ... return request.abort(); }",
       "relevant_when": "When implementing server-side vote validation",
       "why_given": "new knowledge"
     },
@@ -98,7 +98,7 @@
     },
     {
       "instruction": "Implement rate limiting per voter using a counter in KV Store with key pattern ratelimit:<voterId>",
-      "original_snippets": "const rateKey = `ratelimit:${voterId}`; return kvstore.getCounter(rateKey).then((attempts) => { if (attempts && attempts > 10) throw new Error('RATE_LIMITED');",
+      "original_snippets": "const rateKey = `ratelimit:${voterId}`; const attempts = await kvstore.getCounter(rateKey); if (attempts && attempts > 10) throw new Error('RATE_LIMITED');",
       "relevant_when": "When implementing fraud detection in a voting system",
       "why_given": "new knowledge"
     },

@@ -67,14 +67,14 @@
       "why_given": "reminder"
     },
     {
-      "instruction": "Encrypt all wager and balance messages using PubNub's built-in AES encryption via cipherKey",
-      "original_snippets": "Encrypt all wager and balance messages using PubNub's built-in AES encryption ... cipherKey: 'aes-256-encryption-key' ... Encrypt all financial channels (wagers, balances, cash-out) with AES-256",
+      "instruction": "Encrypt all wager and balance messages using PubNub CryptoModule AES-256-CBC (aesCbcCryptoModule)",
+      "original_snippets": "Encrypt all wager and balance messages using PubNub CryptoModule AES-256-CBC ... cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({ cipherKey: 'aes-256-encryption-key' }) ... Encrypt all financial channels (wagers, balances, cash-out) with AES-256",
       "relevant_when": "Initializing PubNub for any betting or financial data channels",
       "why_given": "particular preference"
     },
     {
-      "instruction": "Include PubNub SDK initialization with encryption and Access Manager configuration (cipherKey and authKey)",
-      "original_snippets": "Include PubNub SDK initialization with encryption and Access Manager configuration ... cipherKey: 'your-encryption-key', authKey: 'auth-token-from-server'",
+      "instruction": "Include PubNub SDK initialization with CryptoModule encryption and Access Manager via setToken (not constructor authKey)",
+      "original_snippets": "Include PubNub SDK initialization with encryption and Access Manager configuration ... cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({ cipherKey: 'your-encryption-key' }) ... pubnub.setToken('auth-token-from-server')",
       "relevant_when": "Initializing PubNub client for betting platform",
       "why_given": "particular preference"
     },

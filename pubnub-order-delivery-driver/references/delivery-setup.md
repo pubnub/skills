@@ -1,6 +1,6 @@
 # PubNub Delivery Tracking Setup
 
-This reference covers the foundational setup for building real-time delivery tracking with PubNub, including channel architecture, GPS location publishing, SDK initialization, tracking page implementation, and battery-efficient mobile updates.
+This reference covers channel architecture, GPS location publishing, Access Manager, and tracking-page subscriptions for real-time delivery tracking with PubNub.
 
 ## Channel Architecture for Delivery
 
@@ -23,7 +23,6 @@ A well-designed channel structure separates concerns and keeps subscriptions eff
 Use channel groups to let fleet dashboards subscribe to all active driver location channels without managing individual subscriptions.
 
 ```javascript
-// Add a driver's location channel to the fleet group when they go on duty
 async function addDriverToFleet(pubnub, driverId, fleetId) {
   await pubnub.channelGroups.addChannels({
     channelGroup: `fleet-${fleetId}-locations`,
@@ -31,7 +30,6 @@ async function addDriverToFleet(pubnub, driverId, fleetId) {
   });
 }
 
-// Remove when driver goes off duty
 async function removeDriverFromFleet(pubnub, driverId, fleetId) {
   await pubnub.channelGroups.removeChannels({
     channelGroup: `fleet-${fleetId}-locations`,
@@ -39,7 +37,6 @@ async function removeDriverFromFleet(pubnub, driverId, fleetId) {
   });
 }
 
-// Fleet dashboard subscribes to the group
 pubnub.subscribe({
   channelGroups: ['fleet-main-locations']
 });
@@ -58,12 +55,11 @@ const pubnub = new PubNub({
   publishKey: process.env.PUBNUB_PUBLISH_KEY,
   subscribeKey: process.env.PUBNUB_SUBSCRIBE_KEY,
   userId: `driver-${driverProfile.id}`,
-  restore: true,           // Automatically reconnect and catch up
+  restore: true,
   autoNetworkDetection: true,
-  heartbeatInterval: 30    // Presence heartbeat every 30 seconds
+  heartbeatInterval: 30
 });
 
-// Set driver state for presence
 pubnub.setState({
   channels: [`driver.${driverProfile.id}.location`],
   state: {
@@ -92,7 +88,6 @@ const pubnub = new PubNub({
 Use Access Manager to control who can publish and subscribe to which channels.
 
 ```javascript
-// Server-side: Grant a customer read access to their order and driver channels
 async function grantCustomerAccess(orderId, driverId, customerToken) {
   const token = await pubnub.grantToken({
     ttl: 120,  // 2 hours
@@ -108,7 +103,6 @@ async function grantCustomerAccess(orderId, driverId, customerToken) {
   return token;
 }
 
-// Server-side: Grant a driver publish access to their location and order channels
 async function grantDriverAccess(driverId, orderId) {
   const token = await pubnub.grantToken({
     ttl: 480,  // 8 hours (full shift)
@@ -126,11 +120,13 @@ async function grantDriverAccess(driverId, orderId) {
 }
 ```
 
+When using a privacy Function, grant customers read on `order.{orderId}.driver-location` instead of raw `driver.{driverId}.location`. See [delivery-patterns.md](delivery-patterns.md).
+
 ## GPS Location Publishing
 
 ### Adaptive Frequency Publishing
 
-Adjust publishing frequency based on driver speed and activity. This saves bandwidth and battery while maintaining accuracy when it matters most.
+Throttle publishes to `driver.{driverId}.location` so GPS ticks do not flood the keyset. Tune intervals to PubNub message volume, not to a mapping SDK.
 
 | Driver State | Speed | Publish Interval | Rationale |
 |-------------|-------|-----------------|-----------|
@@ -146,101 +142,38 @@ class AdaptiveLocationPublisher {
     this.pubnub = pubnub;
     this.driverId = driverId;
     this.channel = `driver.${driverId}.location`;
-    this.lastLocation = null;
-    this.destinationCoords = null;
-    this.intervalId = null;
+    this.lastPublishTime = 0;
   }
 
-  getPublishInterval(speed, distanceToDestination) {
-    // Near destination: max frequency
-    if (distanceToDestination !== null && distanceToDestination < 200) {
-      return 1000;
-    }
+  getPublishInterval(speed, nearDestination) {
+    if (nearDestination) return 1000;
     if (speed < 1) return 30000;
     if (speed < 15) return 5000;
     if (speed < 60) return 3000;
     return 2000;
   }
 
-  publish(position) {
-    const { latitude, longitude, heading, speed } = position;
-
-    const message = {
-      lat: latitude,
-      lng: longitude,
-      heading: heading || 0,
-      speed: speed || 0,
-      accuracy: position.accuracy || null,
-      timestamp: Date.now(),
-      driverId: this.driverId
-    };
+  publish(position, nearDestination) {
+    const interval = this.getPublishInterval(position.speed || 0, nearDestination);
+    const now = Date.now();
+    if (now - this.lastPublishTime < interval) return;
 
     this.pubnub.publish({
       channel: this.channel,
-      message: message,
-      storeInHistory: false  // Location data is ephemeral
+      message: {
+        lat: position.latitude,
+        lng: position.longitude,
+        heading: position.heading || 0,
+        speed: position.speed || 0,
+        accuracy: position.accuracy || null,
+        timestamp: now,
+        driverId: this.driverId
+      },
+      storeInHistory: false
     });
 
-    this.lastLocation = message;
+    this.lastPublishTime = now;
   }
-
-  setDestination(lat, lng) {
-    this.destinationCoords = { lat, lng };
-  }
-
-  start() {
-    if (navigator.geolocation) {
-      this.watchId = navigator.geolocation.watchPosition(
-        (pos) => {
-          const distToDest = this.destinationCoords
-            ? haversineDistance(
-                pos.coords.latitude, pos.coords.longitude,
-                this.destinationCoords.lat, this.destinationCoords.lng
-              )
-            : null;
-
-          const interval = this.getPublishInterval(pos.coords.speed || 0, distToDest);
-
-          // Throttle publishing to the calculated interval
-          const now = Date.now();
-          if (!this.lastPublishTime || (now - this.lastPublishTime) >= interval) {
-            this.publish(pos.coords);
-            this.lastPublishTime = now;
-          }
-        },
-        (err) => console.error('Geolocation error:', err),
-        { enableHighAccuracy: true, maximumAge: 1000 }
-      );
-    }
-  }
-
-  stop() {
-    if (this.watchId) {
-      navigator.geolocation.clearWatch(this.watchId);
-    }
-  }
-}
-```
-
-### Haversine Distance Utility
-
-Used throughout the delivery system for distance calculations.
-
-```javascript
-function haversineDistance(lat1, lng1, lat2, lng2) {
-  const R = 6371e3; // Earth's radius in meters
-  const toRad = (deg) => (deg * Math.PI) / 180;
-
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-    Math.sin(dLng / 2) * Math.sin(dLng / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Distance in meters
 }
 ```
 
@@ -248,33 +181,17 @@ function haversineDistance(lat1, lng1, lat2, lng2) {
 
 ### Customer Tracking Page
 
-The tracking page subscribes to both the order status channel and the driver location channel, rendering updates on a map and a status timeline.
+Subscribe to `order.{orderId}.status` and either the privacy-filtered location channel or (if AM allows) `driver.{driverId}.location`. Catch up the last GPS point with `fetchMessages` (`count: 1`) because location publishes use `storeInHistory: false` — persist a last-known waypoint separately if you need reload after the ephemeral window.
 
 ```javascript
 class DeliveryTracker {
-  constructor(pubnub, orderId, driverId, mapElement) {
+  constructor(pubnub, orderId, driverId) {
     this.pubnub = pubnub;
     this.orderId = orderId;
     this.driverId = driverId;
-    this.map = new google.maps.Map(mapElement, {
-      zoom: 15,
-      center: { lat: 0, lng: 0 }
-    });
-    this.driverMarker = null;
-    this.destinationMarker = null;
-    this.routeLine = null;
   }
 
-  start(deliveryAddress) {
-    // Place destination marker
-    this.destinationMarker = new google.maps.Marker({
-      position: deliveryAddress,
-      map: this.map,
-      icon: '/icons/destination-pin.png',
-      title: 'Delivery Address'
-    });
-
-    // Subscribe to channels
+  start() {
     this.pubnub.subscribe({
       channels: [
         `order.${this.orderId}.status`,
@@ -286,72 +203,26 @@ class DeliveryTracker {
       message: (event) => this.handleMessage(event)
     });
 
-    // Fetch last known driver location from history
     this.fetchLastLocation();
   }
 
   async fetchLastLocation() {
-    const response = await this.pubnub.history({
-      channel: `driver.${this.driverId}.location`,
+    const channel = `driver.${this.driverId}.location`;
+    const response = await this.pubnub.fetchMessages({
+      channels: [channel],
       count: 1
     });
-
-    if (response.messages.length > 0) {
-      this.updateDriverPosition(response.messages[0].entry);
+    const messages = response.channels[channel] ?? [];
+    if (messages.length > 0) {
+      this.onLocation(messages[0].message);
     }
   }
 
   handleMessage(event) {
     if (event.channel === `driver.${this.driverId}.location`) {
-      this.updateDriverPosition(event.message);
+      this.onLocation(event.message);
     } else if (event.channel === `order.${this.orderId}.status`) {
-      this.updateOrderStatus(event.message);
-    }
-  }
-
-  updateDriverPosition(location) {
-    const position = { lat: location.lat, lng: location.lng };
-
-    if (!this.driverMarker) {
-      this.driverMarker = new google.maps.Marker({
-        position: position,
-        map: this.map,
-        icon: '/icons/driver-car.png',
-        title: 'Your Driver'
-      });
-      this.map.setCenter(position);
-    } else {
-      this.animateMarker(this.driverMarker, position);
-    }
-  }
-
-  animateMarker(marker, newPosition) {
-    const start = marker.getPosition();
-    const end = new google.maps.LatLng(newPosition.lat, newPosition.lng);
-    const frames = 30;
-    let frame = 0;
-
-    const animate = () => {
-      frame++;
-      const progress = frame / frames;
-      const lat = start.lat() + (end.lat() - start.lat()) * progress;
-      const lng = start.lng() + (end.lng() - start.lng()) * progress;
-      marker.setPosition({ lat, lng });
-
-      if (frame < frames) {
-        requestAnimationFrame(animate);
-      }
-    };
-    animate();
-  }
-
-  updateOrderStatus(statusMessage) {
-    const statusElement = document.getElementById('order-status');
-    statusElement.textContent = formatStatus(statusMessage.status);
-
-    if (statusMessage.eta) {
-      const etaElement = document.getElementById('eta-display');
-      etaElement.textContent = formatETA(statusMessage.eta);
+      this.onStatus(event.message);
     }
   }
 
@@ -363,139 +234,6 @@ class DeliveryTracker {
       ]
     });
   }
-}
-```
-
-## Battery-Efficient Mobile Location Updates
-
-### iOS (Swift) Background Location
-
-```swift
-import CoreLocation
-import PubNub
-
-class DriverLocationManager: NSObject, CLLocationManagerDelegate {
-    private let locationManager = CLLocationManager()
-    private let pubnub: PubNub
-    private let driverId: String
-    private var lastPublishTime: Date = .distantPast
-    private var isNearDestination = false
-
-    init(pubnub: PubNub, driverId: String) {
-        self.pubnub = pubnub
-        self.driverId = driverId
-        super.init()
-
-        locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.allowsBackgroundLocationUpdates = true
-        locationManager.pausesLocationUpdatesAutomatically = false
-        locationManager.showsBackgroundLocationIndicator = true
-        locationManager.distanceFilter = 10 // Minimum 10m movement
-    }
-
-    func startTracking() {
-        locationManager.requestAlwaysAuthorization()
-        locationManager.startUpdatingLocation()
-    }
-
-    func stopTracking() {
-        locationManager.stopUpdatingLocation()
-    }
-
-    func setNearDestination(_ near: Bool) {
-        isNearDestination = near
-        locationManager.distanceFilter = near ? 5 : 10
-    }
-
-    func locationManager(_ manager: CLLocationManager,
-                         didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.last else { return }
-
-        let interval: TimeInterval = isNearDestination ? 1.0 : 3.0
-        guard Date().timeIntervalSince(lastPublishTime) >= interval else { return }
-
-        let message: [String: Any] = [
-            "lat": location.coordinate.latitude,
-            "lng": location.coordinate.longitude,
-            "heading": location.course,
-            "speed": max(location.speed, 0),
-            "accuracy": location.horizontalAccuracy,
-            "timestamp": Int(Date().timeIntervalSince1970 * 1000),
-            "driverId": driverId
-        ]
-
-        pubnub.publish(
-            channel: "driver.\(driverId).location",
-            message: message
-        ) { result in
-            // Handle publish result
-        }
-
-        lastPublishTime = Date()
-    }
-}
-```
-
-### Android (Kotlin) Background Location
-
-```kotlin
-class DriverLocationService : Service() {
-    private lateinit var pubnub: PubNub
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private var driverId: String = ""
-    private var lastPublishTime: Long = 0
-
-    override fun onCreate() {
-        super.onCreate()
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-    }
-
-    fun startTracking(driverId: String) {
-        this.driverId = driverId
-
-        val locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY, 2000L
-        ).setMinUpdateIntervalMillis(1000L)
-         .setMinUpdateDistanceMeters(5f)
-         .build()
-
-        fusedLocationClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback,
-            Looper.getMainLooper()
-        )
-    }
-
-    private val locationCallback = object : LocationCallback() {
-        override fun onLocationResult(result: LocationResult) {
-            val location = result.lastLocation ?: return
-            val now = System.currentTimeMillis()
-
-            if (now - lastPublishTime < 2000) return
-
-            val message = mapOf(
-                "lat" to location.latitude,
-                "lng" to location.longitude,
-                "heading" to location.bearing,
-                "speed" to location.speed,
-                "accuracy" to location.accuracy,
-                "timestamp" to now,
-                "driverId" to driverId
-            )
-
-            pubnub.publish(
-                channel = "driver.$driverId.location",
-                message = message
-            ).async { result ->
-                // Handle result
-            }
-
-            lastPublishTime = now
-        }
-    }
-
-    override fun onBind(intent: Intent?): IBinder? = null
 }
 ```
 
@@ -511,8 +249,4 @@ class DriverLocationService : Service() {
 
 5. **Secure channels with Access Manager.** Never let customers publish to driver channels or other customers' order channels. Issue time-limited tokens scoped to the exact channels needed for one delivery.
 
-6. **Smooth the tracking map.** Interpolate between received GPS points with animation (as shown above) to prevent the driver marker from jumping. A 30-frame linear interpolation at 60fps gives a half-second smooth transition.
-
-7. **Monitor battery impact.** On mobile, test location publishing in the background over a full simulated shift (8 hours) and verify that battery drain stays within acceptable limits. Use the distance filter to reduce unnecessary callbacks.
-
-8. **Plan for scale.** A fleet of 1,000 drivers publishing every 3 seconds generates about 20,000 messages per minute. Factor this into your PubNub plan and consider aggregating fleet positions server-side if the dashboard does not need per-driver granularity.
+6. **Plan for scale.** A fleet of 1,000 drivers publishing every 3 seconds generates about 20,000 messages per minute. Factor this into your PubNub plan and consider aggregating fleet positions server-side if the dashboard does not need per-driver granularity.

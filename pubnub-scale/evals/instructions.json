@@ -145,8 +145,8 @@
       "why_given": "preference"
     },
     {
-      "instruction": "Use cipherKey in PubNub config for end-to-end encryption; messages are stored encrypted and auto-decrypted on retrieval with same key",
-      "original_snippets": "Messages encrypted with `cipherKey` are stored encrypted: ... const pubnub = new PubNub({ ... cipherKey: 'my-secret-key' }); ... // Retrieve - automatically decrypted with same cipherKey",
+      "instruction": "Use CryptoModule (aesCbcCryptoModule) for end-to-end encryption; messages are stored encrypted and auto-decrypted on retrieval with the same key",
+      "original_snippets": "Messages encrypted with CryptoModule are stored encrypted: ... cryptoModule: PubNub.CryptoModule.aesCbcCryptoModule({ cipherKey: 'my-secret-key' }) ... // Retrieve - automatically decrypted with the same CryptoModule key",
       "relevant_when": "Building applications requiring message encryption",
       "why_given": "new knowledge"
     },

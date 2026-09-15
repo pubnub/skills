@@ -12,6 +12,8 @@ Every game event published to PubNub follows a common envelope with a sport-spec
 | Standard | Significant in-game actions | Fouls, substitutions, timeouts | Immediate |
 | Informational | Context and statistics | Possession changes, stat updates | Batched (1-5 second window) |
 
+Map provider play types in your ingestion layer. Do not keep sport-rule encyclopedias (NFL/NBA/Soccer/MLB scoring catalogs, period clocks) in this skill.
+
 ## Universal Event Envelope
 
 ```javascript
@@ -30,143 +32,7 @@ const gameEvent = {
     home: { team: 'string', score: 'number' },
     away: { team: 'string', score: 'number' }
   },
-  payload: {}                // Sport-specific event data
-};
-```
-
-## Sport-Specific Event Types
-
-### NFL Event Types
-
-| Event Type | Tier | Description |
-|------------|------|-------------|
-| `touchdown` | Critical | Touchdown scored |
-| `field_goal` | Critical | Field goal made or missed |
-| `safety` | Critical | Safety scored |
-| `extra_point` | Standard | PAT attempt result |
-| `two_point_conversion` | Standard | Two-point conversion result |
-| `turnover` | Standard | Interception or fumble recovery |
-| `penalty` | Standard | Penalty called |
-| `quarter_change` | Standard | Quarter transition |
-| `play` | Informational | Individual play result |
-
-```javascript
-const touchdownEvent = {
-  type: 'touchdown',
-  gameId: '2024-SEA-SF-week5',
-  sport: 'nfl',
-  sequence: 142,
-  timestamp: Date.now(),
-  period: { current: 3, label: 'Q3', clock: '04:32' },
-  score: { home: { team: 'SF', score: 21 }, away: { team: 'SEA', score: 14 } },
-  payload: {
-    team: 'SF',
-    player: 'C. McCaffrey',
-    playType: 'rush',
-    yards: 12,
-    description: 'C. McCaffrey 12 yard rush',
-    driveInfo: { plays: 8, yards: 75, timeOfPossession: '4:23' }
-  }
-};
-```
-
-### NBA Event Types
-
-| Event Type | Tier | Description |
-|------------|------|-------------|
-| `three_pointer` | Critical | Three-point basket made |
-| `dunk` | Critical | Dunk (highlight play) |
-| `basket` | Standard | Two-point field goal |
-| `free_throw` | Standard | Free throw attempt |
-| `foul` | Standard | Personal or technical foul |
-| `timeout` | Standard | Timeout called |
-| `quarter_change` | Standard | Quarter transition |
-| `rebound` | Informational | Offensive or defensive rebound |
-| `block` | Informational | Shot blocked |
-
-```javascript
-const threePointerEvent = {
-  type: 'three_pointer',
-  gameId: '2024-LAL-BOS-finals-g3',
-  sport: 'nba',
-  sequence: 312,
-  timestamp: Date.now(),
-  period: { current: 4, label: 'Q4', clock: '01:45' },
-  score: { home: { team: 'BOS', score: 101 }, away: { team: 'LAL', score: 98 } },
-  payload: {
-    team: 'BOS',
-    player: 'J. Tatum',
-    distance: 28,
-    assisted: true,
-    assistPlayer: 'J. Brown'
-  }
-};
-```
-
-### Soccer Event Types
-
-| Event Type | Tier | Description |
-|------------|------|-------------|
-| `goal` | Critical | Goal scored |
-| `red_card` | Critical | Red card issued |
-| `penalty_awarded` | Critical | Penalty kick awarded |
-| `yellow_card` | Standard | Yellow card issued |
-| `substitution` | Standard | Player substituted |
-| `half_change` | Standard | Half transition |
-| `shot_on_target` | Informational | Shot on goal |
-| `corner` | Informational | Corner kick awarded |
-| `offside` | Informational | Offside call |
-
-```javascript
-const goalEvent = {
-  type: 'goal',
-  gameId: '2024-ARS-CHE-epl-md12',
-  sport: 'epl',
-  sequence: 87,
-  timestamp: Date.now(),
-  period: { current: 2, label: '2nd Half', clock: '68:22' },
-  score: { home: { team: 'ARS', score: 2 }, away: { team: 'CHE', score: 1 } },
-  payload: {
-    team: 'ARS',
-    scorer: 'K. Havertz',
-    assist: 'B. Saka',
-    goalType: 'header',
-    minute: 68
-  }
-};
-```
-
-### MLB Event Types
-
-| Event Type | Tier | Description |
-|------------|------|-------------|
-| `home_run` | Critical | Home run hit |
-| `run_scored` | Critical | Run crosses home plate |
-| `strikeout` | Standard | Batter struck out |
-| `walk` | Standard | Base on balls |
-| `hit` | Standard | Base hit (single, double, triple) |
-| `inning_change` | Standard | Inning transition |
-| `pitch` | Informational | Individual pitch result |
-| `out` | Informational | Out recorded |
-
-```javascript
-const homeRunEvent = {
-  type: 'home_run',
-  gameId: '2024-NYY-BOS-aug15',
-  sport: 'mlb',
-  sequence: 198,
-  timestamp: Date.now(),
-  period: { current: 5, label: 'Bot 5th', clock: '' },
-  score: { home: { team: 'NYY', score: 6 }, away: { team: 'BOS', score: 3 } },
-  payload: {
-    team: 'NYY',
-    batter: 'A. Judge',
-    pitcher: 'C. Sale',
-    exitVelocity: 112.4,
-    distance: 425,
-    runsBattedIn: 2,
-    description: 'A. Judge 2-run homer to center (425 ft)'
-  }
+  payload: {}                // Sport-specific event data from the provider
 };
 ```
 
@@ -232,26 +98,14 @@ async function publishGameStatus(publisher, gameId, sport, newStatus, period, sc
     sport,
     period,
     score,
-    payload: { status: newStatus, statusMessage: getStatusMessage(newStatus, sport) }
+    payload: { status: newStatus }
   });
-}
-
-function getStatusMessage(status, sport) {
-  const messages = {
-    'pre_game': 'Game starting soon',
-    'in_progress': 'Game underway',
-    'halftime': sport === 'epl' ? 'Half-time' : 'Halftime',
-    'final': 'Final',
-    'delayed': 'Game delayed',
-    'overtime': 'Overtime'
-  };
-  return messages[status] || status;
 }
 ```
 
 ## Standings and League Tables
 
-### Publishing Standings Updates
+Publish already-ranked standings. Do not implement league-table math (points, GD, sort keys) in this skill.
 
 ```javascript
 async function publishStandings(pubnub, league, standings) {
@@ -261,99 +115,15 @@ async function publishStandings(pubnub, league, standings) {
       type: 'standings_update',
       league,
       timestamp: Date.now(),
-      standings: standings.map(entry => ({
-        rank: entry.rank, team: entry.team, name: entry.name,
-        played: entry.wins + entry.losses + (entry.draws || 0),
-        wins: entry.wins, draws: entry.draws || 0, losses: entry.losses,
-        points: entry.points, goalDifference: entry.goalDifference
-      }))
+      standings
     }
   });
 }
 ```
 
-### Soccer League Table Calculation
-
-```javascript
-function calculateLeagueTable(results) {
-  const table = new Map();
-
-  for (const match of results) {
-    if (match.status !== 'final') continue;
-    const home = getOrCreate(table, match.home.team, match.home.name);
-    const away = getOrCreate(table, match.away.team, match.away.name);
-
-    home.played++; away.played++;
-    home.goalsFor += match.home.score; home.goalsAgainst += match.away.score;
-    away.goalsFor += match.away.score; away.goalsAgainst += match.home.score;
-
-    if (match.home.score > match.away.score) {
-      home.wins++; home.points += 3; away.losses++;
-    } else if (match.home.score < match.away.score) {
-      away.wins++; away.points += 3; home.losses++;
-    } else {
-      home.draws++; away.draws++; home.points += 1; away.points += 1;
-    }
-    home.goalDifference = home.goalsFor - home.goalsAgainst;
-    away.goalDifference = away.goalsFor - away.goalsAgainst;
-  }
-
-  return [...table.values()]
-    .sort((a, b) => b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor)
-    .map((entry, i) => ({ ...entry, rank: i + 1 }));
-}
-
-function getOrCreate(table, team, name) {
-  if (!table.has(team)) {
-    table.set(team, { team, name, played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, goalDifference: 0, points: 0 });
-  }
-  return table.get(team);
-}
-```
-
 ## Play-by-Play Feed Construction
 
-### Client-Side Timeline Builder
-
-Use [delta / sequence state synchronization](../../pubnub-multiplayer-gaming/references/gaming-state-sync.md) for monotonic sequence tracking, gap detection, and backfill. **Sport-specific delta:** maintain a play-by-play timeline sorted by `sequence`; on gap, request backfill for the missing range; filter scoring events by sport-specific play types (`touchdown`, `goal`, etc.).
-
-## Period and Clock Tracking
-
-### Period Transition Map
-
-| Sport | Periods | Labels | Clock Direction |
-|-------|---------|--------|-----------------|
-| NFL | 4 quarters + OT | Q1-Q4, OT | Counts down from 15:00 |
-| NBA | 4 quarters + OT | Q1-Q4, OT | Counts down from 12:00 |
-| NHL | 3 periods + OT | P1-P3, OT | Counts down from 20:00 |
-| Soccer | 2 halves + ET | 1st Half, 2nd Half, ET1, ET2 | Counts up from 0:00 |
-| MLB | 9 innings | Top/Bot 1st-9th, Extras | No clock |
-
-### Period Label Formatting
-
-```javascript
-function formatPeriodLabel(sport, period, isTop) {
-  switch (sport) {
-    case 'nfl':
-    case 'nba':
-      return period <= 4 ? `Q${period}` : `OT${period - 4 > 1 ? period - 4 : ''}`;
-    case 'nhl':
-      return period <= 3 ? `P${period}` : `OT`;
-    case 'epl':
-      return period === 1 ? '1st Half' : period === 2 ? '2nd Half' : `ET${period - 2}`;
-    case 'mlb': {
-      const suffix = getOrdinalSuffix(period);
-      return `${isTop ? 'Top' : 'Bot'} ${period}${suffix}`;
-    }
-    default: return `Period ${period}`;
-  }
-}
-
-function getOrdinalSuffix(n) {
-  if (n >= 11 && n <= 13) return 'th';
-  switch (n % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
-}
-```
+Use [delta / sequence state synchronization](../../pubnub-multiplayer-gaming/references/gaming-state-sync.md) for monotonic sequence tracking, gap detection, and backfill. **Sport-specific delta:** maintain a play-by-play timeline sorted by `sequence`; on gap, request backfill for the missing range; filter scoring events by the provider’s play types.
 
 ## Error Handling
 
@@ -418,5 +188,4 @@ function validateGameEvent(event) {
 6. **Clock synchronization** - Always use the server-side game clock value; never derive it from wall-clock time
 7. **Backfill on reconnect** - Fetch recent history and replay events through the timeline builder to close gaps
 8. **Validation at ingestion** - Validate every event before publishing; reject malformed events to protect downstream consumers
-9. **Period labels** - Use sport-appropriate labels (quarters, halves, innings) in every event for correct rendering
-10. **Scoring summary** - Maintain a separate list of scoring plays for quick catch-up when users join mid-game
+9. **Scoring summary** - Maintain a separate list of scoring plays for quick catch-up when users join mid-game

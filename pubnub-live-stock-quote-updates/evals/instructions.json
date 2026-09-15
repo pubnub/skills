@@ -68,7 +68,7 @@
     },
     {
       "instruction": "PubNub Functions for alert evaluation should use kvstore for alert storage, check alert conditions server-side, and mark triggered alerts to prevent duplicates",
-      "original_snippets": "const kvstore = require('kvstore'); ... return kvstore.get(`alerts_${quote.symbol}`).then((data) => { ... alerts.forEach((alert) => { if (alert.triggered) return; ... alert.triggered = true; ... return kvstore.set(`alerts_${quote.symbol}`, JSON.stringify(alerts))",
+      "original_snippets": "const kvstore = require('kvstore'); ... const data = await kvstore.get(`alerts_${quote.symbol}`); ... alerts.forEach((alert) => { if (alert.triggered) return; ... alert.triggered = true; ... await kvstore.set(`alerts_${quote.symbol}`, JSON.stringify(alerts))",
       "relevant_when": "When building server-side price alert evaluation with PubNub Functions",
       "why_given": "new knowledge"
     },
